@@ -46,6 +46,12 @@
         }
       ]
     },
-    "os:default"
+    "os:default",
+    "http:default",
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://**/*" }],
+      "deny": []
+    }
   ]
 }
