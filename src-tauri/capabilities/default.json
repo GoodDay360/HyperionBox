@@ -37,7 +37,15 @@
     "fs:scope-resource-recursive",
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "$APPDATA" }, {"path": "$APPDATA/**/*" }]
-    }
+      "allow": [
+        {
+          "path": "$APPDATA"
+        },
+        {
+          "path": "$APPDATA/**/*"
+        }
+      ]
+    },
+    "os:default"
   ]
 }

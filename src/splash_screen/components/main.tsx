@@ -1,4 +1,7 @@
 
+// React import
+import { useEffect, useState, useRef } from 'react';
+
 
 // Tauri Plugins
 import { Command } from '@tauri-apps/plugin-shell';
@@ -15,7 +18,7 @@ import check_node from '../scripts/check_node';
 
 // Import assets
 import Icon from "../../assets/icons/icon.png"
-import { useEffect, useState } from 'react';
+
 import { json } from 'stream/consumers';
 
 // Import styles
@@ -23,9 +26,12 @@ import styles from "../styles/main.module.css";
 
 
 function Splash_Screen() {
+    // const run_state = useRef<boolean>(false)
     const [feedback, setFeedback] = useState<string>("")
 
     useEffect(()=>{
+        // if(run_state.current) return;
+        // run_state.current = true;
         (async ()=>{
             const config_path = await path.join(await path.appDataDir(),"config.json")
             const file_exist = await exists(config_path);
@@ -50,6 +56,7 @@ function Splash_Screen() {
 
             }).catch((e)=> {info(e)})
         })();
+        
     },[])
 
     return (
