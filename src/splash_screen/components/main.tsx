@@ -23,8 +23,7 @@ import styles from "../styles/main.module.css";
 
 
 function Splash_Screen() {
-    const [feedback_1, setFeedback_1] = useState<string>("")
-    const [feedback_2, setFeedback_2] = useState<string>("")
+    const [feedback, setFeedback] = useState<string>("")
 
     useEffect(()=>{
         (async ()=>{
@@ -44,7 +43,7 @@ function Splash_Screen() {
                 }
 
                 if (!config.first_load){
-                    check_node({setFeedback_1,setFeedback_2})
+                    check_node({setFeedback})
                 }
 
 
@@ -59,8 +58,7 @@ function Splash_Screen() {
                 className={styles.icon}
             />
             <div style={{display:"flex",flexDirection:"column"}}>
-                <span className={styles.feedback_1}>{feedback_1}</span>
-                <span className={styles.feedback_2}>{feedback_2}</span>
+                <span className={styles.feedback}>{feedback}</span>
             </div>
             
             

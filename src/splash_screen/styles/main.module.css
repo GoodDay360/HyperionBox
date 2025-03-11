@@ -17,20 +17,11 @@
     height: calc((100vw + 100vh)*0.5/2);
 }
 
-.feedback_1{
+.feedback{
     font-size: calc((100vw + 100vh)*0.05/2);
     height: auto;
     color: var(--color);
     font-family: var(--font-family-medium);
-    font-style: normal;
-    text-align: center;
-}
-
-.feedback_2{
-    font-size: calc((100vw + 100vh)*0.035/2);
-    height: auto;
-    color: var(--color);
-    font-family: var(--font-family-regular);
     font-style: normal;
     text-align: center;
 }

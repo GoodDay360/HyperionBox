@@ -1,7 +1,6 @@
 
-const check_node = ({setFeedback_1, setFeedback_2}:any) => {
-    setFeedback_1("Checking Node...")
-    setFeedback_2("Downloading.")
+const check_node = ({setFeedback}:any) => {
+    setFeedback("Downloading Node...")
 }
 
 export default check_node;

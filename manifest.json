@@ -1,0 +1,7 @@
+{
+    "node":{
+        "window": {
+            "x64": "https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip"
+        }
+    }
+}
