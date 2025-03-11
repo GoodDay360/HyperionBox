@@ -1,18 +1,18 @@
 import puppeteer from 'puppeteer';
-// Or import puppeteer from 'puppeteer-core';
+import fs from 'fs';
+import path, { dirname } from 'path';
+import { fileURLToPath, pathToFileURL} from 'url'
 
-const get_list = async () => {
+const get_list = async (options) => {
+    
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-
-    await page.goto('https://hianime.to/filter');
+    await page.goto(`https://hianime.to/search?keyword=${options.search || "+"}&page=${options.page || 1}`);
 
     await page.setViewport({width: 1080, height: 1024});
 
     const data = await page.evaluate(() => {
         const result = []
-
-
         
         const film_item = document.querySelector('.film_list-wrap').querySelectorAll('.flw-item');
         film_item.forEach(node => {
@@ -30,6 +30,34 @@ const get_list = async () => {
     })
 
     console.log(data);
+
+    const jsonString = JSON.stringify(
+        {
+            data: data,
+            status: {
+                code: 200,
+                message: "OK"
+            }
+        }
+    , null, 2);
+
+    const LOG_DIRECTORY = path.join(options.output_dir, "log");
+    fs.mkdir(LOG_DIRECTORY, { recursive: true }, (err) => {
+        if (err) {
+            console.error('Error creating directory', err);
+        } else {
+            fs.writeFile(path.join(LOG_DIRECTORY, "result.json"), jsonString, (err) => {
+                if (err) {
+                    console.log('Error writing file', err);
+                } else {
+                    console.log('Successfully wrote file');
+                }
+            });
+        }
+    });
+    
+    
+
     await browser.close();
 }
 

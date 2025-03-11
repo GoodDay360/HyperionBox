@@ -1,5 +1,4 @@
 import puppeteer from 'puppeteer';
-// Or import puppeteer from 'puppeteer-core';
 
 const get_sepcific = async (options) => {
     const url = options.url || "https://hianime.to/the-fruit-of-evolution-before-i-knew-it-my-life-had-it-made-season-2-18283"

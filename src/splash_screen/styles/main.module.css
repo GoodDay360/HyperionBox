@@ -1,0 +1,36 @@
+.container{
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    background-color: var(--background-color);
+    padding:18px;
+    padding-top: calc((100vw + 100vh)*0.05/2);
+    padding-bottom: calc((100vw + 100vh)*0.05/2);
+    
+}
+
+.icon{
+    width: calc((100vw + 100vh)*0.5/2);
+    height: calc((100vw + 100vh)*0.5/2);
+}
+
+.feedback_1{
+    font-size: calc((100vw + 100vh)*0.05/2);
+    height: auto;
+    color: var(--color);
+    font-family: var(--font-family-medium);
+    font-style: normal;
+    text-align: center;
+}
+
+.feedback_2{
+    font-size: calc((100vw + 100vh)*0.035/2);
+    height: auto;
+    color: var(--color);
+    font-family: var(--font-family-regular);
+    font-style: normal;
+    text-align: center;
+}

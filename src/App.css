@@ -1,11 +1,46 @@
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
+@font-face {
+  font-family: 'Montserrat-Thin';
+  src: url('./assets/fonts/Montserrat/static/Montserrat-Thin.ttf') format('truetype');
+  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-style: italic;
 }
 
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafb);
+@font-face {
+  font-family: 'Montserrat-Light';
+  src: url('./assets/fonts/Montserrat/static/Montserrat-Light.ttf') format('truetype');
+  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-style: italic;
 }
+
+@font-face {
+  font-family: 'Montserrat-Regular';
+  src: url('./assets/fonts/Montserrat/static/Montserrat-Regular.ttf') format('truetype');
+  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Montserrat-Medium';
+  src: url('./assets/fonts/Montserrat/static/Montserrat-Medium.ttf') format('truetype');
+  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Montserrat-Bold';
+  src: url('./assets/fonts/Montserrat/static/Montserrat-Bold.ttf') format('truetype');
+  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-style: normal;
+}
+
+
+
 :root {
+  --font-family-thin: 'Montserrat-Thin';
+  --font-family-medium: 'Montserrat-Medium';
+  --font-family-light: 'Montserrat-Light';
+  --font-family-regular: 'Montserrat-Regular';
+  --font-family-bold: 'Montserrat-Bold';
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
@@ -19,31 +54,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
 }
 
 a {
@@ -91,10 +101,6 @@ button {
   outline: none;
 }
 
-#greet-input {
-  margin-right: 5px;
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     color: #f6f6f6;
@@ -113,4 +119,9 @@ button {
   button:active {
     background-color: #0f0f0f69;
   }
+}
+
+[data-theme="dark"] {
+  --color: #f6f6f6;
+  --background-color: #2f2f2f;
 }

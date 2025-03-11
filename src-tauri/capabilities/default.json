@@ -14,7 +14,7 @@
       "identifier": "shell:allow-execute",
       "allow": [
         {
-          "name": "exec-cmd",
+          "name": "exec",
           "cmd": "cmd.exe",
           "args": [
             "/c",
@@ -24,6 +24,20 @@
           ]
         }
       ]
+    },
+    "fs:default",
+    "fs:allow-open",
+    "fs:allow-write",
+    "fs:allow-read",
+    "fs:allow-rename",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-write-text-file",
+    "fs:scope-download-recursive",
+    "fs:scope-resource-recursive",
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "$APPDATA" }, {"path": "$APPDATA/**/*" }]
     }
   ]
 }
