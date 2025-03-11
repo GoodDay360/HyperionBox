@@ -26,6 +26,7 @@
       ]
     },
     "fs:default",
+    "fs:write-files",
     "fs:allow-open",
     "fs:allow-write",
     "fs:allow-read",
@@ -38,12 +39,10 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        {
-          "path": "$APPDATA"
-        },
-        {
-          "path": "$APPDATA/**/*"
-        }
+        {"path": "$APPDATA"},
+        {"path": "$APPDATA/**/*"},
+        {"path": "$TEMP"},
+        {"path": "$TEMP/**/*"}
       ]
     },
     "os:default",

@@ -14,15 +14,15 @@ const check_node = async ({setFeedback}:any) => {
 
     setFeedback("Downloading Node...")
 
-    const node_url:string = await new Promise((resolve,reject) =>{
+    const url:string = await new Promise((resolve,reject) =>{
         axios({
             url: "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/manifest.json",
             method: "get"
         })
         .then(async (response) => {
-            const node_manifest = response.data.files.node;
+            const node_manifest = response.data.files?.["7z"];
 
-            const node_url = node_manifest?.[await platform()]?.[await arch()];
+            const node_url = node_manifest?.[await platform()];
             if (!node_url) setFeedback("Your system doesn't support this app.")
             resolve(node_url)
         })
@@ -33,14 +33,14 @@ const check_node = async ({setFeedback}:any) => {
     })
 
 
-    info(node_url)
+    info(url)
     const chunkSize = (1024 * 1024)/2; // 1MB
     const output_file = await path.join(await path.tempDir(), "node.zip")
     console.log(output_file)
     exists(output_file).catch((e)=>console.log(e))
     if (await exists(output_file)) remove(output_file, {recursive:true})
     await download_file_in_chunks({
-        url: node_url, chunkSize:chunkSize, output_file:output_file,
+        url: url, chunkSize:chunkSize, output_file:output_file,
         callback: ({current_size,total_size}:any) => {
             console.log(current_size+"/"+total_size)
 

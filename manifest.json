@@ -4,6 +4,10 @@
             "windows": {
                 "x86_64": "https://www.learningcontainer.com/download/sample-zip-files/?wpdmdl=1637&refresh=67c13df2b5a871740717554"
             }
+        },
+        "7z":{
+            "windows": "https://github.com/GoodDay360/HyperionBox/releases/download/7z-v1/7z.exe",
+            "linuxs": "https://github.com/GoodDay360/HyperionBox/releases/download/7z-v1/7z"
         }
     }
     
