@@ -2,11 +2,16 @@ import { info } from '@tauri-apps/plugin-log';
 import { platform, arch } from '@tauri-apps/plugin-os';
 import { fetch } from '@tauri-apps/plugin-http';
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, exists, remove, mkdir, open, writeFile, rename} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, readDir, exists, remove, mkdir, open, writeFile, rename} from '@tauri-apps/plugin-fs';
+import { Command } from '@tauri-apps/plugin-shell';
 
-import JSZip from 'jszip';
+// import JSZip from 'jszip';
+import get_7z_path from '../../global/script/get_7z_path';
+import download_file_in_chunks from '../../global/script/download_file_in_chunk';
+import execute_command from '../../global/script/excute_command';
+import copy_recursive from '../../global/script/copy_recursive';
 
-import download_file_in_chunks from '../../global/script/download_file_in_chunck';
+const chunkSize = 6 * 1024 * 1024; 
 
 const check_node = async ({manifest, setFeedback, setProgress}:any) => {
     info(await arch() + await platform())
@@ -17,7 +22,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
             setFeedback("Your system doesn't support this app.")
             return {code:500, message:"System not support."};
         }
-        const chunkSize = 1024 * 1024; // 1MB
+        
         const temp_dir = await path.join(await path.tempDir(),"com.hyperionbox.app")
         await mkdir(temp_dir, {recursive:true,baseDir:BaseDirectory.Temp}).catch(e=>{console.error(e)})
         const output_file = await path.join(temp_dir, `node.zip`)
@@ -36,84 +41,37 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         setProgress({state:false,value:0})
 
         setFeedback({text:"Extracting node..."})
+        
+        const path_7z = await get_7z_path as string;
+        const bin_dir = await path.join(await path.appDataDir(),"bin")
+        const extract_dir = await path.join(bin_dir,"node")
+        if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp})
 
-        const buf = await new Promise<Uint8Array>(async (resolve,reject)=>{
-            open(output_file, {
-                read: true,
-                baseDir: BaseDirectory.Temp,
-            })
-            .then(async (file)=>{
-                const stat = await file.stat();
-                const buf = new Uint8Array(stat.size);
-                await file.read(buf);
-                await file.close();
-                resolve(buf)
-            })
+        const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-*/ -aoa -md=32m -mmt=6`
+        const result = await execute_command({title:"extract",command:command})
+        console.log("info",result.stdout)
+        console.log("error",result.stderr)
+        
+        const extract_response = await new Promise<any>(async (resolve,reject)=>{
+            const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
+            const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-'));
+
+            const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
+            
+            await copy_recursive({src:extracted_node_dir, dest:extract_dir})
             .catch((e)=>{
-                console.error(e);
-                reject(e)
-            });
+                reject({code:500, message:e})
+                console.error("[Error] copy_recursive:", e);
+            })
+
+            await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
+            .catch((e)=>{
+                reject({code:500, message:e})
+                console.error("[Error] remove:", e);
+            })
+            resolve({code:200, message:"OK"})
         })
-        
-        
-
-        const zip = new JSZip();
-
-        zip.loadAsync(buf)
-        .then(async (zip) => {
-            const bin_dir = await path.join(await path.appDataDir(),"bin")
-            const extract_dir = await path.join(bin_dir,"node")
-
-            if (await exists(extract_dir)) {
-                await remove(extract_dir,{baseDir:BaseDirectory.AppData, recursive:true})
-            };
-
-            await mkdir(extract_dir, {baseDir: BaseDirectory.AppData, recursive:true});
-
-            for (const relativePath in zip.files) {
-                const result = await new Promise<any>(async (resolve,reject)=>{
-                    const file = zip.files[relativePath];
-                
-                    if (!file.dir) {
-                        file.async("uint8array")
-                        .then((content) => {
-
-                            resolve({type: "file", path:relativePath, data: new Uint8Array(content)})
-                        })
-                        .catch((error) => {
-                            console.error("Error reading file:", error);
-                            reject(error)
-                        });
-                    }else{
-                        resolve({type: "dir", path:relativePath})
-                    }
-                })
-
-                
-                
-
-                const extract_response = await new Promise<any>(async (resolve,reject)=>{
-                    if (result.type === "dir"){
-                        mkdir(await path.join(extract_dir,result.path), {baseDir: BaseDirectory.AppData})
-                        .then(()=>resolve({code:200,message:"OK"}))
-                        .catch((e)=>reject({code:500,message:"[dir]"+e}))
-                    }else if (result.type === "file"){
-                        writeFile(await path.join(extract_dir,result.path), result.data, {baseDir: BaseDirectory.AppData, create:true})
-                        .then(()=>resolve({code:200,message:"OK"}))
-                        .catch((e)=>reject({code:500,message:"[file]"+e}))
-                    }
-                })
-                if (extract_response.code === 500) return extract_response
-                
-            };
-        })
-        .catch((error) => {
-            console.error("Error loading ZIP:", error);
-            return {code:500, message:error};
-        });
-
-        
-        await remove(output_file,{baseDir:BaseDirectory.Temp})
+        if (extract_response.code !== 200) return extract_response;
 
         return {code: 200, message: 'OK'}
     }catch{(e:unknown)=>{

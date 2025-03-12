@@ -1,4 +1,3 @@
-import axios from "axios";
 import { writeFile, BaseDirectory} from '@tauri-apps/plugin-fs';
 import { fetch } from '@tauri-apps/plugin-http';
 

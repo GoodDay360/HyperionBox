@@ -14,7 +14,7 @@
       "identifier": "shell:allow-execute",
       "allow": [
         {
-          "name": "exec",
+          "name": "windows-shell",
           "cmd": "cmd.exe",
           "args": [
             "/c",

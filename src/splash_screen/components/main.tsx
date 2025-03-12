@@ -88,12 +88,10 @@ function Splash_Screen() {
                     const key = Object.keys(item)[0]
                     const callable:any = item[key]
                     if (!config.bin[key]){
-                        // check_node({setFeedback})
                         const result = await callable({manifest:manifest_response.data,setFeedback,setProgress});
-                        console.log(result)
                         if (result?.code === 200) {
                             config.bin[key] = true;
-                            // await writeTextFile(config_path, JSON.stringify(config, null, 2))
+                            await writeTextFile(config_path, JSON.stringify(config, null, 2))
                         }else{
                             console.error(result)
                             setFeedback({text:`Error downloading ${key}`,color:"red"})
@@ -105,7 +103,7 @@ function Splash_Screen() {
                     setFeedback({text:`Download ${key} successfully.`})
                 }
                 
-
+                setFeedback({text:"Launching app..."})
                 run_state.current = false
             }).catch((e)=> {
                 console.error(e);

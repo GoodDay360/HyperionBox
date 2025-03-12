@@ -6,7 +6,10 @@ import { BaseDirectory, exists, remove, mkdir, open, writeFile, rename} from '@t
 
 import JSZip from 'jszip';
 
-import download_file_in_chunks from '../../global/script/download_file_in_chunck';
+import download_file_in_chunks from '../../global/script/download_file_in_chunk';
+
+
+const chunkSize = 6 * 1024 * 1024; 
 
 const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
     info(await arch() + await platform())
@@ -18,7 +21,7 @@ const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
             setFeedback("Your system doesn't support this app.")
             return {code:500, message:"System not support."};
         }
-        const chunkSize = 1024 * 1024; // 1MB
+        
         const temp_dir = await path.join(await path.tempDir(),"com.hyperionbox.app")
         await mkdir(temp_dir, {recursive:true,baseDir:BaseDirectory.Temp}).catch(e=>{console.error(e)})
         const output_file = await path.join(temp_dir, `7z.zip`)
