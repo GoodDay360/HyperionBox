@@ -15,6 +15,7 @@ import { fileURLToPath, pathToFileURL} from 'url'
 // Custom imports
 import { get_extensions_directory } from '../../global/script/get_extensions_directory';
 import check_node from '../scripts/check_node';
+import check_7z from '../scripts/check_7z';
 
 // Import assets
 import Icon from "../../assets/icons/icon.png"
@@ -23,6 +24,7 @@ import { json } from 'stream/consumers';
 
 // Import styles
 import styles from "../styles/main.module.css";
+
 
 
 function Splash_Screen() {
@@ -49,7 +51,9 @@ function Splash_Screen() {
                 }
 
                 if (!config.first_load){
-                    check_node({setFeedback})
+                    // check_node({setFeedback})
+                    check_7z({setFeedback})
+
                 }
 
 
