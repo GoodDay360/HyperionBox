@@ -42,7 +42,7 @@ const check_7z = async ({setFeedback}:any) => {
             const chunkSize = 1024 * 1024; // 1MB
             const bin_folder = await path.join(await path.appDataDir(),"bin")
             await mkdir(await path.join(await path.appDataDir(),"bin"), {recursive:true,baseDir:BaseDirectory.AppData})
-            const output_file = await path.join(bin_folder, `7z${await get_platform_file_extensions()}`)
+            const output_file = await path.join(bin_folder, `7z.zip`)
             console.log(output_file)
             exists(output_file).catch((e)=>console.log(e))
             if (await exists(output_file)) remove(output_file, {recursive:true})
