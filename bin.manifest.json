@@ -6,8 +6,9 @@
             }
         },
         "7z":{
-            "windows": "https://github.com/GoodDay360/HyperionBox/releases/download/7z-v1/7z.exe",
-            "linuxs": "https://github.com/GoodDay360/HyperionBox/releases/download/7z-v1/7z"
+            "windows": {
+                "x86_64": "https://www.7-zip.org/a/7z2409-extra.7z"
+            }
         }
     }
     

@@ -20,8 +20,6 @@ import check_7z from '../scripts/check_7z';
 // Import assets
 import Icon from "../../assets/icons/icon.png"
 
-import { json } from 'stream/consumers';
-
 // Import styles
 import styles from "../styles/main.module.css";
 
@@ -29,7 +27,7 @@ import styles from "../styles/main.module.css";
 
 function Splash_Screen() {
     // const run_state = useRef<boolean>(false)
-    const [feedback, setFeedback] = useState<string>("")
+    const [feedback, setFeedback] = useState<any>({})
 
     useEffect(()=>{
         // if(run_state.current) return;
@@ -40,7 +38,6 @@ function Splash_Screen() {
             if (!file_exist) await writeTextFile(config_path, "{}")
             readTextFile(config_path)
             .then(async (res)=>{
-                info(res)
                 let config
                 try{
                     config = JSON.parse(res)
@@ -50,12 +47,30 @@ function Splash_Screen() {
                     config = {}
                 }
 
-                if (!config.first_load){
-                    // check_node({setFeedback})
-                    check_7z({setFeedback})
+                const check_bin:any = [
+                    {"7z": check_7z},
+                    // {"node": check_node}
 
+                ]
+
+                for (const item of check_bin){
+                    if (!config.bin) config.bin = {};
+                    const key = Object.keys(item)[0]
+                    const callable:any = item[key]
+                    if (!config.bin[key]){
+                        // check_node({setFeedback})
+                        const result = await callable({setFeedback});
+                        if (result?.code === 200) {
+                            config.bin[key] = true;
+                            // await writeTextFile(config_path, JSON.stringify(config, null, 2))
+                        }else{
+                            setFeedback({text:`Error downloading ${key}`,color:"red"})
+                            return;
+
+                        }
+                    }
                 }
-
+                
 
 
             }).catch((e)=> {info(e)})
@@ -69,7 +84,7 @@ function Splash_Screen() {
                 className={styles.icon}
             />
             <div style={{display:"flex",flexDirection:"column"}}>
-                <span className={styles.feedback}>{feedback}</span>
+                <span className={styles.feedback} style={{color:feedback.color || "var(--color)"}}>{feedback.text}</span>
             </div>
             
             
