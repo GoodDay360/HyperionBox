@@ -61,7 +61,7 @@ function Splash_Screen() {
                         {method: "get"}
                     )
                     .then(async (response) => {
-                        const node_manifest = (await response.json())?.data;
+                        const node_manifest = (await response.json());
                         resolve({data:node_manifest, code:200})
                     })
                     .catch(error => {
@@ -89,7 +89,7 @@ function Splash_Screen() {
                     const callable:any = item[key]
                     if (!config.bin[key]){
                         // check_node({setFeedback})
-                        const result = await callable({manifest:manifest_response,setFeedback,setProgress});
+                        const result = await callable({manifest:manifest_response.data,setFeedback,setProgress});
                         console.log(result)
                         if (result?.code === 200) {
                             config.bin[key] = true;
