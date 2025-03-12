@@ -1,9 +1,7 @@
 import { info } from '@tauri-apps/plugin-log';
 import { platform, arch } from '@tauri-apps/plugin-os';
-import { fetch } from '@tauri-apps/plugin-http';
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, readDir, exists, remove, mkdir, open, writeFile, rename} from '@tauri-apps/plugin-fs';
-import { Command } from '@tauri-apps/plugin-shell';
+import { BaseDirectory, readDir, exists, remove, mkdir} from '@tauri-apps/plugin-fs';
 
 // import JSZip from 'jszip';
 import get_7z_path from '../../global/script/get_7z_path';

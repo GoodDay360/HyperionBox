@@ -3,10 +3,9 @@
 import { useEffect, useState, useRef } from 'react';
 
 // Tauri Plugins
-import { Command } from '@tauri-apps/plugin-shell';
-import { info, error } from '@tauri-apps/plugin-log';
+import {  error } from '@tauri-apps/plugin-log';
 import { path } from '@tauri-apps/api';
-import { exists, open, BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { exists,  readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
 
 // Material UI 
 import LinearProgress from '@mui/material/LinearProgress';
@@ -19,10 +18,9 @@ import Icon from "../../assets/icons/icon.png"
 import styles from "../styles/main.module.css";
 
 // Custom imports
-import { get_extensions_directory } from '../../global/script/get_extensions_directory';
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
-import { fileURLToPath, pathToFileURL} from 'url'
+
 
 
 

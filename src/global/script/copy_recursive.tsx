@@ -1,4 +1,4 @@
-import { BaseDirectory, readDir, exists, remove, mkdir, open, writeFile, rename, copyFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, readDir, mkdir, copyFile} from '@tauri-apps/plugin-fs';
 import { path } from '@tauri-apps/api';
 
 async function copy_recursive({ src, dest, threads = 3 }:any) {

@@ -2,9 +2,9 @@
 
 import { lazy, useEffect } from "react";
 import { BrowserRouter, Routes, Route} from "react-router";
-import { info, error } from '@tauri-apps/plugin-log';
+import {  error } from '@tauri-apps/plugin-log';
 
-const Home = lazy(() => import('./home/components/main'));
+// const Home = lazy(() => import('./home/components/main'));
 const Splash_Screen = lazy(() => import('./splash_screen/components/main'));
 
 // Style import
