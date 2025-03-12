@@ -2,60 +2,121 @@ import { info } from '@tauri-apps/plugin-log';
 import { platform, arch } from '@tauri-apps/plugin-os';
 import { fetch } from '@tauri-apps/plugin-http';
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, exists, remove, mkdir} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, exists, remove, mkdir, open, writeFile, rename} from '@tauri-apps/plugin-fs';
+
+import JSZip from 'jszip';
 
 import download_file_in_chunks from '../../global/script/download_file_in_chunck';
-import get_platform_file_extensions from '../../global/script/get_platform_file_extensions';
 
-
-
-const check_7z = async ({setFeedback}:any) => {
+const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
     info(await arch() + await platform())
 
-    setFeedback({text:"Downloading 7z..."})
-
-
     try{
-        const node_response:any = await new Promise((resolve,reject) =>{
-            fetch(
-                "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
-                {method: "get"}
-            )
-            .then(async (response) => {
-                const node_manifest = (await response.json()).files?.["7z"];
-                resolve({data:node_manifest, code:200})
-            })
-            .catch(error => {
-                console.error('Error fetching the data:', error);
 
-                reject({message:error, code:500})
+        const url = manifest?.["7z"]?.[await platform()]?.[await arch()];
+        if (!url) {
+            setFeedback("Your system doesn't support this app.")
+            return {code:500, message:"System not support."};
+        }
+        const chunkSize = 1024 * 1024; // 1MB
+        const temp_dir = await path.join(await path.tempDir(),"com.hyperionbox.app")
+        await mkdir(temp_dir, {recursive:true,baseDir:BaseDirectory.Temp}).catch(e=>{console.error(e)})
+        const output_file = await path.join(temp_dir, `7z.zip`)
+
+        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp})
+        setFeedback({text:"Downloading 7z..."})
+
+        await download_file_in_chunks({
+            url: url, chunkSize:chunkSize, output_file:output_file,
+            callback: ({current_size,total_size}:any) => {
+                setProgress({state:true,value:current_size*100/total_size})
+
+            }
+        });
+
+        setProgress({state:false,value:0})
+
+        setFeedback({text:"Extracting 7z..."})
+
+        const buf = await new Promise<Uint8Array>(async (resolve,reject)=>{
+            open(output_file, {
+                read: true,
+                baseDir: BaseDirectory.Temp,
+            })
+            .then(async (file)=>{
+                const stat = await file.stat();
+                const buf = new Uint8Array(stat.size);
+                await file.read(buf);
+                await file.close();
+                resolve(buf)
+            })
+            .catch((e)=>{
+                console.error(e);
+                reject(e)
             });
         })
-        if (node_response.code === 500) {
-            return {code:500, message:"Fail to request node manifest."}
-        }else{
-            const node_url = node_response?.data?.[await platform()];
-            if (!node_url) {
-                setFeedback("Your system doesn't support this app.")
-                return {code:500, message:"System not support."};
-            }
-            const chunkSize = 1024 * 1024; // 1MB
-            const bin_folder = await path.join(await path.appDataDir(),"bin")
-            await mkdir(await path.join(await path.appDataDir(),"bin"), {recursive:true,baseDir:BaseDirectory.AppData})
-            const output_file = await path.join(bin_folder, `7z.zip`)
-            console.log(output_file)
-            exists(output_file).catch((e)=>console.log(e))
-            if (await exists(output_file)) remove(output_file, {recursive:true})
-            
-            return await download_file_in_chunks({
-                url: node_url, chunkSize:chunkSize, output_file:output_file,
-                callback: ({current_size,total_size}:any) => {
-                    console.log(current_size+"/"+total_size)
+        
+        
 
-                }
-            });
-            return {code: 200, message: 'OK'}
-        }
+        const zip = new JSZip();
+
+        zip.loadAsync(buf)
+        .then(async (zip) => {
+            const bin_dir = await path.join(await path.appDataDir(),"bin")
+            const extract_dir = await path.join(bin_dir,"7z")
+
+            if (await exists(extract_dir)) {
+                await remove(extract_dir,{baseDir:BaseDirectory.AppData, recursive:true})
+            };
+
+            await mkdir(extract_dir, {baseDir: BaseDirectory.AppData, recursive:true});
+
+            for (const relativePath in zip.files) {
+                const result = await new Promise<any>(async (resolve,reject)=>{
+                    const file = zip.files[relativePath];
+                
+                    if (!file.dir) {
+                        file.async("uint8array")
+                        .then((content) => {
+
+                            resolve({type: "file", path:relativePath, data: new Uint8Array(content)})
+                        })
+                        .catch((error) => {
+                            console.error("Error reading file:", error);
+                            reject(error)
+                        });
+                    }else{
+                        resolve({type: "dir", path:relativePath})
+                    }
+                })
+
+                
+                
+
+                const extract_response = await new Promise<any>(async (resolve,reject)=>{
+                    if (result.type === "dir"){
+                        mkdir(await path.join(extract_dir,result.path), {baseDir: BaseDirectory.AppData})
+                        .then(()=>resolve({code:200,message:"OK"}))
+                        .catch((e)=>reject({code:500,message:"[dir]"+e}))
+                    }else if (result.type === "file"){
+                        writeFile(await path.join(extract_dir,result.path), result.data, {baseDir: BaseDirectory.AppData, create:true})
+                        .then(()=>resolve({code:200,message:"OK"}))
+                        .catch((e)=>reject({code:500,message:"[file]"+e}))
+                    }
+                })
+                if (extract_response.code === 500) return extract_response
+                
+            };
+        })
+        .catch((error) => {
+            console.error("Error loading ZIP:", error);
+            return {code:500, message:error};
+        });
+
+        
+        await remove(output_file,{baseDir:BaseDirectory.Temp})
+
+        return {code: 200, message: 'OK'}
     }catch{(e:unknown)=>{
         console.error("[Error] check_7z: ", e);
         return {code:500, message:e};

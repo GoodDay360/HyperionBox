@@ -21,15 +21,21 @@ async function download_file_in_chunks({
 
                 });
                 const data = await response.arrayBuffer();
-                await writeFile(output_file, new Uint8Array(data), { baseDir: BaseDirectory.AppData, append: true });
+                const write_response = await new Promise<any>(async(resolve,reject)=>{
+                    writeFile(output_file, new Uint8Array(data), { baseDir: BaseDirectory.AppData, append: true })
+                    .then(()=>{resolve({code:200,message:"OK"})})
+                    .catch((e)=>reject({code:500,message:`[Error] Downlaod and write in chunk: ${e}`}))
+                })
+                if (write_response.code !== 200) return write_response;
                 start = end + 1;
                 callback({ current_size: start, total_size: totalSize });
-                return {code: 200, message: "OK"};
+                
             } catch (error) {
                 console.error('Error downloading chunk:', error);
                 return {code: 500, message: error};
             }
         }
+        return {code: 200, message: "OK"};
     } catch (error) {
         console.error('Error getting file size:', error);
         return {code: 500, message: error};
