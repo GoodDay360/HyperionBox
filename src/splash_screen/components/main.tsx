@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from 'react';
 import {  error } from '@tauri-apps/plugin-log';
 import { path } from '@tauri-apps/api';
 import { exists,  readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/window"
 
 // Material UI 
 import LinearProgress from '@mui/material/LinearProgress';
@@ -20,6 +21,7 @@ import styles from "../styles/main.module.css";
 // Custom imports
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
+import check_extension_packages from '../scripts/check_extension_packages';
 
 
 
@@ -35,6 +37,14 @@ function Splash_Screen() {
         if(run_state.current) return;
         run_state.current = true;
         (async ()=>{
+            await getCurrentWindow().setResizable(false);
+            await getCurrentWindow().setAlwaysOnTop(true);
+            const monitor_size:any = (await currentMonitor())?.size;
+            const new_height = monitor_size.height*0.5;
+            const new_width = monitor_size.width*0.25;
+            await getCurrentWindow().setSize(new LogicalSize(new_width, new_height));
+
+
             const config_path = await path.join(await path.appDataDir(),"config.json")
             const file_exist = await exists(config_path);
             if (!file_exist) await writeTextFile(config_path, "{}")
@@ -68,7 +78,7 @@ function Splash_Screen() {
                         reject({message:error, code:500})
                     });
                 })
-                console.log(manifest_response)
+                
                 if (manifest_response.code === 500) {
                     setFeedback({text:`Failed to check manifest.`, color:"red"})
                     run_state.current = false;
@@ -81,8 +91,8 @@ function Splash_Screen() {
 
                 ]
 
+                if (!config.bin) config.bin = {};
                 for (const item of check_bin){
-                    if (!config.bin) config.bin = {};
                     const key = Object.keys(item)[0]
                     const callable:any = item[key]
                     if (!config.bin[key]){
@@ -100,8 +110,33 @@ function Splash_Screen() {
                     }
                     setFeedback({text:`Download ${key} successfully.`})
                 }
+
+
+                if (!config.bin.extension_packages){
+                    const result = await check_extension_packages({setFeedback,setProgress});
+                    if (result?.code === 200) {
+                        config.bin.extension_packages = true;
+                        await writeTextFile(config_path, JSON.stringify(config, null, 2))
+                    }else{
+                        console.error(result)
+                        setFeedback({text:`Error downloading extension_packages`,color:"red"})
+                        run_state.current = false
+                        return;
+
+                    }
+                }
+                setFeedback({text:`Download extension_packages successfully.`})
+
+                setFeedback({text:"Launching..."})
                 
-                setFeedback({text:"Launching app..."})
+                await getCurrentWindow().setResizable(true);
+                await getCurrentWindow().setAlwaysOnTop(false);
+
+                const monitor_size:any = (await currentMonitor())?.size;
+                const new_height = monitor_size.height*0.5;
+                const new_width = monitor_size.width*0.5;
+                await getCurrentWindow().setSize(new LogicalSize(new_width, new_height));
+
                 run_state.current = false
             }).catch((e)=> {
                 console.error(e);
@@ -126,8 +161,6 @@ function Splash_Screen() {
                     </Box>
                 )
             }
-            
-            
         </div>
     );
 }

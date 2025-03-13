@@ -22,6 +22,7 @@
     "@tauri-apps/plugin-shell": "^2.2.0",
     "axios": "^1.8.2",
     "bootstrap": "^5.3.3",
+    "bundle": "file:C:/Users/User/AppData/Roaming/com.hyperionbox.app/extensions",
     "jszip": "^3.10.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

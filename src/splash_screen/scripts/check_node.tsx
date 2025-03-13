@@ -1,4 +1,3 @@
-import { info } from '@tauri-apps/plugin-log';
 import { platform, arch } from '@tauri-apps/plugin-os';
 import { path } from '@tauri-apps/api';
 import { BaseDirectory, readDir, exists, remove, mkdir} from '@tauri-apps/plugin-fs';
@@ -12,8 +11,6 @@ import copy_recursive from '../../global/script/copy_recursive';
 const chunkSize = 6 * 1024 * 1024; 
 
 const check_node = async ({manifest, setFeedback, setProgress}:any) => {
-    info(await arch() + await platform())
-
     try{
         const url = manifest?.["node"]?.[await platform()]?.[await arch()];
         if (!url) {
@@ -25,7 +22,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         await mkdir(temp_dir, {recursive:true,baseDir:BaseDirectory.Temp}).catch(e=>{console.error(e)})
         const output_file = await path.join(temp_dir, `node.zip`)
 
-        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp})
+        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp,recursive:true}).catch(e=>{console.error(e)})
         setFeedback({text:"Downloading node..."})
 
         await download_file_in_chunks({
@@ -40,15 +37,14 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
 
         setFeedback({text:"Extracting node..."})
         
-        const path_7z = await get_7z_path as string;
+        const path_7z = await get_7z_path;
         const bin_dir = await path.join(await path.appDataDir(),"bin")
         const extract_dir = await path.join(bin_dir,"node")
-        if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp})
+        if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
         const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-*/ -aoa -md=32m -mmt=6`
         const result = await execute_command({title:"extract",command:command})
-        console.log("info",result.stdout)
-        console.log("error",result.stderr)
+        if (result.stderr) return {code:500, message:result.stderr, at:"check_node.tsx -> excute_command -> extract"};
         
         const extract_response = await new Promise<any>(async (resolve,reject)=>{
             const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
@@ -69,6 +65,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
             })
             resolve({code:200, message:"OK"})
         })
+        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true})
         if (extract_response.code !== 200) return extract_response;
 
         return {code: 200, message: 'OK'}

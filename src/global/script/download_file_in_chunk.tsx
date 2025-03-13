@@ -1,4 +1,4 @@
-import { writeFile, BaseDirectory} from '@tauri-apps/plugin-fs';
+import { writeFile, BaseDirectory, exists, remove} from '@tauri-apps/plugin-fs';
 import { fetch } from '@tauri-apps/plugin-http';
 
 async function download_file_in_chunks({
@@ -9,6 +9,7 @@ async function download_file_in_chunks({
 }: any): Promise<any> {
     let start = 0;
     try {
+        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)})
         const headResponse = await fetch(url, { method: 'HEAD' });
         const totalSize = parseInt(headResponse.headers.get('content-length') as string, 10);
 

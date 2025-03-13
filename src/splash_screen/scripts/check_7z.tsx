@@ -1,4 +1,3 @@
-import { info } from '@tauri-apps/plugin-log';
 import { platform, arch } from '@tauri-apps/plugin-os';
 
 import { path } from '@tauri-apps/api';
@@ -12,7 +11,6 @@ import download_file_in_chunks from '../../global/script/download_file_in_chunk'
 const chunkSize = 6 * 1024 * 1024; 
 
 const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
-    info(await arch() + await platform())
 
     try{
 

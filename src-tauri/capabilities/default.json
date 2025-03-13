@@ -7,8 +7,15 @@
   ],
   "permissions": [
     "core:default",
+    "core:window:default",
+    "core:window:allow-set-resizable",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-set-size",
+    "core:window:allow-maximize",
+
     "opener:default",
     "log:default",
+
     "shell:default",
     {
       "identifier": "shell:allow-execute",
@@ -21,10 +28,12 @@
             {
               "validator": "^.*$"
             }
+            
           ]
         }
       ]
     },
+
     "fs:default",
     "fs:write-files",
     "fs:allow-fstat",
