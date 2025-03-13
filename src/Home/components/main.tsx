@@ -4,9 +4,9 @@
 import { Command } from '@tauri-apps/plugin-shell';
 import { info, error } from '@tauri-apps/plugin-log';
 import { path } from '@tauri-apps/api';
-import { exists, open, BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
+import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 
-import { fileURLToPath, pathToFileURL} from 'url'
+
 
 
 // Custom imports
