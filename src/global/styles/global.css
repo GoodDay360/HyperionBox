@@ -1,46 +1,49 @@
 @font-face {
-  font-family: 'Montserrat-Thin';
-  src: url('./assets/fonts/Montserrat/static/Montserrat-Thin.ttf') format('truetype');
-  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-family: "Montserrat-Thin";
+  src: url("../../assets/fonts/Montserrat/static/Montserrat-Thin.ttf") format("truetype");
+  font-weight: 100 900;
+  /* Adjust the range of weights based on the font file */
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Montserrat-Light';
-  src: url('./assets/fonts/Montserrat/static/Montserrat-Light.ttf') format('truetype');
-  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-family: "Montserrat-Light";
+  src: url("../../assets/fonts/Montserrat/static/Montserrat-Light.ttf") format("truetype");
+  font-weight: 100 900;
+  /* Adjust the range of weights based on the font file */
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Montserrat-Regular';
-  src: url('./assets/fonts/Montserrat/static/Montserrat-Regular.ttf') format('truetype');
-  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-family: "Montserrat-Regular";
+  src: url("../../assets/fonts/Montserrat/static/Montserrat-Regular.ttf") format("truetype");
+  font-weight: 100 900;
+  /* Adjust the range of weights based on the font file */
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Montserrat-Medium';
-  src: url('./assets/fonts/Montserrat/static/Montserrat-Medium.ttf') format('truetype');
-  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-family: "Montserrat-Medium";
+  src: url("../../assets/fonts/Montserrat/static/Montserrat-Medium.ttf") format("truetype");
+  font-weight: 100 900;
+  /* Adjust the range of weights based on the font file */
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Montserrat-Bold';
-  src: url('./assets/fonts/Montserrat/static/Montserrat-Bold.ttf') format('truetype');
-  font-weight: 100 900; /* Adjust the range of weights based on the font file */
+  font-family: "Montserrat-Bold";
+  src: url("../../assets/fonts/Montserrat/static/Montserrat-Bold.ttf") format("truetype");
+  font-weight: 100 900;
+  /* Adjust the range of weights based on the font file */
   font-style: normal;
 }
-
-
 
 :root {
-  --font-family-thin: 'Montserrat-Thin';
-  --font-family-medium: 'Montserrat-Medium';
-  --font-family-light: 'Montserrat-Light';
-  --font-family-regular: 'Montserrat-Regular';
-  --font-family-bold: 'Montserrat-Bold';
+  --font-family-thin: "Montserrat-Thin";
+  --font-family-medium: "Montserrat-Medium";
+  --font-family-light: "Montserrat-Light";
+  --font-family-regular: "Montserrat-Regular";
+  --font-family-bold: "Montserrat-Bold";
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
@@ -91,6 +94,7 @@ button {
 button:hover {
   border-color: #396cd8;
 }
+
 button:active {
   border-color: #396cd8;
   background-color: #e8e8e8;
@@ -116,6 +120,7 @@ button {
     color: #ffffff;
     background-color: #0f0f0f98;
   }
+
   button:active {
     background-color: #0f0f0f69;
   }
@@ -123,5 +128,7 @@ button {
 
 [data-theme="dark"] {
   --color: #f6f6f6;
-  --background-color: #2f2f2f;
+  --selected-menu-background-color: #396cd8;
+  --background-color: rgb(15,18,20);
+  --background-color-layer-1: rgb(30,30,30);
 }
