@@ -25,6 +25,7 @@
     "axios": "^1.8.2",
     "bootstrap": "^5.3.3",
     "bundle": "file:C:/Users/User/AppData/Roaming/com.hyperionbox.app/extensions",
+    "framer-motion": "^12.5.0",
     "jszip": "^3.10.1",
     "rc-virtual-list": "^3.18.4",
     "react": "^18.3.1",

@@ -57,6 +57,7 @@ function App() {
 	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"History", path:"history", icon:HistoryIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
 	const menu_button_bottom:any = [{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
 
+
 	useEffect(()=>{
 		navigate(`/${menu.path}`);
 	},[menu])
@@ -90,13 +91,13 @@ function App() {
 
 	return (<ThemeProvider theme={theme}>
 		<CssBaseline />
-		<div className={styles.container}>
-			<global_context.Provider 
-				value={{
-					...{fullscreen_snackbar, set_fullscreen_snackbar},
-					...{app_ready, set_app_ready}
-				}}
-			>
+		<global_context.Provider 
+			value={{
+				...{fullscreen_snackbar, set_fullscreen_snackbar},
+				...{app_ready, set_app_ready},
+			}}
+		>
+			<div className={styles.container}>
 				<>{menu.state &&
 					<div className={styles.menu_container}>
 						<div className={styles.menu}>
@@ -157,8 +158,9 @@ function App() {
 						{fullscreen_snackbar.text}
 					</Alert>
 				</Snackbar>
-			</global_context.Provider>
-		</div>
+			</div>
+		</global_context.Provider>
+		
 	</ThemeProvider>);
 }
 

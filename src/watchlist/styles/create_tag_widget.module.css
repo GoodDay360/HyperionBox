@@ -1,0 +1,42 @@
+.container{
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top:0;left: 0;
+    background: transparent;
+    z-index: 2;
+
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 18px;
+
+}
+
+.box{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: var(--background-color);
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 2px solid var(--background-color-layer-1);
+}
+
+.title{
+    color: var(--color);
+    font-family: var(--font-family-bold);
+}
+
+.body{
+    flex:1;
+    background: var(--background-color-layer-1);
+    border-bottom-right-radius: inherit; border-bottom-left-radius: inherit;
+}

@@ -11,7 +11,7 @@ import { useDraggable } from "react-use-draggable-scroll";
 import { useEffect, useState, useRef, useContext } from 'react';
 
 // React Virtualized Imports
-import { List } from 'react-virtualized';
+// import { List } from 'react-virtualized';
 
 // MUI Imports
 import { ButtonBase, Button, Tooltip } from '@mui/material';
@@ -22,7 +22,13 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
 
-// Custom imports
+// Framer motion Imports
+import { AnimatePresence } from 'framer-motion';
+
+// Components Import
+import CreateTagWidget from './create_tag_widget';
+
+// Custom Imports
 import styles from "../styles/main.module.css";
 import global_context from '../../global/script/contexts';
 import load_tags from '../scripts/load_tags';
@@ -32,14 +38,13 @@ function Watchlist() {
     const {app_ready, set_app_ready} = useContext<any>(global_context);
 
     const tag_container_ref:any = useRef();
-
     const { events } = useDraggable(tag_container_ref); 
 
 
     const [tag_data, set_tag_data] = useState<any>([]);
     const [selected_tag, set_selected_tag] = useState<string>("");
+    const [widget, set_widget] = useState<string>("");
 
-    
 
     const isRun = useRef<boolean>(false);
     useEffect(()=>{
@@ -49,18 +54,26 @@ function Watchlist() {
             // await load_tags({set_tags});
             set_tag_data(["anime","movie"]);
             set_selected_tag("anime");
+            
             isRun.current = false;
         })();
         return;
     },[app_ready])
 
-    return (
+    return (<>
         <div className={styles.container}>
             <div className={styles.header}>
                 <ButtonBase
                     sx={{
                         color:"var(--icon-color-1)",
                         backgroundColor:"var(--background-color-layer-1)",
+                    }}
+                    onClick={()=>{
+                        tag_container_ref.current.scrollBy({
+                            top: 0,
+                            left:  - tag_container_ref.current.clientWidth * 0.25, 
+                            behavior: 'smooth', 
+                        });
                     }}
                 >
                     <ArrowBackIosRoundedIcon/>
@@ -90,20 +103,32 @@ function Watchlist() {
                         color:"var(--icon-color-1)",
                         backgroundColor:"var(--background-color-layer-1)",
                     }}
+                    onClick={()=>{
+                        tag_container_ref.current.scrollBy({
+                            top: 0,
+                            left: tag_container_ref.current.clientWidth * 0.25, 
+                            behavior: 'smooth', 
+                        });
+                    }}
                 >
                     <ArrowForwardIosRoundedIcon/>
                 </ButtonBase>
             </div>
             <div className={styles.action_button_container}>
                 <Tooltip title="Create tag" placement='left'>
-                    <Fab color='primary' size='small'
+                    <Fab color='primary' size='small' style={{zIndex:1}}
+                        onClick={()=>{set_widget("create_tag")}}
                     >
                         <AddRoundedIcon />
                     </Fab>
                 </Tooltip>
             </div>
+            <AnimatePresence>
+                {widget === "create_tag" && <CreateTagWidget {...{widget, set_widget}}/>}
+            </AnimatePresence>
+            
         </div>
-    );
+    </>);
 }
 
 export default Watchlist;

@@ -1,32 +1,33 @@
 .container{
+    flex: 1;
     display: flex;
-    flex:1;
-    overflow: hidden;
-    align-items: flex-start;
     background: var(--background-color);
+    align-items: flex-start;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .header{
     display: flex;
     flex-direction: row;
-    flex:1;
+    width: 100%;
     height: calc(100vh + 100vw)*0.9/2;
+    justify-content: space-between;
+    
 }
 
 .tag_container{
     display: flex;
     flex-direction: row;
-    flex:1;
+    width: 100%;
     overflow-x: auto;
     scrollbar-width: none;
     background: var(--background-color-layer-1);
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
-    
+    min-width: 0;
 }
 .tag_box {
-    display: flex;
     flex-direction: row;
-    width: auto;
     margin:auto;
 }
 

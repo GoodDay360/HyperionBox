@@ -4,8 +4,10 @@
     height: 100vh;
     background: var(--background-color);
     overflow: auto;
-    justify-content: space-between
+    justify-content: space-between;
+    z-index: 1;
 }
+
 
 .menu_container{
     display: flex;
@@ -16,6 +18,8 @@
     background: var(--background-color-layer-1);
     justify-content: space-between;
     box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    z-index: 1;
+    box-sizing: border-box;
 }
 
 
@@ -27,4 +31,3 @@
     background: var(--background-color-layer-1);
     padding: 16px;
 }
-
