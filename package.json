@@ -21,13 +21,17 @@
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-os": "^2.2.1",
     "@tauri-apps/plugin-shell": "^2.2.0",
+    "@tauri-apps/plugin-sql": "^2.2.0",
     "axios": "^1.8.2",
     "bootstrap": "^5.3.3",
     "bundle": "file:C:/Users/User/AppData/Roaming/com.hyperionbox.app/extensions",
     "jszip": "^3.10.1",
+    "rc-virtual-list": "^3.18.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router": "^7.3.0"
+    "react-router": "^7.3.0",
+    "react-use-draggable-scroll": "^0.4.7",
+    "react-virtualized": "^9.22.6"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",

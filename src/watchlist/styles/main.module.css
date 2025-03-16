@@ -1,0 +1,44 @@
+.container{
+    display: flex;
+    flex:1;
+    overflow: hidden;
+    align-items: flex-start;
+    background: var(--background-color);
+}
+
+.header{
+    display: flex;
+    flex-direction: row;
+    flex:1;
+    height: calc(100vh + 100vw)*0.9/2;
+}
+
+.tag_container{
+    display: flex;
+    flex-direction: row;
+    flex:1;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--background-color-layer-1);
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    
+}
+.tag_box {
+    display: flex;
+    flex-direction: row;
+    width: auto;
+    margin:auto;
+}
+
+.tag_container > * { /* Targets the child elements */
+    flex: none; /* Prevents shrinking and ensures consistent size */
+    
+}
+
+.action_button_container{
+    position: absolute;
+    flex:1;
+    bottom: 0;
+    right: 0;
+    padding: 12px;
+}

@@ -14,10 +14,8 @@
     "core:window:allow-maximize",
     "core:window:allow-set-fullscreen",
     "core:window:allow-center",
-
     "opener:default",
     "log:default",
-
     "shell:default",
     {
       "identifier": "shell:allow-execute",
@@ -30,12 +28,10 @@
             {
               "validator": "^.*$"
             }
-            
           ]
         }
       ]
     },
-
     "fs:default",
     "fs:write-files",
     "fs:allow-fstat",
@@ -55,18 +51,32 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        {"path": "$APPDATA"},
-        {"path": "$APPDATA/**/*"},
-        {"path": "$TEMP"},
-        {"path": "$TEMP/**/*"}
+        {
+          "path": "$APPDATA"
+        },
+        {
+          "path": "$APPDATA/**/*"
+        },
+        {
+          "path": "$TEMP"
+        },
+        {
+          "path": "$TEMP/**/*"
+        }
       ]
     },
     "os:default",
     "http:default",
     {
       "identifier": "http:default",
-      "allow": [{ "url": "https://**/*" }],
+      "allow": [
+        {
+          "url": "https://**/*"
+        }
+      ],
       "deny": []
-    }
+    },
+    "sql:default",
+    "sql:allow-execute"
   ]
 }

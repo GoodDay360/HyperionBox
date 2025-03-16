@@ -7,15 +7,14 @@ import {  error } from '@tauri-apps/plugin-log';
 
 
 // Material UI
-import Snackbar, { SnackbarCloseReason } from '@mui/material/Snackbar';
+import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import { Button } from "@mui/material";
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 
 // Material UI Icons
-import AppsIcon from '@mui/icons-material/Apps';
-import FolderIcon from '@mui/icons-material/Folder';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import HistoryIcon from '@mui/icons-material/History';
 import ExploreIcon from '@mui/icons-material/Explore';
@@ -25,6 +24,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 
 // Style import
 import 'bootstrap/dist/css/bootstrap-reboot.min.css';
+import 'react-virtualized/styles.css';
 import "../../global/styles/global.css";
 import styles from "../styles/main.module.css";
 
@@ -35,16 +35,22 @@ import { check_fullscreen, check_resize } from '../../global/script/keys_event_l
 // Context Imports
 import global_context from '../../global/script/contexts';
 
-// const Home = lazy(() => import('./home/components/main'));
+
+// Components Import
+const Watchlist = lazy(() => import('../../watchlist/components/main'));
 const Splash_Screen = lazy(() => import('../../splash_screen/components/main'));
 
-
+const theme = createTheme({
+    typography: {
+        fontFamily: "var(--font-family-medium)",
+    },
+});
 
 
 function App() {
 	const navigate = useNavigate();
 	const [fullscreen_snackbar, set_fullscreen_snackbar] = useState<any>({});
-	const [menu, set_menu] = useState<string>("");
+	const [menu, set_menu] = useState<any>({state:false,path:""});
 
 	const [app_ready, set_app_ready ] = useState<boolean>(false);
 
@@ -52,7 +58,7 @@ function App() {
 	const menu_button_bottom:any = [{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
 
 	useEffect(()=>{
-		navigate(`/${menu}`);
+		navigate(`/${menu.path}`);
 	},[menu])
 
 	useEffect(()=>{
@@ -61,7 +67,7 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			set_menu("watchlist");
+			set_menu({state:true,path:"watchlist"});
 		})();
 	},[app_ready])
 
@@ -82,7 +88,8 @@ function App() {
 		
 	},[])
 
-	return (
+	return (<ThemeProvider theme={theme}>
+		<CssBaseline />
 		<div className={styles.container}>
 			<global_context.Provider 
 				value={{
@@ -90,46 +97,50 @@ function App() {
 					...{app_ready, set_app_ready}
 				}}
 			>
-				<div className={styles.menu_container}>
-					<div className={styles.menu}>
-						{menu_button_top.map((item:any, index:number) => (
-							<Tooltip title={item.title} placement="right" key={index}>
-								<IconButton  
-									sx={{
-										background: menu === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
-										borderRadius: 12.5,
-									}}
-									onClick={() => {set_menu(item.path)}}
-								>
-									<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
-								</IconButton>
-							</Tooltip>
-						))}
+				<>{menu.state &&
+					<div className={styles.menu_container}>
+						<div className={styles.menu}>
+							{menu_button_top.map((item:any, index:number) => (
+								<Tooltip title={item.title} placement="right" key={index}>
+									<IconButton disabled={menu.path === item.path}
+										sx={{
+											background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
+											borderRadius: 12.5,
+											"&:disabled": {
+												backgroundColor: "var(--selected-menu-background-color)",
+											},
+										}}
+										onClick={() => {set_menu({...menu,path:item.path})}}
+									>
+										<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
+									</IconButton>
+								</Tooltip>
+							))}
+						</div>
+						<div className={styles.menu} style={{alignSelf: "flex-end"}}>
+							{menu_button_bottom.map((item:any, index:number) => (
+								<Tooltip title={item.title} placement="right" key={index}>
+									<IconButton  disabled={menu.path === item.path}
+										sx={{
+											background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
+											borderRadius: 12.5,
+											"&:disabled": {
+												backgroundColor: "var(--selected-menu-background-color)",
+											},
+										}}
+										onClick={() => {set_menu({...menu,path:item.path})}}
+									>
+										<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
+									</IconButton>
+								</Tooltip>
+							))}
+						</div>
 					</div>
-					<div className={styles.menu} style={{alignSelf: "flex-end"}}>
-						{menu_button_bottom.map((item:any, index:number) => (
-							<Tooltip title={item.title} placement="right" key={index}>
-								<IconButton  
-									sx={{
-										background: menu === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
-										borderRadius: 12.5,
-									}}
-									onClick={() => {set_menu(item.path)}}
-								>
-									<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
-								</IconButton>
-							</Tooltip>
-						))}
-					</div>
-				</div>
+				}</>
 				
 				<Routes>
 					<Route path="/" element={<Splash_Screen/>}/>
-					<Route path="/watchlist/*" 
-						element={
-							<h1>Hyperion is happy</h1> 
-						} 
-					/>
+					<Route path="/watchlist/*" element={<Watchlist/>} />
 				</Routes>
 				<Snackbar 
 					open={fullscreen_snackbar.state} 
@@ -148,7 +159,7 @@ function App() {
 				</Snackbar>
 			</global_context.Provider>
 		</div>
-	)
+	</ThemeProvider>);
 }
 
 export default App;

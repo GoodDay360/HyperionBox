@@ -4,16 +4,21 @@
     height: 100vh;
     background: var(--background-color);
     overflow: auto;
+    justify-content: space-between
 }
 
 .menu_container{
     display: flex;
     flex-direction: column;
+    flex:0;
+    flex-shrink: 0;
     height: 100%;
     background: var(--background-color-layer-1);
     justify-content: space-between;
-    
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
+
+
 
 .menu{
     display: flex;

@@ -40,9 +40,9 @@
 
 :root {
   --font-family-thin: "Montserrat-Thin";
-  --font-family-medium: "Montserrat-Medium";
   --font-family-light: "Montserrat-Light";
   --font-family-regular: "Montserrat-Regular";
+  --font-family-medium: "Montserrat-Medium";
   --font-family-bold: "Montserrat-Bold";
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -128,7 +128,10 @@ button {
 
 [data-theme="dark"] {
   --color: #f6f6f6;
+  --icon-color-1: #f6f6f6;
+  --fab-background-color-1: #396cd8;
   --selected-menu-background-color: #396cd8;
+  --selected-tag-color: #396cd8;
   --background-color: rgb(15,18,20);
   --background-color-layer-1: rgb(30,30,30);
 }
