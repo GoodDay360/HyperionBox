@@ -22,11 +22,12 @@ import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
 
+
 // Framer motion Imports
 import { AnimatePresence } from 'framer-motion';
 
 // Components Import
-import CreateTagWidget from './create_tag_widget';
+import ManageTagWidget from '../../global/components/manage_tag_widget';
 
 // Custom Imports
 import styles from "../styles/main.module.css";
@@ -43,7 +44,7 @@ function Watchlist() {
 
     const [tag_data, set_tag_data] = useState<any>([]);
     const [selected_tag, set_selected_tag] = useState<string>("");
-    const [widget, set_widget] = useState<string>("");
+    const [widget, set_widget] = useState<string>("manage_tag");
 
 
     const isRun = useRef<boolean>(false);
@@ -51,9 +52,9 @@ function Watchlist() {
         if (!app_ready || isRun.current) return;
         isRun.current = true;
         (async () => {
-            // await load_tags({set_tags});
-            set_tag_data(["anime","movie"]);
-            set_selected_tag("anime");
+            await load_tags({set_tag_data,set_selected_tag});
+            // set_tag_data(["anime","movie"]);
+            // set_selected_tag("anime");
             
             isRun.current = false;
         })();
@@ -117,14 +118,14 @@ function Watchlist() {
             <div className={styles.action_button_container}>
                 <Tooltip title="Create tag" placement='left'>
                     <Fab color='primary' size='small' style={{zIndex:1}}
-                        onClick={()=>{set_widget("create_tag")}}
+                        onClick={()=>{set_widget("manage_tag")}}
                     >
                         <AddRoundedIcon />
                     </Fab>
                 </Tooltip>
             </div>
             <AnimatePresence>
-                {widget === "create_tag" && <CreateTagWidget {...{widget, set_widget}}/>}
+                {widget === "manage_tag" && <ManageTagWidget {...{widget, set_widget}}/>}
             </AnimatePresence>
             
         </div>

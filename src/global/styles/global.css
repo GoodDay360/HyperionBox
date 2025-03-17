@@ -59,6 +59,38 @@
   -webkit-text-size-adjust: 100%;
 }
 
+/* Universal scrollbar styles */
+* {
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: rgba(255, 255, 255, 0.5) rgba(0, 0, 0, 0.2); /* Thumb and track colors */
+}
+
+/* For WebKit-based browsers */
+*::-webkit-scrollbar {
+  width: 12px; /* Scrollbar width */
+  height: 12px; /* Scrollbar height */
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2); /* Semi-transparent track */
+  backdrop-filter: blur(4px); /* Glass-like effect */
+  border-radius: 6px; /* Rounded track corners */
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5); /* Semi-transparent thumb */
+  backdrop-filter: blur(4px); /* Glass-like effect for the thumb */
+  border-radius: 6px; /* Rounded thumb corners */
+  border: 2px solid rgba(0, 0, 0, 0.2); /* Creates spacing for the thumb */
+}
+
+/* Remove scrollbar arrows */
+*::-webkit-scrollbar-button {
+  display: none; /* Hide arrows */
+}
+
+
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -129,6 +161,7 @@ button {
 [data-theme="dark"] {
   --color: #f6f6f6;
   --icon-color-1: #f6f6f6;
+  --icon-color-2: #396cd8;
   --fab-background-color-1: #396cd8;
   --selected-menu-background-color: #396cd8;
   --selected-tag-color: #396cd8;
