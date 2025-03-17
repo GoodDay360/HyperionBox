@@ -32,7 +32,7 @@ import ManageTagWidget from '../../global/components/manage_tag_widget';
 // Custom Imports
 import styles from "../styles/main.module.css";
 import global_context from '../../global/script/contexts';
-import load_tags from '../scripts/load_tags';
+import get_tag_data from '../scripts/get_tag_data';
 
 
 function Watchlist() {
@@ -52,9 +52,12 @@ function Watchlist() {
         if (!app_ready || isRun.current) return;
         isRun.current = true;
         (async () => {
-            await load_tags({set_tag_data,set_selected_tag});
-            // set_tag_data(["anime","movie"]);
-            // set_selected_tag("anime");
+            const result = await get_tag_data();
+            if (result.code === 200){
+                set_tag_data(result.data);
+                if (result.data.length) set_selected_tag(result.data[0]);
+            }
+            
             
             isRun.current = false;
         })();
@@ -125,7 +128,15 @@ function Watchlist() {
                 </Tooltip>
             </div>
             <AnimatePresence>
-                {widget === "manage_tag" && <ManageTagWidget {...{widget, set_widget}}/>}
+                {widget === "manage_tag" && <ManageTagWidget 
+                    {...{widget, set_widget,
+                        callback:({tag_data}:any)=>{
+                            set_tag_data(tag_data);
+                            if (tag_data.length) set_selected_tag(tag_data[0]);
+                        }
+                        
+                    }}
+                />}
             </AnimatePresence>
             
         </div>

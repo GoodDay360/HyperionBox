@@ -110,10 +110,13 @@
 }
 
 .edit_content_body_container{
-    
     width: 100%;
     min-height: auto;
+    display: flex;
+    flex-direction: column;
+    gap:16px;
 }
+
 .edit_content_body_create_tag_box{
     display: flex;
     flex-direction: column;

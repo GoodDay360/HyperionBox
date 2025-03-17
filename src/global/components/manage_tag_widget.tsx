@@ -1,5 +1,5 @@
 // React Imports
-import { useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 // MUI Imports
 import { ButtonBase, IconButton, Tooltip, Button } from '@mui/material';
@@ -9,18 +9,244 @@ import TextField from '@mui/material/TextField';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 
 // Framer motion
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, m } from 'framer-motion';
 
 // Custom Imports
-import request_create_tag from '../script/request_create_tag';
+import {request_create_tag, request_rename_tag, request_delete_tag} from '../script/request_manage_tag';
+import get_tag_data from '../../watchlist/scripts/get_tag_data';
 
 // Styles
 import styles from "../styles/manage_tag_widget.module.css";
 
-const ManageTagWidget  = ({widget, set_widget}:any) => {
-    const [create_tag, set_create_tag] = useState<any>({})
+const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
+    const [create_tag, set_create_tag] = useState<any>({tag_name:"",error:false,message:""});
+    const [tag_data, set_tag_data] = useState<any>([]);
+
+    const isRun = useRef<boolean>(false);
+    useEffect(()=>{
+        if (isRun.current) return;
+        isRun.current = true;
+        (async () => {
+            const result = await get_tag_data();
+            if (result.code === 200){
+                set_tag_data(result.data);
+            }
+            isRun.current = false;
+        })();
+        return;
+    },[])
+
+    const RenderItem = ({tag_name}:any) => {
+        const [edit_tag, set_edit_tag] = useState<boolean>(false);
+        const [delete_tag, set_delete_tag] = useState<boolean>(false);
+        const [new_tag_name, set_new_tag_name] = useState<string>("");
+        const [edit_error,set_edit_error] = useState<any>({state:false,message:""});
+        return (<>
+            <div
+                style={{
+                    display: "flex",
+                    width: "100%",
+                    height: "auto",
+                    border: edit_tag ? "2px solid var(--background-color)" : "none",
+                    borderRadius:"8px",
+                    boxSizing:"border-box",
+                    flexDirection:"column",
+                }}
+            >
+                <div 
+                    style={{
+                        display:"flex",
+                        flexDirection:"row",
+                        justifyContent:"space-between",
+                        alignItems:"center",
+                        flex:1,
+                        width:"100%",
+                        height:"auto",
+                        padding:"12px",
+                        border:"2px solid var(--background-color)",
+                        borderRadius:"inherit",
+                        boxSizing:"border-box",
+                        gap:"8px",
+                        boxShadow: edit_tag ? "rgba(0, 0, 0, 0.35) 0px 5px 15px" : "none",
+                    }}
+                >
+                    {/* Text Field/<p> Section */}
+                    <>{edit_tag ? (
+                        <Tooltip title={edit_error.message}>
+                            <TextField
+                                label="Tag name"
+                                variant="standard"
+                                size="small"
+                                value={new_tag_name}
+                                error={edit_error.state}
+                                focused
+                                slotProps={{ htmlInput: { maxLength: 64 } }}
+                                sx={{
+                                    width:"100%",
+                                    input:{
+                                        color:"var(--color)",
+                                        fontFamily:"var(--font-family-medium)",
+                                        fontSize:"18px",
+                                    }
+                                }}
+                                onChange={(e)=>{
+                                    if (!e.target.value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/) && e.target.value) {
+                                        set_edit_error({state:true, message:"Invalid tag name format."});
+                                    }else {
+                                        edit_error ? set_edit_error({state:false, message:""}) : null;
+                                        set_new_tag_name(e.target.value)
+                                    };
+                                }}  
+                            />    
+                        </Tooltip>
+                    ) : (
+                        <p
+                            style={{
+                                height:"auto",
+                                width:"100%",
+                                color:"var(--color)",
+                                fontFamily:"var(--font-family-medium)",
+                                fontSize:"18px",
+                                wordBreak:"break-all"
+                            }}
+                        >{tag_name}</p>
+                    )}</>
+
+                    {/* Icon section */}
+                    <>{edit_tag ? (
+                        <IconButton style={{color:"red"}}
+                            onClick={()=>{
+                                set_new_tag_name(tag_name);
+                                set_edit_tag(false);
+                            }}
+                        >
+                            <CloseRoundedIcon />
+                        </IconButton>
+                    ):(
+                        <IconButton style={{color:"var(--icon-color-1)"}}
+                            onClick={()=>{
+                                set_new_tag_name(tag_name);
+                                set_edit_tag(true);
+                            }}
+                        >
+                            <EditRoundedIcon />
+                        </IconButton>
+                    )}</>
+                </div>
+                <>{edit_tag && !delete_tag && (
+                    <div
+                        style={{
+                            display:"flex",
+                            flexDirection:"column",
+                            justifyContent:"space-around",
+                            alignItems:"center",
+                            width:"100%",
+                            height:'auto',
+                            padding:"25px"
+                        }}
+                    >
+                        <div
+                            style={{
+                                display:"flex",
+                                flexDirection:"row",
+                                justifyContent:"space-around",
+                                width:"100%",
+                                height:'auto',
+                            }}
+                        >
+                            <Button color='error' variant='contained'
+                                onClick={()=>{
+                                    set_delete_tag(true);
+                                }}
+                            >Delete</Button>
+                            <Button color='success' variant='contained'
+                                onClick={async ()=>{
+                                    if (tag_name === new_tag_name) {
+                                        set_edit_error({state:true, message:"New tag name can't be same."});
+                                        return;
+                                    }
+                                    const result = await request_rename_tag({current_tag_name:tag_name,new_tag_name:new_tag_name});
+                                    console.log("AAA", result);
+                                    if (result.code === 200){
+                                        const result = await get_tag_data();
+                                        if (result.code === 200){
+                                            set_tag_data(result.data);
+                                            callback({tag_data:result.data});
+                                        }else{
+                                            set_edit_error({state:true, message:result.message});
+                                        }
+                                        set_edit_tag(false);
+                                    }else{
+                                        set_edit_error({state:true, message:result.message});
+                                    }
+                                }}
+                            >Save</Button>
+                        </div>
+                    </div>
+                )}</>
+
+                <>{delete_tag && (
+                    <div
+                        style={{
+                            display:"flex",
+                            flexDirection:"column",
+                            justifyContent:"space-around",
+                            alignItems:"center",
+                            width:"100%",
+                            height:'auto',
+                            padding:"25px"
+                        }}
+                    >
+                        <p
+                            style={{
+                                color:"var(--color)",
+                                fontFamily:"var(--font-family-medium)",
+                                fontSize:"calc((100vw + 100vh)*0.025/2)",
+                                textAlign:"center"
+                            }}
+                        >Are you sure you want to delete this tag?</p>
+                        <div
+                            style={{
+                                display:"flex",
+                                flexDirection:"row",
+                                justifyContent:"space-around",
+                                width:"100%",
+                                height:'auto',
+                            }}
+                        >
+                            <Button color='primary'  variant='contained'
+                                onClick={()=>{
+                                    set_delete_tag(false);
+                                }}
+                            >No</Button>
+                            <Button color='error' variant='contained'
+                                onClick={async ()=>{
+                                    const result = await request_delete_tag({tag_name:tag_name});
+                                    if (result.code === 200){
+                                        const result = await get_tag_data();
+                                        if (result.code === 200){
+                                            set_tag_data(result.data);
+                                            callback({tag_data:result.data});
+                                        }else{
+                                            set_edit_error({state:true, message:result.message});
+                                        }
+                                    }
+                                }}
+                            ><DeleteRoundedIcon /></Button>
+                        </div>
+                    </div>
+                )}</>
+
+                
+                
+            </div>
+        </>)
+    }
+    
     return (<>
         <div className={styles.container}>
             <motion.div className={styles.box}
@@ -112,24 +338,33 @@ const ManageTagWidget  = ({widget, set_widget}:any) => {
                                         
                                     >
                                         <div style={{
+                                            display:'flex',
                                             background:"var(--background-color)",
                                             width:"100%",
-                                            height:"20px",
+                                            height:"auto",
                                             borderTopLeftRadius:"inherit", borderTopRightRadius:"inherit",
-                                            padding:"12px"
+                                            padding:"12px",
+                                            alignItems:"center",
                                         }}>
-                                            <TextField focused={true} variant='standard' label='Tag name' value={create_tag.tag_name} required
-                                                sx={{
-                                                    width:"100%",
-                                                    input: {
-                                                        color:"var(--color)",
-                                                        fontFamily:"var(--font-family-regular)",
-                                                    }
-                                                }}
-                                                onChange={(e)=>{
-                                                    set_create_tag({...create_tag,tag_name:e.target.value})
-                                                }}
-                                            />
+                                            <Tooltip title={create_tag.message}>
+                                                <TextField focused={true} variant='standard' label='Tag name' placeholder='eg. Movie, TV Show' slotProps={{ htmlInput: { maxLength: 64 } }}
+                                                    value={create_tag.tag_name} error={create_tag.error} required
+                                                    sx={{
+                                                        width:"100%",
+                                                        input: {
+                                                            color:"var(--color)",
+                                                            fontFamily:"var(--font-family-regular)",
+                                                        }
+                                                    }}
+                                                    onChange={(e)=>{
+                                                        if (!e.target.value.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/) && e.target.value) {
+                                                            set_create_tag({...create_tag,error:true,message:"Invalid tag name format."})
+                                                        }else set_create_tag({...create_tag,tag_name:e.target.value,error:false,message:""})
+                                                    }}
+                                                />
+                                            </Tooltip>
+
+                                            
                                         </div>
                                         <div style={{
                                             display:"flex",
@@ -147,8 +382,20 @@ const ManageTagWidget  = ({widget, set_widget}:any) => {
                                                 onClick={async(e)=>{
                                                     e.preventDefault()
                                                     if (!create_tag.tag_name) return
-                                                    await request_create_tag({tag_name:create_tag.tag_name});
-                                                    set_create_tag({...create_tag,state:false})
+                                                    const result = await request_create_tag({tag_name:create_tag.tag_name});
+                                                    if (result.code === 200) {
+                                                        set_create_tag({...create_tag,state:false})
+                                                        
+                                                        const result = await get_tag_data();
+                                                        if (result.code === 200){
+                                                            set_tag_data(result.data);
+                                                            callback({tag_data:result.data});
+                                                        }
+                                                        
+                                                    }else{
+                                                        set_create_tag({...create_tag, error:true, message:result.message})
+                                                    }   
+                                                    
                                                 }}
                                             >Create</Button>
                                         </div>
@@ -156,6 +403,24 @@ const ManageTagWidget  = ({widget, set_widget}:any) => {
                                     </motion.form>
                                 )}
                             </AnimatePresence>
+                            <div
+                                style={{
+                                    display:"flex",
+                                    flexDirection:"column",
+                                    width:"100%",
+                                    height:"auto",
+                                    gap:"8px",
+                                }}
+                            >
+                                <>{tag_data.map((item:any,index:number)=>(
+                                    <RenderItem key={index} tag_name={item}/>
+                                ))}</>
+                                
+                                
+                            </div>
+                            
+                            
+
                         </div>
                     </div>
                 </div>
