@@ -13,16 +13,15 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 
 // Framer motion
-import { motion, AnimatePresence, m } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Custom Imports
-import {request_create_tag, request_rename_tag, request_delete_tag} from '../script/request_manage_tag';
-import get_tag_data from '../../watchlist/scripts/get_tag_data';
+import {request_tag_data, request_create_tag, request_rename_tag, request_delete_tag} from '../script/request_manage_tag';
 
 // Styles
 import styles from "../styles/manage_tag_widget.module.css";
 
-const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
+const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
     const [create_tag, set_create_tag] = useState<any>({tag_name:"",error:false,message:""});
     const [tag_data, set_tag_data] = useState<any>([]);
 
@@ -31,7 +30,7 @@ const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
         if (isRun.current) return;
         isRun.current = true;
         (async () => {
-            const result = await get_tag_data();
+            const result = await request_tag_data();
             if (result.code === 200){
                 set_tag_data(result.data);
             }
@@ -104,37 +103,41 @@ const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
                             />    
                         </Tooltip>
                     ) : (
-                        <p
+                        <span
                             style={{
                                 height:"auto",
                                 width:"100%",
                                 color:"var(--color)",
                                 fontFamily:"var(--font-family-medium)",
                                 fontSize:"18px",
-                                wordBreak:"break-all"
+                                wordBreak:"break-all",
                             }}
-                        >{tag_name}</p>
+                        >{tag_name}</span>
                     )}</>
 
                     {/* Icon section */}
                     <>{edit_tag ? (
-                        <IconButton style={{color:"red"}}
-                            onClick={()=>{
-                                set_new_tag_name(tag_name);
-                                set_edit_tag(false);
-                            }}
-                        >
-                            <CloseRoundedIcon />
-                        </IconButton>
+                        <Tooltip title="Cancel edit tag">
+                            <IconButton style={{color:"red"}}
+                                onClick={()=>{
+                                    set_new_tag_name(tag_name);
+                                    set_edit_tag(false);
+                                }}
+                            >
+                                <CloseRoundedIcon />
+                            </IconButton>
+                        </Tooltip>
                     ):(
-                        <IconButton style={{color:"var(--icon-color-1)"}}
-                            onClick={()=>{
-                                set_new_tag_name(tag_name);
-                                set_edit_tag(true);
-                            }}
-                        >
-                            <EditRoundedIcon />
-                        </IconButton>
+                        <Tooltip title="Edit tag">
+                            <IconButton style={{color:"var(--icon-color-1)"}}
+                                onClick={()=>{
+                                    set_new_tag_name(tag_name);
+                                    set_edit_tag(true);
+                                }}
+                            >
+                                <EditRoundedIcon />
+                            </IconButton>
+                        </Tooltip>
                     )}</>
                 </div>
                 <>{edit_tag && !delete_tag && (
@@ -172,7 +175,7 @@ const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
                                     const result = await request_rename_tag({current_tag_name:tag_name,new_tag_name:new_tag_name});
                                     console.log("AAA", result);
                                     if (result.code === 200){
-                                        const result = await get_tag_data();
+                                        const result = await request_tag_data();
                                         if (result.code === 200){
                                             set_tag_data(result.data);
                                             callback({tag_data:result.data});
@@ -227,7 +230,7 @@ const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
                                 onClick={async ()=>{
                                     const result = await request_delete_tag({tag_name:tag_name});
                                     if (result.code === 200){
-                                        const result = await get_tag_data();
+                                        const result = await request_tag_data();
                                         if (result.code === 200){
                                             set_tag_data(result.data);
                                             callback({tag_data:result.data});
@@ -275,7 +278,7 @@ const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
                                 background: "red"
                             }
                         }}
-                        onClick={()=>{set_widget("")}}
+                        onClick={()=>{onClose()}}
                     >
                         <CloseRoundedIcon />
                     </IconButton>
@@ -386,7 +389,7 @@ const ManageTagWidget  = ({widget, set_widget, callback=({})=>{}}:any) => {
                                                     if (result.code === 200) {
                                                         set_create_tag({...create_tag,state:false})
                                                         
-                                                        const result = await get_tag_data();
+                                                        const result = await request_tag_data();
                                                         if (result.code === 200){
                                                             set_tag_data(result.data);
                                                             callback({tag_data:result.data});

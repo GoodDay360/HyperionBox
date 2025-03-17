@@ -1,6 +1,17 @@
 
 import Database from '@tauri-apps/plugin-sql';
 
+
+export const request_tag_data = async ()=> {
+    return await new Promise <any>(async (resolve,reject)=>{
+        try{
+            const db = await Database.load('sqlite:watchlist.db');
+            const result:any = (await db.select("SELECT name FROM sqlite_master WHERE type='table'") as any).map((item:any) => item.name);
+            resolve({code:200,message:"OK", data:result});
+        }catch(e:any){reject({code:500,message:e.message})}
+    })
+}
+
 export const request_create_tag = async ({tag_name,callback=()=>{}}:any)=> {
     if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) return {code:500, message:`Invalid tag name format.`};
     // Load the database

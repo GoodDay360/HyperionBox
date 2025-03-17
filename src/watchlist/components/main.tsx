@@ -32,7 +32,7 @@ import ManageTagWidget from '../../global/components/manage_tag_widget';
 // Custom Imports
 import styles from "../styles/main.module.css";
 import global_context from '../../global/script/contexts';
-import get_tag_data from '../scripts/get_tag_data';
+import { request_tag_data } from '../../global/script/request_manage_tag';
 
 
 function Watchlist() {
@@ -44,7 +44,7 @@ function Watchlist() {
 
     const [tag_data, set_tag_data] = useState<any>([]);
     const [selected_tag, set_selected_tag] = useState<string>("");
-    const [widget, set_widget] = useState<string>("manage_tag");
+    const [widget, set_widget] = useState<string>("");
 
 
     const isRun = useRef<boolean>(false);
@@ -52,7 +52,7 @@ function Watchlist() {
         if (!app_ready || isRun.current) return;
         isRun.current = true;
         (async () => {
-            const result = await get_tag_data();
+            const result = await request_tag_data();
             if (result.code === 200){
                 set_tag_data(result.data);
                 if (result.data.length) set_selected_tag(result.data[0]);
@@ -129,7 +129,7 @@ function Watchlist() {
             </div>
             <AnimatePresence>
                 {widget === "manage_tag" && <ManageTagWidget 
-                    {...{widget, set_widget,
+                    {...{onClose:()=>{set_widget("")},
                         callback:({tag_data}:any)=>{
                             set_tag_data(tag_data);
                             if (tag_data.length) set_selected_tag(tag_data[0]);
