@@ -67,21 +67,23 @@ function Watchlist() {
     return (<>
         <div className={styles.container}>
             <div className={styles.header}>
-                <ButtonBase
-                    sx={{
-                        color:"var(--icon-color-1)",
-                        backgroundColor:"var(--background-color-layer-1)",
-                    }}
-                    onClick={()=>{
-                        tag_container_ref.current.scrollBy({
-                            top: 0,
-                            left:  - tag_container_ref.current.clientWidth * 0.25, 
-                            behavior: 'smooth', 
-                        });
-                    }}
-                >
-                    <ArrowBackIosRoundedIcon/>
-                </ButtonBase>
+                <Tooltip title="Scroll left">
+                    <ButtonBase
+                        sx={{
+                            color:"var(--icon-color-1)",
+                            backgroundColor:"var(--background-color-layer-1)",
+                        }}
+                        onClick={()=>{
+                            tag_container_ref.current.scrollBy({
+                                top: 0,
+                                left:  - tag_container_ref.current.clientWidth * 0.25, 
+                                behavior: 'smooth', 
+                            });
+                        }}
+                    >
+                        <ArrowBackIosRoundedIcon/>
+                    </ButtonBase>
+                </Tooltip>
                 <div className={styles.tag_container} {...events} ref={tag_container_ref}>
                     <div className={styles.tag_box}>
                         <>{tag_data.map((item:any, index:number)=>(
@@ -102,21 +104,23 @@ function Watchlist() {
                         
                     </div>
                 </div>
-                <ButtonBase
-                    sx={{
-                        color:"var(--icon-color-1)",
-                        backgroundColor:"var(--background-color-layer-1)",
-                    }}
-                    onClick={()=>{
-                        tag_container_ref.current.scrollBy({
-                            top: 0,
-                            left: tag_container_ref.current.clientWidth * 0.25, 
-                            behavior: 'smooth', 
-                        });
-                    }}
-                >
-                    <ArrowForwardIosRoundedIcon/>
-                </ButtonBase>
+                <Tooltip title="Scroll right">
+                    <ButtonBase
+                        sx={{
+                            color:"var(--icon-color-1)",
+                            backgroundColor:"var(--background-color-layer-1)",
+                        }}
+                        onClick={()=>{
+                            tag_container_ref.current.scrollBy({
+                                top: 0,
+                                left: tag_container_ref.current.clientWidth * 0.25, 
+                                behavior: 'smooth', 
+                            });
+                        }}
+                    >
+                        <ArrowForwardIosRoundedIcon/>
+                    </ButtonBase>
+                </Tooltip>
             </div>
             <div className={styles.action_button_container}>
                 <Tooltip title="Create tag" placement='left'>

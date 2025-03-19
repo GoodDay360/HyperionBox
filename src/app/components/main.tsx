@@ -39,6 +39,7 @@ import global_context from '../../global/script/contexts';
 // Components Import
 const Watchlist = lazy(() => import('../../watchlist/components/main'));
 const Splash_Screen = lazy(() => import('../../splash_screen/components/main'));
+const Explore = lazy(() => import('../../explore/components/main'));
 
 const theme = createTheme({
     typography: {
@@ -68,7 +69,7 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			set_menu({state:true,path:"watchlist"});
+			set_menu({state:true,path:"explore"});
 		})();
 	},[app_ready])
 
@@ -142,6 +143,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Splash_Screen/>}/>
 					<Route path="/watchlist/*" element={<Watchlist/>} />
+					<Route path="/explore/*" element={<Explore/>} />
 				</Routes>
 				<Snackbar 
 					open={fullscreen_snackbar.state} 

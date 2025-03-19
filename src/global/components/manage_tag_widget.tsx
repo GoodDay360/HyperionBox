@@ -24,7 +24,7 @@ import styles from "../styles/manage_tag_widget.module.css";
 const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
     const [create_tag, set_create_tag] = useState<any>({tag_name:"",error:false,message:""});
     const [tag_data, set_tag_data] = useState<any>([]);
-
+    const [search, set_search] = useState<string>("");
     const isRun = useRef<boolean>(false);
     useEffect(()=>{
         if (isRun.current) return;
@@ -38,6 +38,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
         })();
         return;
     },[])
+
 
     const RenderItem = ({tag_name}:any) => {
         const [edit_tag, set_edit_tag] = useState<boolean>(false);
@@ -211,7 +212,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                                 fontSize:"calc((100vw + 100vh)*0.025/2)",
                                 textAlign:"center"
                             }}
-                        >Are you sure you want to delete this tag?</p>
+                        >Are you sure you want to delete this tag? <br/>This will delete all content inside, make sure to migrate it to other tag.</p>
                         <div
                             style={{
                                 display:"flex",
@@ -301,7 +302,9 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                         <div className={styles.edit_content_header_container}>
                             <div className={styles.edit_content_search_box}>
                                 <SearchRoundedIcon sx={{color:"var(--color)"}} fontSize='medium'/>
-                                <input type='text' placeholder='Search'></input>
+                                <input type='text' placeholder='Search' value={search}
+                                    onChange={(e)=>{set_search(e.target.value)}}
+                                ></input>
                             </div>
                             <Tooltip title="Add tag" placement='bottom'>
                                 <IconButton sx={{color:"var(--icon-color-2)"}} size="large"
@@ -314,7 +317,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                         <div className={styles.edit_content_body_container}>
                             <AnimatePresence>
                                 {create_tag.state && (
-                                    <motion.form className={styles.edit_content_body_create_tag_box}
+                                    <motion.form className={styles.edit_content_body_create_tag_box} onSubmit={(e)=>e.preventDefault()}
                                         initial="hidden"
                                         animate="visible"
                                         exit="exit"
@@ -372,8 +375,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                                         <div style={{
                                             display:"flex",
                                             background:"var(--background-color)",
-                                            padding:"12px",
-                                            paddingTop:"50px",
+                                            padding:"25px",
                                             justifyContent:"space-around",
                                             width:"auto",
                                             borderBottomLeftRadius:"inherit", borderBottomRightRadius:"inherit",
@@ -382,8 +384,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                                                 onClick={()=>{set_create_tag({...create_tag,state:false})}}
                                             >Cancel</Button>
                                             <Button variant='contained' type='submit'
-                                                onClick={async(e)=>{
-                                                    e.preventDefault()
+                                                onClick={async()=>{
                                                     if (!create_tag.tag_name) return
                                                     const result = await request_create_tag({tag_name:create_tag.tag_name});
                                                     if (result.code === 200) {
@@ -415,7 +416,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                                     gap:"8px",
                                 }}
                             >
-                                <>{tag_data.map((item:any,index:number)=>(
+                                <>{tag_data.filter((tag_name:any) => tag_name.toLowerCase().includes(search.toLowerCase())).map((item:any,index:number)=>(
                                     <RenderItem key={index} tag_name={item}/>
                                 ))}</>
                                 

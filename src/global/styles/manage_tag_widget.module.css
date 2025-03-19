@@ -107,6 +107,7 @@
     all: unset;
     color: var(--color);
     font-family: var(--font-family-medium);
+    width: 100%;
 }
 
 .edit_content_body_container{

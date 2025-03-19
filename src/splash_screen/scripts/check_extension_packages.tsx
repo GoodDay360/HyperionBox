@@ -30,12 +30,12 @@ const check_extension_packages = async ({setFeedback, setProgress}:any) => {
                 
             ]
 
-            const extensions_dir = await path.join(await path.appDataDir(),"extensions")
-            if (!await exists(extensions_dir)) await mkdir(extensions_dir, {baseDir:BaseDirectory.AppData})
+            const extension_dir = await path.join(await path.appDataDir(),"extension")
+            if (!await exists(extension_dir)) await mkdir(extension_dir, {baseDir:BaseDirectory.AppData})
             for (const item of to_downlaod) {
                 setFeedback({text:`Downloading ${item.path}...`})
                 const download = await download_file_in_chunks({
-                    chunkSize:chunkSize,url:item.url, output_file:await path.join(extensions_dir, item.path), 
+                    chunkSize:chunkSize,url:item.url, output_file:await path.join(extension_dir, item.path), 
                     callback: ({current_size,total_size}:any) => {
                         setProgress({state:true,value:current_size*100/total_size})
                     }
@@ -48,7 +48,7 @@ const check_extension_packages = async ({setFeedback, setProgress}:any) => {
             const npm_path = await get_npm_path;
             const command = `"${npm_path}" install`
             setFeedback({text:`Installing extension packages...`})
-            const execute_response = await execute_command({title:"npm-install",command:command,cwd:extensions_dir})
+            const execute_response = await execute_command({title:"npm-install",command:command,cwd:extension_dir})
             if (execute_response.stderr) reject({code: 500, message: execute_response.stderr});
             resolve({code: 200, message: 'OK'})
         })
