@@ -19,7 +19,6 @@ const get_list = async () => {
             const LOG_DIR = await path.join(await path.appDataDir(), "log", "extension")
             const command = [
                 `"${await get_node_path}"`, `"${await path.join(await get_extension_directory, "route.js")}"`,
-
                 "--source", `"${source.title}"`,
                 "--method", '"get_list"',
                 "--search", '"IDOLiSH7 Vibrato"',
@@ -39,7 +38,6 @@ const get_list = async () => {
                         }else{
                             DATA[source.title] = {code:200, message:"OK", response:result};
                         }
-                        
                     }catch(e){
                         DATA[source.title] = {code:500, message:e};
                     }

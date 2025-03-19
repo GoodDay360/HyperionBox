@@ -41,11 +41,11 @@ const Explore = () => {
                     <IconButton color="primary" size='large' type="submit"
                         onClick={()=>{
                             if (!search) return;
-                            
                         }}
                     >
                         <SearchRoundedIcon sx={{color:"var(--icon-color-1)"}} />
                     </IconButton>
+                    
                 </form>
             </div>
         </div>
