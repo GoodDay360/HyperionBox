@@ -38,13 +38,13 @@ function Splash_Screen() {
     const [feedback, setFeedback] = useState<any>({})
     const [progress, setProgress] = useState<any>({state:false,value:0})
 
-    const { app_ready, set_app_ready } = useContext<any>(global_context);
-
+    const { set_app_ready } = useContext<any>(global_context);
 
     useEffect(()=>{
         if(run_state.current) return;
         run_state.current = true;
         (async ()=>{
+            await getCurrentWindow().setMaximizable(false);
             await getCurrentWindow().setResizable(false);
             await getCurrentWindow().setAlwaysOnTop(true);
             const monitor_size:any = (await currentMonitor())?.size;
@@ -127,9 +127,9 @@ function Splash_Screen() {
 
             setFeedback({text:"Launching..."})
             
+            await getCurrentWindow().setMaximizable(true);
             await getCurrentWindow().setResizable(true);
             await getCurrentWindow().setAlwaysOnTop(false);
-
 
             set_app_ready(true);
             run_state.current = false

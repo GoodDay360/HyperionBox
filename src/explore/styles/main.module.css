@@ -1,8 +1,11 @@
 .container{
     flex: 1;
+    height: auto;
     display: flex;    
     background: var(--background-color);
     box-sizing: border-box;
+    flex-direction: column;
+    overflow: auto;
 }
 
 .header{
@@ -41,4 +44,14 @@
     color: var(--color);
     font-family: var(--font-family-medium);
     width: 100%;
+}
+
+
+.body{
+    display: flex;
+    flex:1;
+    box-sizing: border-box;
+    background: var(--background-color);
+    padding:12px;
+    flex-direction: column;
 }

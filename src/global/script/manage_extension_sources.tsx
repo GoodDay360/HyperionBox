@@ -8,6 +8,7 @@ async function setupDatabase(): Promise<void> {
         // Create the 'source' table if it doesn't exist
         await db.execute(`
             CREATE TABLE IF NOT EXISTS source (
+                id TEXT NOT NULL PRIMARY KEY,
                 title TEXT NOT NULL,
                 description TEXT,
                 version TEXT,

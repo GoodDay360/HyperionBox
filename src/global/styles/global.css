@@ -160,6 +160,7 @@ button {
 
 [data-theme="dark"] {
   --color: #f6f6f6;
+  --color-2: #396cd8;;
   --icon-color-1: #f6f6f6;
   --icon-color-2: #396cd8;
   --fab-background-color-1: #396cd8;
