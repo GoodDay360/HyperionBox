@@ -4,9 +4,11 @@ import { useEffect, useState, useRef, useCallback } from "react";
 
 // MUI Imports
 import { ButtonBase, IconButton } from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 
 // MUI Icons Import
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 
 // styles Import
 import styles from "../styles/main.module.css";
@@ -18,40 +20,78 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 // Custom Import
 import get_list from "../scripts/get_list";
 import { get_installed_sources } from "../../global/script/manage_extension_sources";
+import write_crash_log from "../../global/script/write_crash_log";
 
 
 const Explore = () => {
     const [search, set_search] = useState<string>("");
     const [DATA, SET_DATA] = useState<any>({});
-    const isRun = useRef<boolean>(false);
+    const [search_count, set_search_count] = useState<number>(0);
+    const [is_searching, set_is_searching] = useState<boolean>(false);
+    const [is_searching_hover, set_is_searching_hover] = useState<boolean>(false);
+    const [error,set_error] = useState<boolean>(false);
+    
+    const cancel_search = useRef<boolean>(false);
+    
     useEffect(()=>{
-        if (isRun.current) return;
-        isRun.current = true;
-        (async ()=>{
-            isRun.current = false;
-        })();
-        return;
+        set_search_count(0);
+        cancel_search.current = false;
+        return () =>{
+            cancel_search.current = true;
+        }
     },[])
 
+    const is_run = useRef<boolean>(false);
+    const is_run_timeout = useRef<any>(null);
     const get_data = useCallback(()=>{
-        (async ()=>{
-            const source_list = await get_installed_sources();
-            if (source_list.code === 200){
-                const data:any = {};
-                for (const source of source_list.data){
-                    const result = await get_list({source_id:source.id, search:search});
-                    if (result.code === 200){
-                        data[source.id] = {
-                            title: source.title,
-                            data: result.response.data,
-                            max_page: result.response.max_page,
-                            status: result.response.status,
-                        };
+        clearTimeout(is_run_timeout.current);
+        const task = async () => {
+            if (is_run.current) {
+                setTimeout(async() => await task(), 1000);
+                return;
+            };
+            is_run.current = true;
+            try{
+                set_error(false)
+                set_is_searching(true)
+                SET_DATA({});
+                set_search_count(0);
+                const source_list = await get_installed_sources();
+                if (source_list.code === 200){
+                    const data:any = {};
+                    for (const source of source_list.data){
+                        set_search_count(x => x+=1);
+                        if (cancel_search.current) {
+                            cancel_search.current = false;
+                            break;
+                        }
+                        const result = await get_list({source_id:source.id, search:search});
+                        if (result.code === 200){
+                            if (!result.response.data?.length) continue;
+                            data[source.id] = {
+                                title: source.title,
+                                data: result.response.data,
+                                max_page: result.response.max_page,
+                                status: result.response.status,
+                            };
+                        }
                     }
+                    SET_DATA(data);
+                    console.log(data);
                 }
-                SET_DATA(data);
-                console.log(data);
+            }catch(e){
+                SET_DATA({});
+                set_error(true)
+                console.error(e);
+                await write_crash_log(`[Mode:String](Error at 'get_data'): ${String(e)}`);
+                await write_crash_log(`[Mode:JSON](Error at 'get_data'): ${JSON.stringify(e)}`);
             }
+            cancel_search.current = false;
+            set_is_searching(false);
+            is_run.current = false;
+        };
+        (async () => {
+            await task();
         })();
         return;
     },[search])
@@ -66,7 +106,7 @@ const Explore = () => {
                     width:"calc((100vw + 100vh)*0.15/2)",
                     height:"auto",
                     borderRadius:"8px",
-                    gap:2,
+                    gap:"8px",
                     flexShrink:0,
                     flexDirection:"column",
                     flexGrow:0,
@@ -79,16 +119,16 @@ const Explore = () => {
                         borderRadius:"8px",
                     }}
                 >
-                        <LazyLoadImage
-                            style={{
-                                width:"100%",
-                                height:"100%",
-                                objectFit:"cover",
-                                borderRadius:"inherit",
-                            }}
-                            alt={_item.title}
-                            src={_item.cover}
-                        />
+                    <LazyLoadImage
+                        style={{
+                            width:"100%",
+                            height:"100%",
+                            objectFit:"cover",
+                            borderRadius:"inherit",
+                        }}
+                        alt={_item.title}
+                        src={_item.cover}
+                    />
                 </div>
                 <span
                     style={{
@@ -150,7 +190,7 @@ const Explore = () => {
                                 padding:"12px",
                                 justifySelf:"flex-end",
                             }}
-                        >+{item.max_page}</h3>
+                        >+{item.max_page-1} pages</h3>
                     </>)}</>
                     
                 </div>
@@ -187,21 +227,78 @@ const Explore = () => {
                             onChange={(e)=>set_search(e.target.value)}
                         />
                     </div>
-                    <IconButton color="primary" size='large' type="submit"
-                        onClick={async ()=>{
-                            if (!search) return;
-                            await get_data()
-                        }}
-                    >
-                        <SearchRoundedIcon sx={{color:"var(--icon-color-1)"}} />
-                    </IconButton>
+                    <>{is_searching 
+                        ? <>
+                            <IconButton color="primary" size='large' type="button" onMouseEnter={()=>set_is_searching_hover(true)} onMouseLeave={()=>set_is_searching_hover(false)}
+                                onClick={async ()=>{
+                                    cancel_search.current = true;
+                                }}
+                            >
+                                {is_searching_hover 
+                                    ? <CloseRoundedIcon sx={{color:"red"}} />
+                                    : <CircularProgress color="primary" size="20px"/>
+                                }
+                            </IconButton>
+                        </>
+                        : <>
+                            <IconButton color="primary" size='large' type="submit" 
+                                onClick={async ()=>{
+                                    if (!search) return;
+                                    await get_data()
+                                }}
+                            >
+                                <SearchRoundedIcon sx={{color:"var(--icon-color-1)"}} />
+                            </IconButton>
+                        </>
+                    }</>
                     
                 </form>
             </div>
             <div className={styles.body}>
-                <>{Object.keys(DATA).map((item,index)=>(
-                    <RenderSource key={index} source_id={item} item={DATA[item]} />
-                ))}</>
+                <>{Object.keys(DATA).length
+                    ? <>
+                        <>{Object.keys(DATA).map((item,index)=>(
+                            <RenderSource key={index} source_id={item} item={DATA[item]} />
+                        ))}</>
+                    </>
+                    : <>
+                        <div
+                            style={{
+                                width:"100%",
+                                height:"100%",
+                                justifyContent:"center",
+                                alignItems:"center",
+                                display:"flex",
+                                boxSizing:"border-box",
+                            }}
+                        >
+                            <h3
+                                style={{
+                                    width:"auto",
+                                    height:"auto",
+                                    textAlign:"center",
+                                    color:"var(--color)",
+                                    fontFamily:"var(--font-family-medium)",
+                                }}
+                            >
+                                
+                                
+                                <>{error 
+                                    ? <>Something went wrong, feedback sent to crash.log.<br/>You can try again.</>
+                                    : <>{is_searching
+                                        ? "Searching..." 
+                                        : <>{search_count > 0
+                                            ? "No result, try search something else." 
+                                            : "Try search something."
+                                        }</>
+                                    }</>
+                                }</>
+                                
+                                
+                            </h3>
+                        </div>
+                    </>
+                }</>
             </div>
         </div>
     </>)

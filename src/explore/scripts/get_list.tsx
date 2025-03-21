@@ -7,7 +7,7 @@ import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { path } from '@tauri-apps/api';
 
 // Custom Imports
-import { get_installed_sources } from "../../global/script/manage_extension_sources";
+
 
 const get_list = async ({source_id, search}:{source_id:string,search:string}) => {
     return await new Promise<any>(async (resolve, reject) => {
@@ -17,7 +17,7 @@ const get_list = async ({source_id, search}:{source_id:string,search:string}) =>
             "--source", `"${source_id}"`,
             "--method", '"get_list"',
             "--search", `"${search}"`,
-            "--log_output_dir", LOG_DIR
+            "--log_output_dir", `"${LOG_DIR}"`
         ].join(" ")
 
         const excute_result = await execute_command({command:command, title:"get_list"})
