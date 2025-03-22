@@ -1,6 +1,6 @@
 // React Import
 import { useEffect, useState, useRef, useCallback } from "react";
-
+import { useNavigate } from "react-router";
 
 // MUI Imports
 import { ButtonBase, IconButton } from "@mui/material";
@@ -24,6 +24,7 @@ import write_crash_log from "../../global/script/write_crash_log";
 
 
 const Explore = () => {
+    const navigate = useNavigate();
     const [search, set_search] = useState<string>("");
     const [DATA, SET_DATA] = useState<any>({});
     const [search_count, set_search_count] = useState<number>(0);
@@ -96,7 +97,7 @@ const Explore = () => {
         return;
     },[search])
 
-    const RenderItem = useCallback(({_item}:{_item?:any}) => {
+    const RenderItem = useCallback(({source_id, _item}:{source_id:string,_item?:any}) => {
         return (<>
             <ButtonBase
                 sx={{
@@ -110,6 +111,10 @@ const Explore = () => {
                     flexShrink:0,
                     flexDirection:"column",
                     flexGrow:0,
+                }}
+                onClick={()=>{
+                    console.log(_item);
+                    navigate(`/preview/${source_id}/${_item.id}`);
                 }}
             >
                 <div
@@ -210,7 +215,7 @@ const Explore = () => {
                     }}
                 >
                     <>{item.data.map((_item:any,index:number)=>(
-                        <RenderItem key={index} _item={_item}/>
+                        <RenderItem key={index} source_id={source_id} _item={_item}/>
                     ))}</>
                 </div>
                 

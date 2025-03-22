@@ -40,6 +40,7 @@ import global_context from '../../global/script/contexts';
 const Watchlist = lazy(() => import('../../watchlist/components/main'));
 const Splash_Screen = lazy(() => import('../../splash_screen/components/main'));
 const Explore = lazy(() => import('../../explore/components/main'));
+const Preview = lazy(() => import('../../[preview]/components/main'));
 
 const theme = createTheme({
     typography: {
@@ -61,6 +62,7 @@ function App() {
 
 	useEffect(()=>{
 		navigate(`/${menu.path}`);
+		// navigate("/preview/hianime/good-bye-dragon-life-19347")
 	},[menu])
 
 	useEffect(()=>{
@@ -70,6 +72,7 @@ function App() {
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
 			set_menu({state:true,path:"explore"});
+			
 		})();
 	},[app_ready])
 
@@ -144,6 +147,7 @@ function App() {
 					<Route path="/" element={<Splash_Screen/>}/>
 					<Route path="/watchlist/*" element={<Watchlist/>} />
 					<Route path="/explore/*" element={<Explore/>} />
+					<Route path="/preview/:source_id/:preview_id" element={<Preview/>} />
 				</Routes>
 				<Snackbar 
 					open={fullscreen_snackbar.state} 

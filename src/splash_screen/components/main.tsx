@@ -114,6 +114,7 @@ function Splash_Screen() {
                 const result = await check_extension_packages({setFeedback,setProgress});
                 if (result?.code === 200) {
                     config.bin.extension_packages = true;
+                    config.bin.browser_path = result.data.browser_path;
                     await write_config(config)
                 }else{
                     console.error(result)

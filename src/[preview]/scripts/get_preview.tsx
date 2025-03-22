@@ -7,19 +7,16 @@ import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { path } from '@tauri-apps/api';
 
 // Custom Imports
-import { read_config } from "../../global/script/manage_config";
 
-const get_list = async ({source_id, search}:{source_id:string,search:string}) => {
+
+const get_preview = async ({source_id,preview_id}:{source_id:string,preview_id:string}) => {
     return await new Promise<any>(async (resolve, reject) => {
-        const config = await read_config();
         const LOG_DIR = await path.join(await path.appDataDir(), "log", "extension")
         const command = [
             `"${await get_node_path}"`, `"${await path.join(await get_extension_directory, "route.js")}"`,
             "--source", `"${source_id}"`,
-            "--method", '"get_list"',
-            "--search", `"${search}"`,
-            "--log_output_dir", `"${LOG_DIR}"`,
-            "--browser_path", `"${config.bin.browser_path}"`
+            "--method", '"get_preview"',
+            "--log_output_dir", `"${LOG_DIR}"`
         ].join(" ")
 
         const excute_result = await execute_command({command:command, title:"get_list"})
@@ -44,4 +41,4 @@ const get_list = async ({source_id, search}:{source_id:string,search:string}) =>
     })
 }
 
-export default get_list;
+export default get_preview;

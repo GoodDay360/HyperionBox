@@ -4,9 +4,10 @@ import { BaseDirectory, exists, mkdir} from '@tauri-apps/plugin-fs';
 // import JSZip from 'jszip';
 
 import download_file_in_chunks from '../../global/script/download_file_in_chunk';
-import get_npm_path from '../../global/script/get_npm_path';
+import get_npm_path from '../../global/script/node/get_npm_path';
+import get_npx_path from '../../global/script/node/get_npx_path';
 import execute_command from '../../global/script/excute_command';
-
+import write_crash_log from '../../global/script/write_crash_log';
 
 const chunkSize = 6 * 1024 * 1024; 
 
@@ -46,11 +47,26 @@ const check_extension_packages = async ({setFeedback, setProgress}:any) => {
                 };
             };
             const npm_path = await get_npm_path;
-            const command = `"${npm_path}" install`
-            setFeedback({text:`Installing extension packages...`})
-            const execute_response = await execute_command({title:"npm-install",command:command,cwd:extension_dir})
-            if (execute_response.stderr) reject({code: 500, message: execute_response.stderr});
-            resolve({code: 200, message: 'OK'})
+            setFeedback({text:`Installing extension packages... might take a while.`})
+            const execute_install_npm_response = await execute_command({title:"npm-install",command:`"${npm_path}" install`,cwd:extension_dir})
+            if (execute_install_npm_response.stderr.trim()) {
+                await write_crash_log(`[check_extension_packages] npm install: ${JSON.stringify({code: 500, message: execute_install_npm_response.stderr})}`);
+                reject({code: 500, message: execute_install_npm_response.stderr});
+            }
+            
+            setFeedback({text:`Installing puppeteer browser... might take a while for first time.`})
+            const npx_path = await get_npx_path;
+            const execute_install_browser_response = await execute_command({title:"npx-install",command:`"${npx_path}" puppeteer browsers install firefox@stable`,cwd:extension_dir})
+            if (execute_install_browser_response.stderr.trim()) {
+                await write_crash_log(`[check_extension_packages] npx install: ${JSON.stringify({code: 500, message: execute_install_browser_response.stderr})}`);
+                reject({code: 500, message: execute_install_browser_response.stderr});
+                console.error({code: 500, message: execute_install_browser_response.stderr});
+            }
+            const path_result = execute_install_browser_response.stdout.trim().split("\n")[1].split(" ");
+            path_result.shift();
+            const browser_path = path_result.join(" ").trim();
+
+            resolve({code: 200, message: 'OK', data: {browser_path}});
         })
         setProgress({state:false,value:0})
 

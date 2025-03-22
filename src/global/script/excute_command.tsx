@@ -19,7 +19,6 @@ const execute_command:any = async ({title="run",command,cwd=""}:any) => {
         ],{cwd:workspace}).execute();
 
         await remove(executor_path, {baseDir:BaseDirectory.AppData}).catch(e=>{console.error(e)});
-        console.log(result.stdout);
         return result;
 
     }
