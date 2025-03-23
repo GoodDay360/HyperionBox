@@ -29,11 +29,12 @@ import "../../global/styles/global.css";
 import styles from "../styles/main.module.css";
 
 // Custom Import
-import load_config_options from '../../global/script/load_config_options';
-import { check_fullscreen, check_resize } from '../../global/script/keys_event_listener';
+import load_config_options from '../scripts/load_config_options';
+import { check_fullscreen, check_resize } from '../scripts/keys_event_listener';
+import initiate_extension from '../scripts/initiate_extension';
 
 // Context Imports
-import global_context from '../../global/script/contexts';
+import global_context from '../../global/scripts/contexts';
 
 
 // Components Import
@@ -65,12 +66,16 @@ function App() {
 		// navigate("/preview/hianime/good-bye-dragon-life-19347")
 	},[menu])
 
+	const is_run = useRef<boolean>(false);
 	useEffect(()=>{
 		if (!app_ready) return;
+		if (is_run.current) return
+		is_run.current = true;
 		(async ()=>{
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
+			await initiate_extension();
 			set_menu({state:true,path:"explore"});
 			
 		})();

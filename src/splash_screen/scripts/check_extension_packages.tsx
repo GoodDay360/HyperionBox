@@ -3,11 +3,11 @@ import { BaseDirectory, exists, mkdir} from '@tauri-apps/plugin-fs';
 
 // import JSZip from 'jszip';
 
-import download_file_in_chunks from '../../global/script/download_file_in_chunk';
-import get_npm_path from '../../global/script/node/get_npm_path';
-import get_npx_path from '../../global/script/node/get_npx_path';
-import execute_command from '../../global/script/excute_command';
-import write_crash_log from '../../global/script/write_crash_log';
+import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
+import get_npm_path from '../../global/scripts/node/get_npm_path';
+import get_npx_path from '../../global/scripts/node/get_npx_path';
+import execute_command from '../../global/scripts/excute_command';
+import write_crash_log from '../../global/scripts/write_crash_log';
 
 const chunkSize = 6 * 1024 * 1024; 
 

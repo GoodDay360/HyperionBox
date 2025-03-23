@@ -3,10 +3,10 @@ import { path } from '@tauri-apps/api';
 import { BaseDirectory, readDir, exists, remove, mkdir} from '@tauri-apps/plugin-fs';
 
 // import JSZip from 'jszip';
-import get_7z_path from '../../global/script/get_7z_path';
-import download_file_in_chunks from '../../global/script/download_file_in_chunk';
-import execute_command from '../../global/script/excute_command';
-import copy_recursive from '../../global/script/copy_recursive';
+import get_7z_path from '../../global/scripts/get_7z_path';
+import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
+import execute_command from '../../global/scripts/excute_command';
+import copy_recursive from '../../global/scripts/copy_recursive';
 
 const chunkSize = 6 * 1024 * 1024; 
 

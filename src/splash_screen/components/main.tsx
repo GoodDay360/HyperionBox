@@ -22,10 +22,10 @@ import styles from "../styles/main.module.css";
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
 import check_extension_packages from '../scripts/check_extension_packages';
-import { read_config, write_config } from '../../global/script/manage_config';
+import { read_config, write_config } from '../../global/scripts/manage_config';
 
 // Context Imports
-import global_context from '../../global/script/contexts';
+import global_context from '../../global/scripts/contexts';
 
 
 

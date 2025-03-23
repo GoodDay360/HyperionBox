@@ -1,46 +1,34 @@
-import execute_command from "../../global/script/excute_command";
-import get_node_path from "../../global/script/node/get_node_path";
-import get_extension_directory from "../../global/script/get_extension_directory";
-
 // Tauri Imports
-import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { path } from '@tauri-apps/api';
+import { fetch } from '@tauri-apps/plugin-http';
 
 // Custom Imports
-import { read_config } from "../../global/script/manage_config";
+import { read_config } from "../../global/scripts/manage_config";
+import get_node_path from "../../global/scripts/node/get_node_path";
+import get_extension_directory from "../../global/scripts/get_extension_directory";
 
 const get_list = async ({source_id, search}:{source_id:string,search:string}) => {
     return await new Promise<any>(async (resolve, reject) => {
         const config = await read_config();
-        const LOG_DIR = await path.join(await path.appDataDir(), "log", "extension")
-        const command = [
-            `"${await get_node_path}"`, `"${await path.join(await get_extension_directory, "route.js")}"`,
-            "--source", `"${source_id}"`,
-            "--method", '"get_list"',
-            "--search", `"${search}"`,
-            "--log_output_dir", `"${LOG_DIR}"`,
-            "--browser_path", `"${config.bin.browser_path}"`
-        ].join(" ")
-
-        const excute_result = await execute_command({command:command, title:"get_list"})
-        if (excute_result.stderr){
-            reject({code:500, message:excute_result.stderr});
-        }else{
-            readTextFile(await path.join(LOG_DIR, "get_list_result.json"), {baseDir:BaseDirectory.AppData})
-            .then((res) => {
-                try{    
-                    const result = JSON.parse(res)
-                    if (result.status.code !== 200) {
-                        reject({code:500, message:`[Error] Failed to get list for source ${source_id}`});
-                    }else{
-                        resolve({code:200, message:"OK", response:result});
-                    }
-                }catch(e){
-                    reject({code:500, message:e});
-                }
-            })
+        const body = {
+            "browser_path": config.bin.browser_path,
+            "source": source_id,
+            "method": "get_list",
+            "search": search,
         }
         
+        fetch('https://api.example.com/data', {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+            'Content-Type': 'application/json',
+            },
+        }).then((res:any) => {
+            console.log(res.json())
+            resolve(res.json());
+        }).catch((e:any) => {
+            reject({code:500, message:e});
+        })
     })
 }
 

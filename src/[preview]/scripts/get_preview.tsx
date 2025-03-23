@@ -1,6 +1,6 @@
-import execute_command from "../../global/script/excute_command";
-import get_node_path from "../../global/script/node/get_node_path";
-import get_extension_directory from "../../global/script/get_extension_directory";
+import execute_command from "../../global/scripts/excute_command";
+import get_node_path from "../../global/scripts/node/get_node_path";
+import get_extension_directory from "../../global/scripts/get_extension_directory";
 
 // Tauri Imports
 import { readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';

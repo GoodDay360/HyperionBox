@@ -5,7 +5,7 @@ import { BaseDirectory, exists, remove, mkdir, open, writeFile} from '@tauri-app
 
 import JSZip from 'jszip';
 
-import download_file_in_chunks from '../../global/script/download_file_in_chunk';
+import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
 
 
 const chunkSize = 6 * 1024 * 1024; 

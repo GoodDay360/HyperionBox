@@ -16,7 +16,7 @@ import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Custom Imports
-import {request_tag_data, request_create_tag, request_rename_tag, request_delete_tag} from '../script/request_manage_tag';
+import {request_tag_data, request_create_tag, request_rename_tag, request_delete_tag} from '../scripts/request_manage_tag';
 
 // Styles
 import styles from "../styles/manage_tag_widget.module.css";

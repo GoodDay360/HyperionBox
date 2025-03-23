@@ -1,5 +1,5 @@
 import { getCurrentWindow, currentMonitor, LogicalSize } from "@tauri-apps/api/window"
-import { read_config, write_config } from "./manage_config";
+import { read_config, write_config } from "../../global/scripts/manage_config";
 export const check_fullscreen = async ({fullscreen_snackbar, set_fullscreen_snackbar}:any) => {
     document.addEventListener('keydown', async function(event) {
         const config = await read_config();

@@ -19,8 +19,8 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Custom Import
 import get_list from "../scripts/get_list";
-import { get_installed_sources } from "../../global/script/manage_extension_sources";
-import write_crash_log from "../../global/script/write_crash_log";
+import { get_installed_sources } from "../../global/scripts/manage_extension_sources";
+import write_crash_log from "../../global/scripts/write_crash_log";
 
 
 const Explore = () => {

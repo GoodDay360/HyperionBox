@@ -31,8 +31,8 @@ import ManageTagWidget from '../../global/components/manage_tag_widget';
 
 // Custom Imports
 import styles from "../styles/main.module.css";
-import global_context from '../../global/script/contexts';
-import { request_tag_data } from '../../global/script/request_manage_tag';
+import global_context from '../../global/scripts/contexts';
+import { request_tag_data } from '../../global/scripts/request_manage_tag';
 
 
 function Watchlist() {

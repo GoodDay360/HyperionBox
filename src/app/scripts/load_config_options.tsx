@@ -1,6 +1,6 @@
 
 import { getCurrentWindow, currentMonitor, LogicalSize } from "@tauri-apps/api/window";
-import { read_config } from "./manage_config";
+import { read_config } from "../../global/scripts/manage_config";
 const load_config_options = async () => {
     const config = await read_config();
     if (!config.options) config.options = {};

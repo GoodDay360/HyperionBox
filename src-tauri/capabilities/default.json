@@ -15,9 +15,26 @@
     "core:window:allow-maximize",
     "core:window:allow-set-fullscreen",
     "core:window:allow-center",
+    "core:window:allow-destroy",
     "opener:default",
     "log:default",
     "shell:default",
+    "shell:allow-kill",
+    {
+      "identifier":  "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "windows-shell",
+          "cmd": "cmd.exe",
+          "args": [
+            "/c",
+            {
+              "validator": "^.*$"
+            }
+          ]
+        }
+      ]
+    },
     {
       "identifier": "shell:allow-execute",
       "allow": [
