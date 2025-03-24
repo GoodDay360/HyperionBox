@@ -1,2 +1,2 @@
 # HyperionBox
-Fast rapid peer-to-peer animes/movies streaming app that support watch progress and download.
+Fast animes/movies streaming app that support watch progress and download for many sources.

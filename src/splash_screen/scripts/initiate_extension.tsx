@@ -19,13 +19,20 @@ await getCurrentWindow().onCloseRequested(async (event) => {
         const result = await execute_command({command:command, title:"get_extension_pid"});
         const lines = result.stdout.trim().split('\n');
 
-        const lastLine = lines.reverse().find((line:any) => line.includes('LISTENING'));
-        if (lastLine) {
-            const match_result:any = lastLine.match(/\b\d+\b$/);
-            if (match_result) pid = match_result[0];
+        for (const line of lines.reverse()){
+            const validOptions = ['LISTENING'];
+            for (const option of validOptions) {
+                if (line.includes(option)) {
+                    pid = line.trim().split(/\s+/).at(-1);
+                    console.log(line.trim().split(/\s+/))
+                    console.log(pid);
+                    const kill_command = `taskkill /PID ${pid} /F`;
+                    console.log(kill_command)
+                    await execute_command({command:kill_command, title:"kill_extension_process"});
+                    break
+                };
+            }
         }
-        const kill_command = `taskkill /PID ${pid} /F`;
-        await execute_command({command:kill_command, title:"kill_extension_process"});
     }
 });
 
@@ -46,8 +53,11 @@ const initiate_extension = async () => {
 
     const max_check = 10
     let current_check = 0;
-    const get_port = () => new Promise(async (resolve, reject) => {
-        if (current_check >= max_check) reject(0)
+    const get_port = () => new Promise(async (resolve) => {
+        if (current_check >= max_check) {
+            resolve(0);
+            return;
+        }
         if (!(await exists(log_path))) {
             setTimeout(async () => {resolve(await get_port())}, 1000);
             current_check += 1;
@@ -65,8 +75,10 @@ const initiate_extension = async () => {
         })
     })
     port = await get_port();
-    if (port) return {code:200, message:"OK", port:port};
-    else {
+    if (port) {
+        sessionStorage.setItem("extension_port", port);
+        return {code:200, message:"OK", port:port}
+    }else {
         console.error({code:500, message:"Failed to initiate extension"})
         return {code:500, message:"Failed to initiate extension"}
     }

@@ -31,7 +31,6 @@ import styles from "../styles/main.module.css";
 // Custom Import
 import load_config_options from '../scripts/load_config_options';
 import { check_fullscreen, check_resize } from '../scripts/keys_event_listener';
-import initiate_extension from '../scripts/initiate_extension';
 
 // Context Imports
 import global_context from '../../global/scripts/contexts';
@@ -63,7 +62,6 @@ function App() {
 
 	useEffect(()=>{
 		navigate(`/${menu.path}`);
-		// navigate("/preview/hianime/good-bye-dragon-life-19347")
 	},[menu])
 
 	const is_run = useRef<boolean>(false);
@@ -75,8 +73,7 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			await initiate_extension();
-			set_menu({state:true,path:"explore"});
+			set_menu({state:true,path:"preview/hianime/good-bye-dragon-life-19347"});
 			
 		})();
 	},[app_ready])
@@ -154,6 +151,7 @@ function App() {
 					<Route path="/explore/*" element={<Explore/>} />
 					<Route path="/preview/:source_id/:preview_id" element={<Preview/>} />
 				</Routes>
+				{/* Fullscreen event listener snackbar */}
 				<Snackbar 
 					open={fullscreen_snackbar.state} 
 					autoHideDuration={6000} 
@@ -169,6 +167,7 @@ function App() {
 						{fullscreen_snackbar.text}
 					</Alert>
 				</Snackbar>
+				{/* ================ */}
 			</div>
 		</global_context.Provider>
 		

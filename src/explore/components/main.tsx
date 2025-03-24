@@ -66,14 +66,14 @@ const Explore = () => {
                             cancel_search.current = false;
                             break;
                         }
-                        const result = await get_list({source_id:source.id, search:search});
-                        if (result.code === 200){
-                            if (!result.response.data?.length) continue;
+                        const request = await get_list({source_id:source.id, search:search});
+                        if (request.code === 200){
+                            if (!request.result.data?.length) continue;
                             data[source.id] = {
                                 title: source.title,
-                                data: result.response.data,
-                                max_page: result.response.max_page,
-                                status: result.response.status,
+                                data: request.result.data,
+                                max_page: request.result.max_page,
+                                status: request.result.status,
                             };
                         }
                     }

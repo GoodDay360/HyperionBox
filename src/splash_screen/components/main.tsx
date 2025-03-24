@@ -22,10 +22,12 @@ import styles from "../styles/main.module.css";
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
 import check_extension_packages from '../scripts/check_extension_packages';
+import initiate_extension from '../scripts/initiate_extension';
 import { read_config, write_config } from '../../global/scripts/manage_config';
 
 // Context Imports
 import global_context from '../../global/scripts/contexts';
+import { color } from 'framer-motion';
 
 
 
@@ -39,6 +41,7 @@ function Splash_Screen() {
     const [progress, setProgress] = useState<any>({state:false,value:0})
 
     const { set_app_ready } = useContext<any>(global_context);
+
 
     useEffect(()=>{
         if(run_state.current) return;
@@ -126,7 +129,14 @@ function Splash_Screen() {
             }
             setFeedback({text:`Download extension_packages successfully.`})
 
-            setFeedback({text:"Launching..."})
+            // setFeedback({text:`Initiating extension...`})
+            // const intiate_result = await initiate_extension();
+            // if (intiate_result?.code !== 200) {
+            //     setFeedback({text:`Initiating extension failed.`,color:"red"})
+            //     run_state.current = false
+            //     return
+            // }
+            // setFeedback({text:"Launching..."})
             
             await getCurrentWindow().setMaximizable(true);
             await getCurrentWindow().setResizable(true);

@@ -23,7 +23,7 @@
     "@tauri-apps/plugin-shell": "^2.2.0",
     "@tauri-apps/plugin-sql": "^2.2.0",
     "@types/react-lazy-load-image-component": "^1.6.4",
-    "axios": "^1.8.2",
+    "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
     "bundle": "file:C:/Users/User/AppData/Roaming/com.hyperionbox.app/extensions",
     "dayjs": "^1.11.13",

@@ -88,9 +88,7 @@
     {
       "identifier": "http:default",
       "allow": [
-        {
-          "url": "https://**/*"
-        }
+        {"url": "https://**"}
       ],
       "deny": []
     },
