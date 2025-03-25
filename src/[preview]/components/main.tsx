@@ -9,8 +9,9 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import ListItemText from '@mui/material/ListItemText';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
+import Pagination from '@mui/material/Pagination';
 
 // MUI Icons
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
@@ -38,6 +39,7 @@ const Preview = () => {
 
     const [selected_tag, set_selected_tag] = useState<any>([]);
     const [show_more_info, set_show_more_info] = useState<boolean>(false)
+    const [current_page, set_current_page] = useState<number>(1);
 
 
     const is_run = useRef<boolean>(false);
@@ -57,7 +59,7 @@ const Preview = () => {
             if (request_preview_result.code === 200) {
                 SET_INFO(request_preview_result.result.info);
                 SET_STATS(request_preview_result.result.stats);
-                SET_EPISODE_DATA(request_preview_result.result.episode_data);
+                SET_EPISODE_DATA(request_preview_result.result.episodes);
             }
         })();
         
@@ -84,6 +86,10 @@ const Preview = () => {
             </div>
         )
     },[STATS])
+
+    const EPISODE_BOX_COMPONENT = useCallback(({item_key}:any)=>{
+        
+    },[EPISODE_DATA])
 
     return (
         <div className={styles.container}>
@@ -206,7 +212,7 @@ const Preview = () => {
                                 }}
                             >
                                 <span className={styles.stats_text}>
-                                    Source: {source_id}
+                                    SOURCE: {source_id}
                                 </span>
                             </div>
                             
@@ -317,6 +323,42 @@ const Preview = () => {
                         }</>
                     </div>
 
+                </div>
+                <div className={styles.body_box_3}>
+                    <>{EPISODE_DATA?.length 
+                        ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(<Fragment key={index}>
+                            <ButtonBase
+                                style={{
+                                    borderRadius:"12px",
+                                    background:"var(--background-color)",
+                                    color:"var(--color)",
+                                    display:"flex",
+                                    alignItems:"center",
+                                    justifyContent:"flex-start",
+                                    padding:"12px",
+                                    border:"2px solid var(--background-color-layer-1)",
+                                    fontFamily: "var(--font-family-medium)",
+                                    fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
+                                }}
+                            >
+                                <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.ep}: </span>{item.title}</span>
+                            </ButtonBase>
+                        </Fragment>))}</>
+                        : <></>
+                    }</>
+                </div>
+                <div className={styles.body_box_4}>
+                    <Pagination count={EPISODE_DATA.length} page={current_page} color="primary" showFirstButton showLastButton
+                        sx={{
+                            ul: {
+                                "& .MuiPaginationItem-root": {
+                                    color:"var(--color)",
+                                }
+                            }
+                        }}
+                        onChange={(event, page:number)=>{set_current_page(page)}}
+                    />
+                    
                 </div>
             </div>
         </div>

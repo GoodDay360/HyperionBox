@@ -83,3 +83,29 @@
     flex-direction: column;
     gap:12px;
 }
+
+.body_box_3{
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap:12px;
+    margin-top: 25px;
+    border-radius: 12px;
+    border-top: 5px solid var(--background-color-layer-1);
+    border-bottom: 5px solid var(--background-color-layer-1);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+    box-sizing: border-box;
+    height: calc((100vw + 100vh) * 0.4 / 2);
+    overflow: auto;
+}
+.body_box_3 > * {
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+.body_box_4{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding:18px
+}
