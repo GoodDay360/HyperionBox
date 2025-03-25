@@ -87,9 +87,6 @@ const Preview = () => {
         )
     },[STATS])
 
-    const EPISODE_BOX_COMPONENT = useCallback(({item_key}:any)=>{
-        
-    },[EPISODE_DATA])
 
     return (
         <div className={styles.container}>
@@ -356,7 +353,7 @@ const Preview = () => {
                                 }
                             }
                         }}
-                        onChange={(event, page:number)=>{set_current_page(page)}}
+                        onChange={(_, page:number)=>{set_current_page(page)}}
                     />
                     
                 </div>
