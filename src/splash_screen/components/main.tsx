@@ -13,7 +13,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
 
 // Import assets
-import Icon from "../../assets/icons/icon.png"
+import Icon from "../../assets/images/icon.png"
 
 // Import styles
 import styles from "../styles/main.module.css";
@@ -129,14 +129,14 @@ function Splash_Screen() {
             }
             setFeedback({text:`Download extension_packages successfully.`})
 
-            // setFeedback({text:`Initiating extension...`})
-            // const intiate_result = await initiate_extension();
-            // if (intiate_result?.code !== 200) {
-            //     setFeedback({text:`Initiating extension failed.`,color:"red"})
-            //     run_state.current = false
-            //     return
-            // }
-            // setFeedback({text:"Launching..."})
+            setFeedback({text:`Initiating extension...`})
+            const intiate_result = await initiate_extension();
+            if (intiate_result?.code !== 200) {
+                setFeedback({text:`Initiating extension failed.`,color:"red"})
+                run_state.current = false
+                return
+            }
+            setFeedback({text:"Launching..."})
             
             await getCurrentWindow().setMaximizable(true);
             await getCurrentWindow().setResizable(true);

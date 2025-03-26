@@ -21,6 +21,7 @@
     background: var(--background-color);
     justify-content: space-between;
     box-sizing: border-box;
+    align-items: center;
 }
 
 .body{
@@ -31,6 +32,7 @@
     padding: 18px;
     background: var(--background-color);
     box-sizing: border-box;
+    
 }
 
 .body_box_1{
@@ -95,7 +97,7 @@
     border-bottom: 5px solid var(--background-color-layer-1);
     box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
     box-sizing: border-box;
-    height: calc((100vw + 100vh) * 0.4 / 2);
+    max-height: calc((100vw + 100vh) * 0.4 / 2);
     overflow: auto;
 }
 .body_box_3 > * {

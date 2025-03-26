@@ -12,7 +12,7 @@ async function setupDatabase(): Promise<void> {
                 title TEXT NOT NULL,
                 description TEXT,
                 version TEXT,
-                install_date TEXT DEFAULT (DATETIME('now'))
+                datetime DATETIME DEFAULT CURRENT_TIMESTAMP 
             )
         `);
         console.log('Database and table setup complete!');

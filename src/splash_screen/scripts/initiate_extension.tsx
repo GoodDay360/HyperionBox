@@ -8,35 +8,27 @@ import { readTextFile, exists, BaseDirectory, mkdir, remove } from '@tauri-apps/
 import execute_command from "../../global/scripts/excute_command"
 import get_extension_directory from "../../global/scripts/get_extension_directory"
 import get_node_path from "../../global/scripts/node/get_node_path"
+import release_port from '../../global/scripts/release_port';
+import { read_config, write_config } from '../../global/scripts/manage_config';
 
 let port:any = null;
 let executor:any;
-await getCurrentWindow().onCloseRequested(async (event) => {
+await getCurrentWindow().onCloseRequested(async () => {
     executor.kill();
-    let pid = null;
     if (port){
-        const command = `netstat -ano | findstr :${port}`;
-        const result = await execute_command({command:command, title:"get_extension_pid"});
-        const lines = result.stdout.trim().split('\n');
-
-        for (const line of lines.reverse()){
-            const validOptions = ['LISTENING'];
-            for (const option of validOptions) {
-                if (line.includes(option)) {
-                    pid = line.trim().split(/\s+/).at(-1);
-                    console.log(line.trim().split(/\s+/))
-                    console.log(pid);
-                    const kill_command = `taskkill /PID ${pid} /F`;
-                    console.log(kill_command)
-                    await execute_command({command:kill_command, title:"kill_extension_process"});
-                    break
-                };
-            }
-        }
+        await release_port(port)
     }
 });
 
 const initiate_extension = async () => {
+    const config = await read_config();
+    if (!config.extension_port){
+        config.exstension_port = 49152;
+        await write_config(config);
+    };
+
+    await release_port(config.exstension_port);
+
     const extension_directory = await get_extension_directory;
     const node_path = await get_node_path;
     const extension_log_dir = await path.join(await path.appDataDir(), "log", "extension")
@@ -46,7 +38,8 @@ const initiate_extension = async () => {
     const route_path = await path.join(extension_directory, "route.js");
     const command = [
         `"${node_path}"`, `"${route_path}"`,
-        "--log_path", `"${log_path}"`
+        "--log_path", `"${log_path}"`,
+        "--port", `"${config.exstension_port}"`
     ].join(" ")
 
     executor = await execute_command({command:command, title:"initiate_extension",wait:false},{cwd:extension_directory});

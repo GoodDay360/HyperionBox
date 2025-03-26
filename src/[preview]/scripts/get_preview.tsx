@@ -28,23 +28,23 @@ const get_preview = async ({source_id,preview_id}:{source_id:string,preview_id:s
             "preview_id": preview_id,
         }
         console.log(`http://localhost:${port}/request_extension`)
-        // axios({
-        //     method: 'POST',
-        //     url: `http://localhost:${port}/request_extension`,
-        //     data: body,
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     },
-        // }).then((res: any) => {
-        //     resolve(res.data);
-        //     console.log(res.data);
-        // }).catch((e: any) => {
-        //     reject({ code: 500, message: e });
-        // });
+        axios({
+            method: 'POST',
+            url: `http://localhost:${port}/request_extension`,
+            data: body,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }).then((res: any) => {
+            resolve(res.data);
+            console.log(res.data);
+        }).catch((e: any) => {
+            resolve({ code: 500, message: e });
+        });
 
-        readTextFile(await path.join(await path.appDataDir(), "log", "extension", "get_preview_result.json"), {baseDir:BaseDirectory.AppData})
-        .then((res) => {resolve(JSON.parse(res))})
-        .catch((e) => {reject({ code: 500, message: e });});
+        // readTextFile(await path.join(await path.appDataDir(), "log", "extension", "get_preview_result.json"), {baseDir:BaseDirectory.AppData})
+        // .then((res) => {resolve(JSON.parse(res))})
+        // .catch((e) => {reject({ code: 500, message: e });});
         
     })
 }
