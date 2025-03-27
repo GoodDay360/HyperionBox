@@ -3,10 +3,11 @@ import { fetch } from '@tauri-apps/plugin-http';
 
 async function download_file_in_chunks({
     url = "",
-    chunkSize = 1024 * 1024,
+    chunkSize = 3 * 1024 * 1024,
     output_file = "",
     callback = () => {}
 }: any): Promise<any> {
+    console.log(url)
     let start = 0;
     try {
         if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)})

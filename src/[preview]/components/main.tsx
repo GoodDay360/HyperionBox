@@ -117,6 +117,17 @@ const Preview = () => {
             SET_INFO(request_preview_result.result.info);
             SET_STATS(request_preview_result.result.stats);
             SET_EPISODE_DATA(request_preview_result.result.episodes);
+            if (mode === "udpate") {
+                await save_local_preview({
+                    source_id,preview_id,
+                    data:{
+                        info:request_preview_result.result.info,
+                        stats:request_preview_result.result.stats,
+                        episodes:request_preview_result.result.episodes,
+                    }
+                });
+            }
+            
         }else if (mode === "get") {
             set_is_error({state:true,message:"Failed to request source."});
             return;
@@ -140,7 +151,12 @@ const Preview = () => {
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
-                await get_data({mode:"update"});
+                try{
+                    await get_data({mode:"update"});
+                }catch{()=>{
+                    set_is_ready(true);
+                }}
+                
             }else{
                 await get_data({mode:"get"});
             }
@@ -292,7 +308,7 @@ const Preview = () => {
                                     >
                                         <LazyLoadImage
                                             style={{width:"100%",height:"100%",borderRadius:"inherit"}}
-                                            src={INFO.cover}
+                                            src={INFO.local_cover || INFO.cover}
                                         />
                                         <div className={styles.cover_overlay}>
                                             <div

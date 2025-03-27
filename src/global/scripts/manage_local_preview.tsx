@@ -1,5 +1,7 @@
 import { writeTextFile, readTextFile, exists, mkdir, BaseDirectory, remove } from "@tauri-apps/plugin-fs"
 import { path } from "@tauri-apps/api"
+import download_file_in_chunks from "./download_file_in_chunk"
+import { convertFileSrc } from '@tauri-apps/api/core';
 
 export const get_local_preview = async ({source_id,preview_id}:{source_id:string,preview_id:string}) => {
     const DATA_DIR = await path.join(await path.appDataDir(), "data")
@@ -10,7 +12,10 @@ export const get_local_preview = async ({source_id,preview_id}:{source_id:string
     if (await exists(manifest_path)){
         try{
             manifest_data = JSON.parse(await readTextFile(manifest_path, {baseDir:BaseDirectory.AppData}))
-            console.log("DDDD", manifest_data)
+            
+            const cover_path = await path.join(preview_dir,"cover.jpg")
+            if (await exists(cover_path)) manifest_data.data.info.local_cover = convertFileSrc(await path.join(preview_dir,"cover.jpg"))
+            console.log("LOCAL", manifest_data)
             return {code:200,result:manifest_data}
         }catch{
             return {code:404,message:"Eror parsing json. This treat as not exist."}
@@ -38,6 +43,8 @@ export const save_local_preview = async ({source_id,preview_id,data}:{source_id:
         manifest_data = {}
     }
     manifest_data.data = data
+    await download_file_in_chunks({url:data.info.cover, output_file: await path.join(preview_dir,"cover.jpg")})
+    
     await writeTextFile(manifest_path,JSON.stringify(manifest_data), {baseDir:BaseDirectory.AppData, create:true}).catch((e)=>{console.error(e)})
 }
 

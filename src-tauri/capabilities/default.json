@@ -21,7 +21,7 @@
     "shell:default",
     "shell:allow-kill",
     {
-      "identifier":  "shell:allow-spawn",
+      "identifier": "shell:allow-spawn",
       "allow": [
         {
           "name": "windows-shell",
@@ -88,11 +88,14 @@
     {
       "identifier": "http:default",
       "allow": [
-        {"url": "https://**"}
+        {
+          "url": "https://**"
+        }
       ],
       "deny": []
     },
     "sql:default",
-    "sql:allow-execute"
+    "sql:allow-execute",
+    "http:default"
   ]
 }

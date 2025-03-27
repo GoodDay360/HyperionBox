@@ -10,14 +10,22 @@ import get_extension_directory from "../../global/scripts/get_extension_director
 import get_node_path from "../../global/scripts/node/get_node_path"
 import release_port from '../../global/scripts/release_port';
 import { read_config, write_config } from '../../global/scripts/manage_config';
+import write_crash_log from '../../global/scripts/write_crash_log';
 
 let port:any = null;
 let executor:any;
 await getCurrentWindow().onCloseRequested(async () => {
-    executor.kill();
-    if (port){
-        await release_port(port)
-    }
+    try{
+        executor.kill();
+        if (port){
+            await release_port(port)
+        }
+    }catch{(e:any)=>{
+        console.error(e)
+        write_crash_log(`[Mode:STRING] ${e}`);
+        write_crash_log(`[Mode:JSON] ${JSON.stringify(e)}`);
+    }}
+    
 });
 
 const initiate_extension = async () => {
