@@ -32,7 +32,6 @@ import get_preview from "../scripts/get_preview";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags } from "../../global/scripts/manage_tag";
 import { get_local_preview, save_local_preview, remove_local_preview} from "../../global/scripts/manage_local_preview";
-import { error } from "console";
 
 
 const Preview = () => {
@@ -217,7 +216,7 @@ const Preview = () => {
                                     if (window.history.state && window.history.state.idx > 0) {
                                         navigate(-1);
                                     } else {
-                                        console.log("No history to go back to");
+                                        console.error("No history to go back to");
                                     }
                                 }}
                             >
@@ -235,7 +234,13 @@ const Preview = () => {
                                 <>{is_update.error
                                     ? <>
                                         <Tooltip title={is_update.message}>
-                                            <ErrorOutlineRoundedIcon color="error" fontSize="medium"/>
+                                            <IconButton color="error" size="large"
+                                                onClick={async ()=>{
+                                                    await get_data({mode:"update"});
+                                                }}
+                                            >
+                                                <ErrorOutlineRoundedIcon color="error" fontSize="medium"/>
+                                            </IconButton>
                                         </Tooltip>
                                     </>
                                     : <>{is_update.state
@@ -243,7 +248,14 @@ const Preview = () => {
                                             <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.05/2)"/>
                                         </Tooltip>
                                         : <Tooltip title="Up-to-date">
-                                            <PublishedWithChangesRoundedIcon color="success" fontSize="medium"/>
+                                            <IconButton color="primary" size="large"
+                                                onClick={async ()=>{
+                                                    await get_data({mode:"update"});
+                                                }}
+                                            >
+                                                <PublishedWithChangesRoundedIcon color="success" fontSize="large"/>
+                                            </IconButton>
+                                            
                                         </Tooltip>
     
                                     }</>                         
@@ -497,7 +509,7 @@ const Preview = () => {
                                                 fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
                                             }}
                                         >
-                                            <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.ep}: </span>{item.title}</span>
+                                            <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
                                         </ButtonBase>
                                     </Fragment>))}</>
                                     : <></>

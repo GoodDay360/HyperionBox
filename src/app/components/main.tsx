@@ -73,7 +73,7 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			set_menu({state:true,path:"preview/hianime/good-bye-dragon-life-19347"});
+			set_menu({state:true,path:"watchlist"});
 			
 		})();
 	},[app_ready])

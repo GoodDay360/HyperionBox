@@ -8,10 +8,10 @@ import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 
 // React Imports
 import { useDraggable } from "react-use-draggable-scroll";
-import { useEffect, useState, useRef, useContext } from 'react';
+import { useEffect, useState, useRef, useContext, useCallback, FC } from 'react';
 
-// React Virtualized Imports
-// import { List } from 'react-virtualized';
+// Lazy Images Imports
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // MUI Imports
 import { ButtonBase, Button, Tooltip } from '@mui/material';
@@ -21,7 +21,7 @@ import Fab from '@mui/material/Fab';
 import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
-
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
 
 // Framer motion Imports
 import { AnimatePresence } from 'framer-motion';
@@ -33,12 +33,13 @@ import ManageTagWidget from '../../global/components/manage_tag_widget';
 import styles from "../styles/main.module.css";
 import global_context from '../../global/scripts/contexts';
 import { request_tag_data } from '../../global/scripts/manage_tag';
+import request_content_from_tag from '../scripts/request_content_from_tag';
 
 
 function Watchlist() {
     const {app_ready, set_app_ready} = useContext<any>(global_context);
 
-    const tag_container_ref:any = useRef();
+    const tag_container_ref:any = useRef({});
     const { events } = useDraggable(tag_container_ref); 
 
 
@@ -46,6 +47,13 @@ function Watchlist() {
     const [selected_tag, set_selected_tag] = useState<string>("");
     const [widget, set_widget] = useState<string>("");
 
+    useEffect(()=>{
+        if (!app_ready || !selected_tag) return;
+        (async ()=>{
+            const result = await request_content_from_tag({tag_name:selected_tag,page:1});
+            console.log(result)
+        })();
+    },[selected_tag])
 
     const isRun = useRef<boolean>(false);
     useEffect(()=>{
@@ -56,13 +64,26 @@ function Watchlist() {
             if (result.code === 200){
                 set_tag_data(result.data);
                 if (result.data.length) set_selected_tag(result.data[0]);
-            }
+            }else return;
             
             
             isRun.current = false;
         })();
         return;
     },[app_ready])
+
+    const RenderItem:any = useCallback((item:any, index:number) => {
+        
+        return (<div>
+            <ButtonBase className={styles.cover_box}          
+            >
+                <LazyLoadImage className={styles.cover}
+                    src='https://static0.srcdn.com/wordpress/wp-content/uploads/2024/01/solo-leveling-tv-series-poster.jpg'
+                />
+
+            </ButtonBase>
+        </div>)
+    },[])
 
     return (<>
         <div className={styles.container}>
@@ -122,12 +143,34 @@ function Watchlist() {
                     </ButtonBase>
                 </Tooltip>
             </div>
+            <div className={styles.body}>
+                <div className={styles.body_box_1}>
+
+                    
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                    <RenderItem/>
+                </div>
+            </div>
             <div className={styles.action_button_container}>
-                <Tooltip title="Create tag" placement='left'>
+                <Tooltip title="Manage tag" placement='left'>
                     <Fab color='primary' size='small' style={{zIndex:1}}
                         onClick={()=>{set_widget("manage_tag")}}
                     >
-                        <AddRoundedIcon />
+                        <EditRoundedIcon />
                     </Fab>
                 </Tooltip>
             </div>
