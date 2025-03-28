@@ -22,7 +22,8 @@
         "default-src": "'self' customprotocol: asset:",
         "style-src": "'self' 'unsafe-inline';",
         "connect-src": "*;",
-        "img-src": "*"
+        "img-src": "*",
+        "media-src": "*"
       },
       "assetProtocol": {
         "enable": true,
