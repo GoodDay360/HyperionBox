@@ -30,8 +30,12 @@ export const request_create_tag = async ({tag_name}:any)=> {
     if (checkResult.length === 0) {
         const createQuery = `
             CREATE TABLE "${tableName}" ( 
-                source_id TEXT,
-                preview_id TEXT, 
+                source_id TEXT NOT NULL,
+                preview_id TEXT NOT NULL, 
+                title TEXT NOT NULL, 
+                cover TEXT NOT NULL,
+                watch_timeline INT DEFAULT 0,
+                current_episode INT DEFAULT 0,
                 datetime DATETIME DEFAULT CURRENT_TIMESTAMP 
             )
         `;
@@ -99,7 +103,14 @@ export const request_delete_tag = async ({
     }
 };
 
-export const request_add_to_tag = async ({ tag_name, source_id, preview_id }: any) => {
+export const request_add_to_tag = async ({ tag_name, source_id, preview_id, title, cover }
+    :{
+        tag_name: string,
+        title: string,
+        cover: string,
+        source_id: string,
+        preview_id: string
+    }) => {
     // Validate the input
     if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) {
         return { code: 500, message: `Invalid tag name format.` };
@@ -138,12 +149,12 @@ export const request_add_to_tag = async ({ tag_name, source_id, preview_id }: an
 
     // Add the item to the tag (table)
     const insertQuery = `
-        INSERT INTO "${tag_name}" (source_id, preview_id, datetime)
-        VALUES ($1, $2, CURRENT_TIMESTAMP)
+        INSERT INTO "${tag_name}" (source_id, preview_id, title, cover, datetime)
+        VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
     `;
 
     try {
-        await db.execute(insertQuery, [source_id, preview_id]);
+        await db.execute(insertQuery, [source_id, preview_id, title, cover]);
         console.log(`Item added to tag "${tag_name}" successfully.`);
         return { code: 200, message: `Item added to tag "${tag_name}" successfully.` };
     } catch (error) {
@@ -152,6 +163,71 @@ export const request_add_to_tag = async ({ tag_name, source_id, preview_id }: an
     }
 };
 
+export const request_update_tag = async ({
+    tag_name,
+    source_id,
+    preview_id,
+    title,
+    cover,
+    watch_timeline,
+    current_episode,
+}: {
+    tag_name: string;
+    source_id: string;
+    preview_id: string;
+    title: string; // Required
+    cover: string; // Required
+    watch_timeline?: number; // Optional
+    current_episode?: number; // Optional
+}) => {
+    if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) {
+    return { code: 500, message: `Invalid tag name format.` };
+    }
+
+    // Validate required fields
+    if (!title || !cover) {
+    return { code: 500, message: `Both "title" and "cover" are required fields.` };
+    }
+
+    // Load the database
+    const db = await Database.load('sqlite:watchlist.db');
+
+    // Prepare the UPDATE query
+    let updateFields = [`title = ?`, `cover = ?`];
+    let values: any[] = [title, cover];
+
+    if (watch_timeline !== undefined) {
+    updateFields.push(`watch_timeline = ?`);
+    values.push(watch_timeline);
+    }
+    if (current_episode !== undefined) {
+    updateFields.push(`current_episode = ?`);
+    values.push(current_episode);
+    }
+
+    // Add datetime field update
+    updateFields.push(`datetime = CURRENT_TIMESTAMP`);
+
+    // Construct the query
+    const updateQuery = `
+    UPDATE "${tag_name}"
+    SET ${updateFields.join(', ')}
+    WHERE source_id = ? AND preview_id = ?
+    `;
+
+    // Add source_id and preview_id to the values
+    values.push(source_id, preview_id);
+
+    try {
+    // Execute the update query
+        const result = await db.execute(updateQuery, values);
+        console.log(`Table "${tag_name}" updated successfully.`);
+        return { code: 200, message: `Tag "${tag_name}" updated successfully.`, result };
+    } catch (error) {
+        console.error(`Failed to update tag "${tag_name}":`, error);
+        return { code: 500, message: `Error updating tag "${tag_name}".`, error };
+    }
+};
 
 export const request_remove_from_tag = async ({ tag_name, source_id, preview_id }: any) => {
     // Validate the input

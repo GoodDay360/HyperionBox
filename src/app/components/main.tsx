@@ -1,6 +1,6 @@
 
 
-import { lazy, useEffect, useState, useRef } from "react";
+import { lazy, useEffect, useState, useRef, useCallback } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router";
 import {  error } from '@tauri-apps/plugin-log';
 
@@ -49,8 +49,11 @@ const theme = createTheme({
 });
 
 
+
 function App() {
 	const navigate = useNavigate();
+	const Memo_Explore = useCallback(() => {return <Explore />;}, []);
+
 	const [fullscreen_snackbar, set_fullscreen_snackbar] = useState<any>({});
 	const [menu, set_menu] = useState<any>({state:false,path:""});
 
@@ -59,6 +62,7 @@ function App() {
 	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"History", path:"history", icon:HistoryIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
 	const menu_button_bottom:any = [{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
 
+	
 
 	useEffect(()=>{
 		navigate(`/${menu.path}`);
@@ -148,7 +152,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Splash_Screen/>}/>
 					<Route path="/watchlist/*" element={<Watchlist/>} />
-					<Route path="/explore/*" element={<Explore/>} />
+					<Route path="/explore/*" element={<Memo_Explore/>} />
 					<Route path="/preview/:source_id/:preview_id" element={<Preview/>} />
 				</Routes>
 				{/* Fullscreen event listener snackbar */}

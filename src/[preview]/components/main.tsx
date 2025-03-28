@@ -30,7 +30,7 @@ import randomColor from "randomcolor";
 // Custom Imports
 import get_preview from "../scripts/get_preview";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags } from "../../global/scripts/manage_tag";
+import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags, request_update_tag } from "../../global/scripts/manage_tag";
 import { get_local_preview, save_local_preview, remove_local_preview} from "../../global/scripts/manage_local_preview";
 
 
@@ -57,14 +57,13 @@ const Preview = () => {
         
         (async () => {
             if (!is_ready) return;
-            console.log(selected_tag, last_selected_tag.current)
             const removed_tag = last_selected_tag.current.filter((item:string) => !selected_tag.includes(item));
             for (const tag of removed_tag) {
                 await request_remove_from_tag({tag_name:tag,source_id,preview_id})
             }
             const added_tag = selected_tag.filter((item:string) => !last_selected_tag.current.includes(item));
             for (const tag of added_tag) {
-                await request_add_to_tag({tag_name:tag,source_id,preview_id})
+                await request_add_to_tag({tag_name:tag,source_id,preview_id,title:INFO.title,cover:INFO.cover})
             }
             if (selected_tag.length){
                 await save_local_preview({
@@ -90,7 +89,6 @@ const Preview = () => {
         set_is_error({state:false,message:""});
         if (mode === "update") set_is_update({...is_update, state:true,error:false})
         const request_tag_data_result = await request_tag_data()
-        console.log(request_tag_data_result)
         if (request_tag_data_result.code === 200){
             SET_TAG_DATA(request_tag_data_result.data)
         }else {
@@ -98,9 +96,8 @@ const Preview = () => {
             return;
         }
 
-        const request_item_tags_result = await request_item_tags({source_id,preview_id});
+        const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
         if (request_item_tags_result.code === 200){
-            console.log(request_item_tags_result.data)
             last_selected_tag.current = request_item_tags_result.data;
             set_selected_tag(request_item_tags_result.data);
         }else{
@@ -112,12 +109,11 @@ const Preview = () => {
         if (mode === "update") set_is_ready(true)
 
         const request_preview_result = await get_preview({source_id,preview_id});
-        console.log(request_preview_result)
         if (request_preview_result.code === 200) {
             SET_INFO(request_preview_result.result.info);
             SET_STATS(request_preview_result.result.stats);
             SET_EPISODE_DATA(request_preview_result.result.episodes);
-            if (mode === "udpate") {
+            if (mode === "update") {
                 await save_local_preview({
                     source_id,preview_id,
                     data:{
@@ -126,6 +122,14 @@ const Preview = () => {
                         episodes:request_preview_result.result.episodes,
                     }
                 });
+                for (const tag_name of request_item_tags_result.data){
+                    await request_update_tag({
+                        tag_name,source_id,preview_id,
+                        title: request_preview_result.result.info.title,
+                        cover: request_preview_result.result.info.cover
+                    });
+                }
+                
             }
             
         }else if (mode === "get") {
@@ -219,7 +223,7 @@ const Preview = () => {
                             if (window.history.state && window.history.state.idx > 0) {
                                 navigate(-1);
                             } else {
-                                console.log("No history to go back to");
+                                console.error("No history to go back to");
                             }
                         }}
                     >Go back</Button>
@@ -501,7 +505,7 @@ const Preview = () => {
                                                     fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
                                                     wordBreak:"break-word",
                                                 }}
-                                            ><span style={{fontFamily: "var(--font-family-bold)"}}>{item_key[0].toUpperCase() + item_key.slice(1)}:</span> {INFO[item_key]}</span>
+                                            ><span style={{fontFamily: "var(--font-family-bold)"}}>{item_key[0].toUpperCase() + item_key.slice(1)}</span> {INFO[item_key]}</span>
                                         )}</>
                                     </Fragment>))
                                     }</>

@@ -64,6 +64,7 @@
     box-sizing: border-box;
     background: var(--background-color);
     border-radius: 8px;
+    gap: 8px;
 }
 
 .cover{
@@ -72,6 +73,15 @@
     box-sizing: border-box;
     border-radius: 8px;
     background: var(--background-color);
+}
+
+.cover_title{
+    width: calc((100vw + 100vh)*0.15/2);
+    height: auto;
+    font-size: calc((100vw + 100vh)*0.015/2);
+    color: var(--color);
+    font-family: var(--font-family-medium);
+    word-break: break-word;
 }
 
 .action_button_container{

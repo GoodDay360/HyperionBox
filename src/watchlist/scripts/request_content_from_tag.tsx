@@ -1,8 +1,11 @@
 import Database from '@tauri-apps/plugin-sql';
+import { path } from '@tauri-apps/api';
+import { exists } from '@tauri-apps/plugin-fs';
+import { convertFileSrc } from '@tauri-apps/api/core';
 
 const LIMIT = 15;
 
-export const request_content_from_tag = async ({tag_name, page}: {tag_name: string, page: number}) => {
+export const request_content_from_tag = async ({ tag_name, page }: { tag_name: string, page: number }) => {
     // Validate the tag name
     if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) {
         return { code: 500, message: `Invalid tag name format.` };
@@ -31,6 +34,16 @@ export const request_content_from_tag = async ({tag_name, page}: {tag_name: stri
     const countResult: any = await db.select(countQuery);
     const totalRows = countResult[0]?.total || 0;
 
+    // If the table is empty, return an empty dataset with max_page 0
+    if (totalRows === 0) {
+        return {
+            code: 200,
+            message: `Data retrieved successfully.`,
+            data: [],
+            max_page: 0
+        };
+    }
+
     // Calculate the maximum number of pages
     const maxPage = Math.ceil(totalRows / LIMIT);
 
@@ -51,6 +64,12 @@ export const request_content_from_tag = async ({tag_name, page}: {tag_name: stri
     `;
     const dataResult: any = await db.select(dataQuery, [LIMIT, offset]);
 
+    for (const item of dataResult) {
+        const preview_dir = await path.join(await path.appDataDir(), "data", item.source_id, item.preview_id);
+        const cover_path = await path.join(preview_dir, "cover.jpg");
+        if (await exists(cover_path)) item.cover = convertFileSrc(cover_path);
+    }
+
     return {
         code: 200,
         message: `Data retrieved successfully.`,
@@ -58,6 +77,7 @@ export const request_content_from_tag = async ({tag_name, page}: {tag_name: stri
         max_page: maxPage,
     };
 };
+
 
 
 export default request_content_from_tag;

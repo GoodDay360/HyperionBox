@@ -22,10 +22,14 @@ import get_list from "../scripts/get_list";
 import { get_installed_sources } from "../../global/scripts/manage_extension_sources";
 import write_crash_log from "../../global/scripts/write_crash_log";
 
+var SEARCH_REF:string = "";
+var DATA_REF:any = {};
+var SEARCH_COUNT_REF:number = 0;
 
 const Explore = () => {
     const navigate = useNavigate();
     const [search, set_search] = useState<string>("");
+    
     const [DATA, SET_DATA] = useState<any>({});
     const [search_count, set_search_count] = useState<number>(0);
     const [is_searching, set_is_searching] = useState<boolean>(false);
@@ -34,9 +38,28 @@ const Explore = () => {
     
     const cancel_search = useRef<boolean>(false);
     
+    // Restore Previous State on navigation
     useEffect(()=>{
-        set_search_count(0);
+        if (!Object.keys(DATA).length) return;
+        DATA_REF = DATA
+    },[DATA])
+    useEffect(()=>{
+        if (!search) return;
+        SEARCH_REF = search
+    },[search])
+    useEffect(()=>{
+        if (!search_count) return;
+        SEARCH_COUNT_REF = search_count
+    },[search_count])
+    // ===================================
+
+    useEffect(()=>{
+        
         cancel_search.current = false;
+        if (SEARCH_REF) set_search(SEARCH_REF);
+        if (SEARCH_COUNT_REF) set_search_count(SEARCH_COUNT_REF);
+        if (Object.keys(DATA_REF).length) SET_DATA(DATA_REF);
+        console.log("EEEE", DATA_REF);
         return () =>{
             cancel_search.current = true;
         }

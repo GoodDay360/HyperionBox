@@ -1,24 +1,21 @@
 
 
 // Tauri Plugins
-import { Command } from '@tauri-apps/plugin-shell';
-import { info, error } from '@tauri-apps/plugin-log';
-import { path } from '@tauri-apps/api';
-import { BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
+
 
 // React Imports
 import { useDraggable } from "react-use-draggable-scroll";
-import { useEffect, useState, useRef, useContext, useCallback, FC } from 'react';
+import { useEffect, useState, useRef, useContext, useCallback } from 'react';
+import { useNavigate } from "react-router";
 
 // Lazy Images Imports
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // MUI Imports
-import { ButtonBase, Button, Tooltip } from '@mui/material';
+import { ButtonBase, Tooltip } from '@mui/material';
 import Fab from '@mui/material/Fab';
 
 // MUI Icons
-import AddRoundedIcon from '@mui/icons-material/AddRounded';
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
@@ -37,6 +34,7 @@ import request_content_from_tag from '../scripts/request_content_from_tag';
 
 
 function Watchlist() {
+    const navigate = useNavigate();
     const {app_ready, set_app_ready} = useContext<any>(global_context);
 
     const tag_container_ref:any = useRef({});
@@ -45,16 +43,27 @@ function Watchlist() {
 
     const [tag_data, set_tag_data] = useState<any>([]);
     const [selected_tag, set_selected_tag] = useState<string>("");
+    const [DATA, SET_DATA] = useState<any>([]);
+    const [current_page, set_current_page] = useState<number>(1);
     const [widget, set_widget] = useState<string>("");
 
+
+    // Check selected tag changes then set tag content
     useEffect(()=>{
         if (!app_ready || !selected_tag) return;
         (async ()=>{
+            set_current_page(1);
             const result = await request_content_from_tag({tag_name:selected_tag,page:1});
             console.log(result)
+            if (result.code === 200){
+                SET_DATA(result.data);
+            }
+            set_app_ready(true);
         })();
     },[selected_tag])
+    // =========================
 
+    // Check if app is ready to use then load the page content
     const isRun = useRef<boolean>(false);
     useEffect(()=>{
         if (!app_ready || isRun.current) return;
@@ -71,16 +80,22 @@ function Watchlist() {
         })();
         return;
     },[app_ready])
+    // =========================
 
-    const RenderItem:any = useCallback((item:any, index:number) => {
+    const RenderItem:any = useCallback(({item}:{item:any}) => {
         
         return (<div>
             <ButtonBase className={styles.cover_box}          
+                onClick={()=>{
+                    navigate(`/preview/${item.source_id}/${item.preview_id}`);
+                }}
             >
                 <LazyLoadImage className={styles.cover}
-                    src='https://static0.srcdn.com/wordpress/wp-content/uploads/2024/01/solo-leveling-tv-series-poster.jpg'
+                    src={item.cover}
                 />
-
+                <span className={styles.cover_title}>
+                    {item.title}
+                </span>
             </ButtonBase>
         </div>)
     },[])
@@ -146,23 +161,10 @@ function Watchlist() {
             <div className={styles.body}>
                 <div className={styles.body_box_1}>
 
+                    <>{DATA.map((item:any,index:number)=>(
+                        <RenderItem key={index} item={item}/>
+                    ))}</>
                     
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
-                    <RenderItem/>
                 </div>
             </div>
             <div className={styles.action_button_container}>
