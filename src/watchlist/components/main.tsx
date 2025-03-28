@@ -12,13 +12,14 @@ import { useNavigate } from "react-router";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // MUI Imports
-import { ButtonBase, Tooltip } from '@mui/material';
+import { ButtonBase, Tooltip, Button } from '@mui/material';
 import Fab from '@mui/material/Fab';
 
 // MUI Icons
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import Pagination from '@mui/material/Pagination';
 
 // Framer motion Imports
 import { AnimatePresence } from 'framer-motion';
@@ -30,12 +31,13 @@ import ManageTagWidget from '../../global/components/manage_tag_widget';
 import styles from "../styles/main.module.css";
 import global_context from '../../global/scripts/contexts';
 import { request_tag_data } from '../../global/scripts/manage_tag';
-import request_content_from_tag from '../scripts/request_content_from_tag';
+import request_content_from_tag from '../../global/scripts/request_content_from_tag';
 
 
 function Watchlist() {
     const navigate = useNavigate();
     const {app_ready, set_app_ready} = useContext<any>(global_context);
+    const { set_menu } = useContext<any>(global_context);
 
     const tag_container_ref:any = useRef({});
     const { events } = useDraggable(tag_container_ref); 
@@ -44,21 +46,33 @@ function Watchlist() {
     const [tag_data, set_tag_data] = useState<any>([]);
     const [selected_tag, set_selected_tag] = useState<string>("");
     const [DATA, SET_DATA] = useState<any>([]);
+    const [max_page, set_max_page] = useState<number>(0);
     const [current_page, set_current_page] = useState<number>(1);
     const [widget, set_widget] = useState<string>("");
 
+    const get_data = async ({page=1}:{page:number})=>{
+        const result:any = await request_content_from_tag({tag_name:selected_tag,page});
+        console.log("ASDASD",result)
+        if (result.code === 200){
+            SET_DATA(result.data);
+            set_max_page(result.max_page);
+        }
+        set_app_ready(true);
+    }
+
+    useEffect(()=>{
+        if (!app_ready || !current_page) return;
+        (async ()=>{
+            await get_data({page:current_page});
+        })();
+    },[current_page])
+    
 
     // Check selected tag changes then set tag content
     useEffect(()=>{
         if (!app_ready || !selected_tag) return;
         (async ()=>{
-            set_current_page(1);
-            const result = await request_content_from_tag({tag_name:selected_tag,page:1});
-            console.log(result)
-            if (result.code === 200){
-                SET_DATA(result.data);
-            }
-            set_app_ready(true);
+            await get_data({page:1});
         })();
     },[selected_tag])
     // =========================
@@ -103,23 +117,26 @@ function Watchlist() {
     return (<>
         <div className={styles.container}>
             <div className={styles.header}>
-                <Tooltip title="Scroll left">
-                    <ButtonBase
-                        sx={{
-                            color:"var(--icon-color-1)",
-                            backgroundColor:"var(--background-color-layer-1)",
-                        }}
-                        onClick={()=>{
-                            tag_container_ref.current.scrollBy({
-                                top: 0,
-                                left:  - tag_container_ref.current.clientWidth * 0.25, 
-                                behavior: 'smooth', 
-                            });
-                        }}
-                    >
-                        <ArrowBackIosRoundedIcon/>
-                    </ButtonBase>
-                </Tooltip>
+                <>{tag_data.length 
+                    ? <Tooltip title="Scroll left">
+                        <ButtonBase
+                            sx={{
+                                color:"var(--icon-color-1)",
+                                backgroundColor:"var(--background-color-layer-1)",
+                            }}
+                            onClick={()=>{
+                                tag_container_ref.current.scrollBy({
+                                    top: 0,
+                                    left:  - tag_container_ref.current.clientWidth * 0.25, 
+                                    behavior: 'smooth', 
+                                });
+                            }}
+                        >
+                            <ArrowBackIosRoundedIcon/>
+                        </ButtonBase>
+                    </Tooltip>
+                    : <></>
+                }</>
                 <div className={styles.tag_container} {...events} ref={tag_container_ref}>
                     <div className={styles.tag_box}>
                         <>{tag_data.map((item:any, index:number)=>(
@@ -130,7 +147,10 @@ function Watchlist() {
                                     color:"var(--color)",
                                     boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
                                 }}
-                                onClick={()=>{set_selected_tag(item)}}
+                                onClick={()=>{
+                                    set_selected_tag(item);
+                                    
+                                }}
                             >{item}</ButtonBase>
 
                         ))}</>
@@ -140,33 +160,121 @@ function Watchlist() {
                         
                     </div>
                 </div>
-                <Tooltip title="Scroll right">
-                    <ButtonBase
+                <>{tag_data.length 
+                    ? <Tooltip title="Scroll right">
+                        <ButtonBase
+                            sx={{
+                                color:"var(--icon-color-1)",
+                                backgroundColor:"var(--background-color-layer-1)",
+                            }}
+                            onClick={()=>{
+                                tag_container_ref.current.scrollBy({
+                                    top: 0,
+                                    left: tag_container_ref.current.clientWidth * 0.25, 
+                                    behavior: 'smooth', 
+                                });
+                            }}
+                        >
+                            <ArrowForwardIosRoundedIcon/>
+                        </ButtonBase>
+                    </Tooltip>
+                    : <></>
+                }</>
+            </div>
+            <>{tag_data.length
+
+                ? <>
+                    {DATA.length
+                        ? <div className={styles.body}>
+                            <div className={styles.body_box_1}>
+                                <>{DATA.map((item:any,index:number)=>(
+                                    <RenderItem key={index} item={item}/>
+                                ))}</>
+                                
+                            </div>
+                            <div className={styles.body_box_2}>
+                                <Pagination count={max_page} page={current_page} color="primary" showFirstButton showLastButton
+                                    sx={{
+                                        ul: {
+                                            "& .MuiPaginationItem-root": {
+                                                color:"var(--color)",
+                                            }
+                                        }
+                                    }}
+                                    onChange={(_, page:number)=>{set_current_page(page)}}
+                                />
+                                
+                            </div>
+                        </div>
+                        : <div
+                            style={{
+                                width:"100%",
+                                height:"100%",
+                                display:"flex",
+                                justifyContent:"center",
+                                alignItems:"center",
+                                flexDirection:"column",
+                                gap:"18px"
+                            }}
+                        >
+                            <span 
+                                style={{
+                                    color:"var(--color)",
+                                    fontFamily:"var(--font-family-bold)",
+                                    fontSize: "calc((100vw + 100vh)*0.0325/2)",
+                                }}
+                            >No content inside this tag.</span>
+                            <Button color="primary" variant="contained"
+                                sx={{
+                                    color:"var(--color)",
+                                    fontFamily:"var(--font-family-bold)",
+                                    fontSize: "calc((100vw + 100vh)*0.0225/2)",
+                                }}
+                                onClick={()=>{
+                                    set_menu({state:true,path:"explore"});
+                                }}
+                            >
+                                Let Explore
+                            </Button>
+                        </div>
+                    
+                    
+                    }
+                </>
+                
+                : <div
+                    style={{
+                        width:"100%",
+                        height:"100%",
+                        display:"flex",
+                        justifyContent:"center",
+                        alignItems:"center",
+                        flexDirection:"column",
+                        gap:"18px"
+                    }}
+                >
+                    <span 
+                        style={{
+                            color:"var(--color)",
+                            fontFamily:"var(--font-family-bold)",
+                            fontSize: "calc((100vw + 100vh)*0.0325/2)",
+                            textAlign:"center",
+                        }}
+                    >No tag available. <br/>Press <EditRoundedIcon fontSize="medium"/> icon or</span>
+                    <Button color="primary" variant="contained"
                         sx={{
-                            color:"var(--icon-color-1)",
-                            backgroundColor:"var(--background-color-layer-1)",
+                            color:"var(--color)",
+                            fontFamily:"var(--font-family-bold)",
+                            fontSize: "calc((100vw + 100vh)*0.0225/2)",
                         }}
                         onClick={()=>{
-                            tag_container_ref.current.scrollBy({
-                                top: 0,
-                                left: tag_container_ref.current.clientWidth * 0.25, 
-                                behavior: 'smooth', 
-                            });
+                            set_widget("manage_tag");
                         }}
                     >
-                        <ArrowForwardIosRoundedIcon/>
-                    </ButtonBase>
-                </Tooltip>
+                        Let Create now
+                    </Button>
             </div>
-            <div className={styles.body}>
-                <div className={styles.body_box_1}>
-
-                    <>{DATA.map((item:any,index:number)=>(
-                        <RenderItem key={index} item={item}/>
-                    ))}</>
-                    
-                </div>
-            </div>
+            }</>
             <div className={styles.action_button_container}>
                 <Tooltip title="Manage tag" placement='left'>
                     <Fab color='primary' size='small' style={{zIndex:1}}

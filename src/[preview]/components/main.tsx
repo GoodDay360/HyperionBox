@@ -88,6 +88,7 @@ const Preview = () => {
         set_is_ready(false);
         set_is_error({state:false,message:""});
         if (mode === "update") set_is_update({...is_update, state:true,error:false})
+        else set_is_update({ state:false,error:false, message:""});
         const request_tag_data_result = await request_tag_data()
         if (request_tag_data_result.code === 200){
             SET_TAG_DATA(request_tag_data_result.data)

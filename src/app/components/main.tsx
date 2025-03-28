@@ -105,6 +105,7 @@ function App() {
 			value={{
 				...{fullscreen_snackbar, set_fullscreen_snackbar},
 				...{app_ready, set_app_ready},
+				...{menu, set_menu},
 			}}
 		>
 			<div className={styles.container}>

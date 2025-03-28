@@ -21,6 +21,7 @@
     display: flex;
     flex-direction: row;
     width: 100%;
+    height: auto;
     overflow-x: auto;
     scrollbar-width: none;
     background: var(--background-color-layer-1);
@@ -44,6 +45,7 @@
     overflow: auto;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
 .body_box_1{
@@ -54,6 +56,7 @@
     row-gap: 25px;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(calc((100vw + 100vh)*0.15/2), 1fr));
+    align-self: flex-start;
 }
 
 .cover_box{
@@ -90,4 +93,14 @@
     bottom: 0;
     right: 0;
     padding: 12px;
+}
+
+.body_box_2{
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: flex-end;
 }

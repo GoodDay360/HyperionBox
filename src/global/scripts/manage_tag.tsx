@@ -1,6 +1,8 @@
 
 import Database from '@tauri-apps/plugin-sql';
-
+import request_content_from_tag from './request_content_from_tag';
+import { path } from '@tauri-apps/api';
+import { exists, remove, BaseDirectory } from '@tauri-apps/plugin-fs';
 
 export const request_tag_data = async ()=> {
     return await new Promise <any>(async (resolve,reject)=>{
@@ -90,8 +92,37 @@ export const request_delete_tag = async ({
     }
 
     // Load the database connection
+    
+    
+    let max_page:number;
+    let current_page:number = 1;
+    while(true){
+        const request_content_from_tag_result:any = await request_content_from_tag({tag_name, page:current_page});
+        if (request_content_from_tag_result.code === 200) {
+            max_page = request_content_from_tag_result.max_page;
+            const data = request_content_from_tag_result.data;
+            for (const item of data) {
+                const source_id = item.source_id;
+                const preview_id = item.preview_id;
+                const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
+                if (request_item_tags_result.code === 200) {
+                    const remain_tags = request_item_tags_result.data.filter((item:string) => item !== tag_name);
+                    if (!remain_tags.length) {
+                        const preview_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id)
+                        if (await exists(preview_dir)) {
+                            await remove(preview_dir,{baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
+                            console.log("Local save removed: ",preview_dir)
+                        }
+                    }
+                }
+            }
+            
+        }else break
+        if (current_page >= max_page) break;
+        else current_page++;
+    }
+    
     const db = await Database.load('sqlite:watchlist.db');
-
     // Execute the SQL query to drop the table
     await db.execute(`DROP TABLE IF EXISTS "${tag_name}";`);
 
@@ -143,7 +174,7 @@ export const request_add_to_tag = async ({ tag_name, source_id, preview_id, titl
     const existsResult: any = await db.select(existsQuery, [source_id, preview_id]);
 
     if (existsResult.length > 0) {
-        console.log(`Item already exists in tag "${tag_name}". Skipping insertion.`);
+        console.error(`Item already exists in tag "${tag_name}". Skipping insertion.`);
         return { code: 200, message: `Item already exists in tag "${tag_name}".` };
     }
 
@@ -155,7 +186,7 @@ export const request_add_to_tag = async ({ tag_name, source_id, preview_id, titl
 
     try {
         await db.execute(insertQuery, [source_id, preview_id, title, cover]);
-        console.log(`Item added to tag "${tag_name}" successfully.`);
+        console.error(`Item added to tag "${tag_name}" successfully.`);
         return { code: 200, message: `Item added to tag "${tag_name}" successfully.` };
     } catch (error) {
         console.error(`Error adding item to tag "${tag_name}":`, error);
@@ -175,38 +206,46 @@ export const request_update_tag = async ({
     tag_name: string;
     source_id: string;
     preview_id: string;
-    title: string; // Required
-    cover: string; // Required
-    watch_timeline?: number; // Optional
-    current_episode?: number; // Optional
+    title?: string;
+    cover?: string; 
+    watch_timeline?: number;
+    current_episode?: number;
 }) => {
     if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) {
-    return { code: 500, message: `Invalid tag name format.` };
-    }
-
-    // Validate required fields
-    if (!title || !cover) {
-    return { code: 500, message: `Both "title" and "cover" are required fields.` };
+        return { code: 500, message: `Invalid tag name format.` };
     }
 
     // Load the database
     const db = await Database.load('sqlite:watchlist.db');
 
     // Prepare the UPDATE query
-    let updateFields = [`title = ?`, `cover = ?`];
-    let values: any[] = [title, cover];
+    let updateFields: string[] = [];
+    let values: any[] = [];
 
+    // Include fields only if they are provided
+    if (title !== undefined) {
+        updateFields.push(`title = ?`);
+        values.push(title);
+    }
+    if (cover !== undefined) {
+        updateFields.push(`cover = ?`);
+        values.push(cover);
+    }
     if (watch_timeline !== undefined) {
-    updateFields.push(`watch_timeline = ?`);
-    values.push(watch_timeline);
+        updateFields.push(`watch_timeline = ?`);
+        values.push(watch_timeline);
     }
     if (current_episode !== undefined) {
-    updateFields.push(`current_episode = ?`);
-    values.push(current_episode);
+        updateFields.push(`current_episode = ?`);
+        values.push(current_episode);
     }
 
     // Add datetime field update
     updateFields.push(`datetime = CURRENT_TIMESTAMP`);
+
+    if (updateFields.length === 0) {
+        return { code: 500, message: `No fields provided to update.` };
+    }
 
     // Construct the query
     const updateQuery = `
@@ -219,7 +258,7 @@ export const request_update_tag = async ({
     values.push(source_id, preview_id);
 
     try {
-    // Execute the update query
+        // Execute the update query
         const result = await db.execute(updateQuery, values);
         console.log(`Table "${tag_name}" updated successfully.`);
         return { code: 200, message: `Tag "${tag_name}" updated successfully.`, result };
@@ -228,6 +267,7 @@ export const request_update_tag = async ({
         return { code: 500, message: `Error updating tag "${tag_name}".`, error };
     }
 };
+
 
 export const request_remove_from_tag = async ({ tag_name, source_id, preview_id }: any) => {
     // Validate the input
@@ -251,6 +291,8 @@ export const request_remove_from_tag = async ({ tag_name, source_id, preview_id 
         console.error(`Table "${tag_name}" does not exist.`);
         return { code: 500, message: `Tag "${tag_name}" does not exist.` };
     }
+
+    
 
     // Remove the item from the tag (table)
     const deleteQuery = `
