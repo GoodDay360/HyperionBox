@@ -1,11 +1,10 @@
 
 // React import
 import { useEffect, useState, useRef, useContext } from 'react';
-import { useNavigate } from 'react-router';
 
 // Tauri Plugins
 import { path } from '@tauri-apps/api';
-import { exists,  readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { exists, writeTextFile } from '@tauri-apps/plugin-fs';
 import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/window"
 
 // Material UI 
@@ -27,14 +26,14 @@ import { read_config, write_config } from '../../global/scripts/manage_config';
 
 // Context Imports
 import global_context from '../../global/scripts/contexts';
-import { color } from 'framer-motion';
+
 
 
 
 
 
 function Splash_Screen() {
-    const navigate = useNavigate();
+    
 
     const run_state = useRef<boolean>(false)
     const [feedback, setFeedback] = useState<any>({})

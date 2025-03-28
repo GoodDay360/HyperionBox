@@ -20,8 +20,9 @@
     "security": {
       "csp": {
         "default-src": "'self' customprotocol: asset:",
-        "connect-src": "ipc: http://ipc.localhost",
-        "img-src": "'self' asset: http://asset.localhost blob: data:"
+        "style-src": "'self' 'unsafe-inline';",
+        "connect-src": "*;",
+        "img-src": "*"
       },
       "assetProtocol": {
         "enable": true,

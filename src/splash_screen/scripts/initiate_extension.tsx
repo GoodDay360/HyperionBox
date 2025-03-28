@@ -14,7 +14,7 @@ import write_crash_log from '../../global/scripts/write_crash_log';
 
 let port:any = null;
 let executor:any;
-await getCurrentWindow().onCloseRequested(async () => {
+getCurrentWindow().onCloseRequested(async () => {
     try{
         executor.kill();
         if (port){

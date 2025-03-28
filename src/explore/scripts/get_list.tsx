@@ -1,13 +1,9 @@
 // Tauri Imports
-import { path } from '@tauri-apps/api';
-import { fetch } from '@tauri-apps/plugin-http';
 // Axios Imports
 import axios from 'axios';
 
 // Custom Imports
 import { read_config } from "../../global/scripts/manage_config";
-import get_node_path from "../../global/scripts/node/get_node_path";
-import get_extension_directory from "../../global/scripts/get_extension_directory";
 
 const get_list = async ({source_id, search}:{source_id:string,search:string}) => {
     return await new Promise<any>(async (resolve, reject) => {

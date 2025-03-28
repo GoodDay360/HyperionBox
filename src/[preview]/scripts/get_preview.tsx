@@ -11,7 +11,7 @@ import { read_config } from "../../global/scripts/manage_config";
 
 
 const get_preview = async ({source_id,preview_id}:{source_id:string,preview_id:string}) => {
-    return await new Promise<any>(async (resolve, reject) => {
+    return await new Promise<any>(async (resolve, _) => {
         const port = sessionStorage.getItem("extension_port");
         const config = await read_config();
         const body = {

@@ -1,7 +1,7 @@
 
 
 import { lazy, useEffect, useState, useRef, useCallback } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router";
+import { Routes, Route, useNavigate } from "react-router";
 import {  error } from '@tauri-apps/plugin-log';
 
 
