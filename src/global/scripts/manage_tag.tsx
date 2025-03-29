@@ -37,7 +37,7 @@ export const request_create_tag = async ({tag_name}:any)=> {
                 title TEXT NOT NULL, 
                 cover TEXT NOT NULL,
                 watch_timeline INT DEFAULT 0,
-                current_episode INT DEFAULT 0,
+                current_watch_index INT DEFAULT 0,
                 datetime DATETIME DEFAULT CURRENT_TIMESTAMP 
             )
         `;
@@ -201,7 +201,7 @@ export const request_update_tag = async ({
     title,
     cover,
     watch_timeline,
-    current_episode,
+    current_watch_index,
 }: {
     tag_name: string;
     source_id: string;
@@ -209,7 +209,7 @@ export const request_update_tag = async ({
     title?: string;
     cover?: string; 
     watch_timeline?: number;
-    current_episode?: number;
+    current_watch_index?: number;
 }) => {
     if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) {
         return { code: 500, message: `Invalid tag name format.` };
@@ -235,9 +235,9 @@ export const request_update_tag = async ({
         updateFields.push(`watch_timeline = ?`);
         values.push(watch_timeline);
     }
-    if (current_episode !== undefined) {
-        updateFields.push(`current_episode = ?`);
-        values.push(current_episode);
+    if (current_watch_index !== undefined) {
+        updateFields.push(`current_watch_index = ?`);
+        values.push(current_watch_index);
     }
 
     // Add datetime field update
