@@ -1,6 +1,6 @@
 import Database from '@tauri-apps/plugin-sql';
 import { path } from '@tauri-apps/api';
-import { exists } from '@tauri-apps/plugin-fs';
+import { exists, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
 const LIMIT = 15;
@@ -62,12 +62,30 @@ export const request_content_from_tag = async ({ tag_name, page }: { tag_name: s
         ORDER BY datetime DESC
         LIMIT $1 OFFSET $2
     `;
-    const dataResult: any = await db.select(dataQuery, [LIMIT, offset]);
+    const queryResult: any = await db.select(dataQuery, [LIMIT, offset]);
 
-    for (const item of dataResult) {
+    const dataResult:any = [];
+
+    for (const item of queryResult) {
         const preview_dir = await path.join(await path.appDataDir(), "data", item.source_id, item.preview_id);
-        const cover_path = await path.join(preview_dir, "cover.jpg");
-        if (await exists(cover_path)) item.cover = convertFileSrc(cover_path);
+        const manifest_path = await path.join(preview_dir, "manifest.json");
+        if (await exists(manifest_path)) {
+            try{
+                const manifest = JSON.parse(await readTextFile(manifest_path, { baseDir: BaseDirectory.AppData }));
+                item.title = manifest.info.title;
+                const cover_path = await path.join(preview_dir, "cover.jpg");
+                if (await exists(cover_path)) item.cover = convertFileSrc(cover_path);
+                else item.cover = manifest.info.cover;
+                dataResult.push(item);
+            }catch{(e:any)=>{
+                console.error(e)
+                item.title = "?";
+                dataResult.push(item);
+            }}
+        }else{
+            item.title = "?";
+            dataResult.push(item);
+        }
     }
 
     return {

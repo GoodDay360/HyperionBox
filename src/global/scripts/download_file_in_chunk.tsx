@@ -10,10 +10,10 @@ async function download_file_in_chunks({
     console.log(url)
     let start = 0;
     try {
-        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)})
+        
         const headResponse = await fetch(url, { method: 'HEAD' });
         const totalSize = parseInt(headResponse.headers.get('content-length') as string, 10);
-
+        let count = 0;
         while (start < totalSize) {
             const end = Math.min(start + chunkSize - 1, totalSize - 1);
             try {
@@ -21,6 +21,15 @@ async function download_file_in_chunks({
                     headers: { Range: `bytes=${start}-${end}` }
 
                 });
+                if (!response.ok) {
+                    return {code: 500, message: `HTTP error! Status: ${response.status}`};
+                }else{
+                    if (!count){
+                        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)})
+                        count ++
+                    }
+                }
+                
                 const data = await response.arrayBuffer();
                 const write_response = await new Promise<any>(async(resolve,reject)=>{
                     writeFile(output_file, new Uint8Array(data), { baseDir: BaseDirectory.AppData, append: true })

@@ -14,6 +14,11 @@ import Checkbox from '@mui/material/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
+// Dayjs Imports
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
+
 // MUI Icons
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
@@ -30,9 +35,10 @@ import randomColor from "randomcolor";
 // Custom Imports
 import get_preview from "../scripts/get_preview";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags, request_update_tag } from "../../global/scripts/manage_tag";
+import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags } from "../../global/scripts/manage_tag";
 import { get_local_preview, save_local_preview, remove_local_preview} from "../../global/scripts/manage_local_preview";
 
+const FETCH_UPDATE_INTERVAL = 10; // In Minutes
 
 const Preview = () => {
     const navigate = useNavigate();
@@ -63,18 +69,19 @@ const Preview = () => {
             }
             const added_tag = selected_tag.filter((item:string) => !last_selected_tag.current.includes(item));
             for (const tag of added_tag) {
-                await request_add_to_tag({tag_name:tag,source_id,preview_id,title:INFO.title,cover:INFO.cover})
+                await request_add_to_tag({tag_name:tag,source_id,preview_id})
             }
-            if (selected_tag.length){
+            if (selected_tag.length && added_tag.length){
                 await save_local_preview({
                     source_id,preview_id,
                     data:{
                         info:INFO,
                         stats:STATS,
                         episodes:EPISODE_DATA,
-                    }
+                        last_update: dayjs.utc().unix(),
+                    },
                 });
-            }else{
+            }else if (!selected_tag.length){
                 await remove_local_preview({source_id,preview_id})
             }
             last_selected_tag.current = selected_tag
@@ -83,18 +90,13 @@ const Preview = () => {
     },[selected_tag, is_ready])
     // ===============
 
-
-    const get_data = useCallback(async ({mode}:{mode:string}) => {
-        set_is_ready(false);
-        set_is_error({state:false,message:""});
-        if (mode === "update") set_is_update({...is_update, state:true,error:false})
-        else set_is_update({ state:false,error:false, message:""});
+    const load_tag_data = useCallback(async () => {
         const request_tag_data_result = await request_tag_data()
         if (request_tag_data_result.code === 200){
             SET_TAG_DATA(request_tag_data_result.data)
         }else {
             set_is_error({state:true,message:"Failed to tag data."});
-            return;
+            return {code:500,message:"Failed to tag data."};
         }
 
         const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
@@ -103,9 +105,19 @@ const Preview = () => {
             set_selected_tag(request_item_tags_result.data);
         }else{
             set_is_error({state:true,message:"Failed to request item tags."});
-            return;
+            return {code:500,message:"Failed to request item tags."};
         }
+        return {code:200,message:"OK"}
+    },[])
 
+    const get_data = useCallback(async ({mode}:{mode:string}) => {
+        set_is_ready(false);
+        set_is_error({state:false,message:""});
+        if (mode === "update") set_is_update({...is_update, state:true,error:false})
+        else set_is_update({ state:false,error:false, message:""});
+        
+        const load_tag_result = await load_tag_data();
+        if (load_tag_result.code !== 200) return;
 
         if (mode === "update") set_is_ready(true)
 
@@ -121,16 +133,9 @@ const Preview = () => {
                         info:request_preview_result.result.info,
                         stats:request_preview_result.result.stats,
                         episodes:request_preview_result.result.episodes,
+                        last_update: dayjs.utc().unix(),
                     }
                 });
-                for (const tag_name of request_item_tags_result.data){
-                    await request_update_tag({
-                        tag_name,source_id,preview_id,
-                        title: request_preview_result.result.info.title,
-                        cover: request_preview_result.result.info.cover
-                    });
-                }
-                
             }
             
         }else if (mode === "get") {
@@ -152,20 +157,29 @@ const Preview = () => {
         (async () => {
             const local_preview_result = await get_local_preview({source_id,preview_id})
             if (local_preview_result.code === 200){
-                const data = local_preview_result.result.data
+                const data = local_preview_result.result
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
                 try{
-                    await get_data({mode:"update"});
-                }catch{()=>{
+                    if (dayjs.utc().unix() - (data.last_update??0) <= FETCH_UPDATE_INTERVAL * 60) {
+                        await load_tag_data();
+                        set_is_update({ state:false,error:false, message:"" });
+                        set_is_ready(true);
+                    }else{
+                        await get_data({mode:"update"});
+                    }
+                    
+                }catch{(e:any)=>{
+                    console.error(e);
+                    set_is_update({ state:true,error:true, message:"Failed to request source update." });
                     set_is_ready(true);
                 }}
                 
             }else{
                 await get_data({mode:"get"});
             }
-            
+            is_run.current = false;
         })();
         
     },[])
@@ -268,7 +282,7 @@ const Preview = () => {
                                         ? <Tooltip title="Fetching update...">
                                             <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.05/2)"/>
                                         </Tooltip>
-                                        : <Tooltip title="Up-to-date">
+                                        : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} minutes`}>
                                             <IconButton color="primary" size="large"
                                                 onClick={async ()=>{
                                                     await get_data({mode:"update"});

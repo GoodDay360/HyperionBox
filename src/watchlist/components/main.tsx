@@ -36,7 +36,7 @@ import request_content_from_tag from '../../global/scripts/request_content_from_
 
 function Watchlist() {
     const navigate = useNavigate();
-    const {app_ready, set_app_ready} = useContext<any>(global_context);
+    const {app_ready} = useContext<any>(global_context);
     const { set_menu } = useContext<any>(global_context);
 
     const tag_container_ref:any = useRef({});
@@ -50,29 +50,20 @@ function Watchlist() {
     const [current_page, set_current_page] = useState<number>(1);
     const [widget, set_widget] = useState<string>("");
 
-    const get_data = async ({page=1}:{page:number})=>{
-        const result:any = await request_content_from_tag({tag_name:selected_tag,page});
-        console.log("ASDASD",result)
+    const get_data = async ({tag_name,page=1}:{tag_name:string,page:number})=>{
+        const result:any = await request_content_from_tag({tag_name,page});
         if (result.code === 200){
             SET_DATA(result.data);
             set_max_page(result.max_page);
         }
-        set_app_ready(true);
     }
-
-    useEffect(()=>{
-        if (!app_ready || !current_page) return;
-        (async ()=>{
-            await get_data({page:current_page});
-        })();
-    },[current_page])
-    
 
     // Check selected tag changes then set tag content
     useEffect(()=>{
-        if (!app_ready || !selected_tag) return;
         (async ()=>{
-            await get_data({page:1});
+            if (!selected_tag) return;
+            console.log("ERRRR", selected_tag)
+            await get_data({tag_name:selected_tag,page:1});
         })();
     },[selected_tag])
     // =========================
@@ -80,17 +71,14 @@ function Watchlist() {
     // Check if app is ready to use then load the page content
     const isRun = useRef<boolean>(false);
     useEffect(()=>{
-        if (!app_ready || isRun.current) return;
+        if (isRun.current || !app_ready) return;
         isRun.current = true;
         (async () => {
-            const result = await request_tag_data();
-            if (result.code === 200){
-                set_tag_data(result.data);
-                if (result.data.length) set_selected_tag(result.data[0]);
+            const tag_data_result = await request_tag_data();
+            if (tag_data_result.code === 200){
+                set_tag_data(tag_data_result.data);
+                if (tag_data_result.data.length) set_selected_tag(tag_data_result.data[0]);
             }else return;
-            
-            
-            isRun.current = false;
         })();
         return;
     },[app_ready])
@@ -108,7 +96,7 @@ function Watchlist() {
                     src={item.cover}
                 />
                 <span className={styles.cover_title}>
-                    {item.title}
+                    {item.title??"?"}
                 </span>
             </ButtonBase>
         </div>)
@@ -201,7 +189,10 @@ function Watchlist() {
                                             }
                                         }
                                     }}
-                                    onChange={(_, page:number)=>{set_current_page(page)}}
+                                    onChange={async (_, page:number)=>{
+                                        set_current_page(page);
+                                        await get_data({tag_name:selected_tag,page:page});
+                                    }}
                                 />
                                 
                             </div>

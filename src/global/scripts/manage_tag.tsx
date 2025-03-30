@@ -34,10 +34,6 @@ export const request_create_tag = async ({tag_name}:any)=> {
             CREATE TABLE "${tableName}" ( 
                 source_id TEXT NOT NULL,
                 preview_id TEXT NOT NULL, 
-                title TEXT NOT NULL, 
-                cover TEXT NOT NULL,
-                watch_timeline INT DEFAULT 0,
-                current_watch_index INT DEFAULT 0,
                 datetime DATETIME DEFAULT CURRENT_TIMESTAMP 
             )
         `;
@@ -134,11 +130,9 @@ export const request_delete_tag = async ({
     }
 };
 
-export const request_add_to_tag = async ({ tag_name, source_id, preview_id, title, cover }
+export const request_add_to_tag = async ({ tag_name, source_id, preview_id }
     :{
         tag_name: string,
-        title: string,
-        cover: string,
         source_id: string,
         preview_id: string
     }) => {
@@ -180,91 +174,17 @@ export const request_add_to_tag = async ({ tag_name, source_id, preview_id, titl
 
     // Add the item to the tag (table)
     const insertQuery = `
-        INSERT INTO "${tag_name}" (source_id, preview_id, title, cover, datetime)
-        VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+        INSERT INTO "${tag_name}" (source_id, preview_id, datetime)
+        VALUES ($1, $2, CURRENT_TIMESTAMP)
     `;
 
     try {
-        await db.execute(insertQuery, [source_id, preview_id, title, cover]);
+        await db.execute(insertQuery, [source_id, preview_id]);
         console.error(`Item added to tag "${tag_name}" successfully.`);
         return { code: 200, message: `Item added to tag "${tag_name}" successfully.` };
     } catch (error) {
         console.error(`Error adding item to tag "${tag_name}":`, error);
         return { code: 500, message: `Failed to add item to tag "${tag_name}".` };
-    }
-};
-
-export const request_update_tag = async ({
-    tag_name,
-    source_id,
-    preview_id,
-    title,
-    cover,
-    watch_timeline,
-    current_watch_index,
-}: {
-    tag_name: string;
-    source_id: string;
-    preview_id: string;
-    title?: string;
-    cover?: string; 
-    watch_timeline?: number;
-    current_watch_index?: number;
-}) => {
-    if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) {
-        return { code: 500, message: `Invalid tag name format.` };
-    }
-
-    // Load the database
-    const db = await Database.load('sqlite:watchlist.db');
-
-    // Prepare the UPDATE query
-    let updateFields: string[] = [];
-    let values: any[] = [];
-
-    // Include fields only if they are provided
-    if (title !== undefined) {
-        updateFields.push(`title = ?`);
-        values.push(title);
-    }
-    if (cover !== undefined) {
-        updateFields.push(`cover = ?`);
-        values.push(cover);
-    }
-    if (watch_timeline !== undefined) {
-        updateFields.push(`watch_timeline = ?`);
-        values.push(watch_timeline);
-    }
-    if (current_watch_index !== undefined) {
-        updateFields.push(`current_watch_index = ?`);
-        values.push(current_watch_index);
-    }
-
-    // Add datetime field update
-    updateFields.push(`datetime = CURRENT_TIMESTAMP`);
-
-    if (updateFields.length === 0) {
-        return { code: 500, message: `No fields provided to update.` };
-    }
-
-    // Construct the query
-    const updateQuery = `
-    UPDATE "${tag_name}"
-    SET ${updateFields.join(', ')}
-    WHERE source_id = ? AND preview_id = ?
-    `;
-
-    // Add source_id and preview_id to the values
-    values.push(source_id, preview_id);
-
-    try {
-        // Execute the update query
-        const result = await db.execute(updateQuery, values);
-        console.log(`Table "${tag_name}" updated successfully.`);
-        return { code: 200, message: `Tag "${tag_name}" updated successfully.`, result };
-    } catch (error) {
-        console.error(`Failed to update tag "${tag_name}":`, error);
-        return { code: 500, message: `Error updating tag "${tag_name}".`, error };
     }
 };
 
