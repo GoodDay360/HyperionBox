@@ -28,6 +28,7 @@
     "bootstrap": "5.3.3",
     "bundle": "2.1.0",
     "dayjs": "1.11.13",
+    "disqus-react": "^1.1.6",
     "framer-motion": "12.6.0",
     "jszip": "3.10.1",
     "randomcolor": "0.6.2",

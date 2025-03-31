@@ -1,5 +1,5 @@
 // React Imports
-import { useEffect, useRef, useState, Fragment, useMemo, useCallback } from "react";
+import { useEffect, useRef, useState, Fragment, useMemo, useCallback, useContext } from "react";
 import { useNavigate, useParams } from "react-router";
 
 // MUI Imports
@@ -28,11 +28,18 @@ import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 // Images Imports
 import Blocks_Loading from "../../assets/images/blocks_loading.svg";
 
+// Disqus Imports
+import { DiscussionEmbed } from 'disqus-react';
+
+// Context Imports
+import global_context from "../../global/scripts/contexts";
+
 // Styles Imports
 import styles from '../styles/main.module.css';
 import randomColor from "randomcolor";
 
 // Custom Imports
+import check_internet_connection from "../../global/scripts/check_internet_connection";
 import get_preview from "../scripts/get_preview";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags } from "../../global/scripts/manage_tag";
@@ -42,8 +49,12 @@ const FETCH_UPDATE_INTERVAL = 10; // In Minutes
 
 const Preview = () => {
     const navigate = useNavigate();
+
+    const { app_ready } = useContext<any>(global_context);
+
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [is_update, set_is_update] = useState<any>({state:false,error:false,message:""})
+    const [is_online, set_is_online] = useState<boolean>(false);
     const { source_id, preview_id }:any = useParams();
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
     const [INFO, SET_INFO] = useState<any>({});
@@ -151,10 +162,12 @@ const Preview = () => {
 
     const is_run = useRef<boolean>(false);
     useEffect(()=>{
-        if (is_run.current) return;
+        if (is_run.current || !app_ready) return;
         is_run.current = true;
         set_is_ready(false);
         (async () => {
+            const is_online_result = await check_internet_connection();
+            set_is_online(is_online_result);
             const local_preview_result = await get_local_preview({source_id,preview_id})
             if (local_preview_result.code === 200){
                 const data = local_preview_result.result
@@ -179,10 +192,9 @@ const Preview = () => {
             }else{
                 await get_data({mode:"get"});
             }
-            is_run.current = false;
         })();
         
-    },[])
+    },[app_ready])
 
     const TAG_BOX_COMPONENT = useCallback(({item_key}:any)=>{
         const bg_color = useMemo(()=>randomColor({luminosity:"bright",format: 'rgba',alpha:0.8}),[STATS])
@@ -512,7 +524,7 @@ const Preview = () => {
                                     }}
                                 >
                                     <>{Object.keys(INFO).map((item_key:string,index:number)=>(<Fragment key={index}>
-                                        <>{!["cover","description", "title"].includes(item_key) && (
+                                        <>{!["cover","local_cover","description", "title"].includes(item_key) && (
                                             <span
                                                 style={{
                                                     fontFamily: "var(--font-family-regular)",
@@ -562,6 +574,20 @@ const Preview = () => {
                                     onChange={(_, page:number)=>{set_current_page(page)}}
                                 />
                                 
+                            </div>
+                            <div className={styles.body_box_5}>
+                                <>{is_online &&
+                                    <DiscussionEmbed
+                                        shortname='hyperionbox'
+                                        config={
+                                            {
+                                                identifier: `${source_id}-${preview_id}`,
+                                                title: INFO.title,
+                                                language: 'en' //e.g. for Traditional Chinese (Taiwan)
+                                            }
+                                        }
+                                    />
+                                }</>
                             </div>
                         </div>
                     </>

@@ -59,7 +59,7 @@ function App() {
 
 	const [app_ready, set_app_ready ] = useState<boolean>(false);
 
-	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"History", path:"history", icon:HistoryIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
+	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
 	const menu_button_bottom:any = [{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
 
 	
