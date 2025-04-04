@@ -65,7 +65,7 @@ export const request_content_from_tag = async ({ tag_name, page }: { tag_name: s
     const queryResult: any = await db.select(dataQuery, [LIMIT, offset]);
 
     const dataResult:any = [];
-
+    console.log(queryResult)
     for (const item of queryResult) {
         const preview_dir = await path.join(await path.appDataDir(), "data", item.source_id, item.preview_id);
         const manifest_path = await path.join(preview_dir, "manifest.json");
@@ -77,17 +77,18 @@ export const request_content_from_tag = async ({ tag_name, page }: { tag_name: s
                 if (await exists(cover_path)) item.cover = convertFileSrc(cover_path);
                 else item.cover = manifest.info.cover;
                 dataResult.push(item);
-            }catch{(e:any)=>{
+            }catch(e:any){
                 console.error(e)
                 item.title = "?";
+
                 dataResult.push(item);
-            }}
+            }
         }else{
             item.title = "?";
             dataResult.push(item);
         }
     }
-
+    console.log("result", dataResult)
     return {
         code: 200,
         message: `Data retrieved successfully.`,

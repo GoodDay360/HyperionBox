@@ -32,20 +32,9 @@ export const save_local_preview = async ({source_id,preview_id,data}:{source_id:
     const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
     if (!(await exists(preview_dir))) await mkdir(preview_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)})
     const manifest_path = await path.join(preview_dir,"manifest.json")
-    let manifest_data
-    if (await exists(manifest_path)){
-        try{
-            manifest_data = JSON.parse(await readTextFile(manifest_path, {baseDir:BaseDirectory.AppData}))
-        }catch{
-            manifest_data = {}
-        }
-    }else{
-        manifest_data = {}
-    }
-    manifest_data = data
     await download_file_in_chunks({url:data.info.cover, output_file: await path.join(preview_dir,"cover.jpg")})
     
-    await writeTextFile(manifest_path,JSON.stringify(manifest_data), {baseDir:BaseDirectory.AppData, create:true}).catch((e)=>{console.error(e)})
+    await writeTextFile(manifest_path,JSON.stringify(data), {baseDir:BaseDirectory.AppData, create:true}).catch((e)=>{console.error(e)})
 }
 
 export const remove_local_preview = async ({source_id,preview_id}:{source_id:string,preview_id:string}) => {

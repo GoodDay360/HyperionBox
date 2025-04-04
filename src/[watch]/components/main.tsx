@@ -4,28 +4,20 @@
 import { path } from "@tauri-apps/api";
 
 // React Imports
-import { useDraggable } from "react-use-draggable-scroll";
-import { useEffect, useState, useRef, useContext, useCallback, Fragment, } from 'react';
+import { useEffect, useState, useRef, useContext, Fragment, } from 'react';
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 // Lazy Images Imports
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Vidstack Imports
-import { MediaPlayer, MediaProvider, isHLSProvider, Captions , CaptionButton, MediaPlayerInstance, useStore  } from '@vidstack/react';
+import { MediaPlayer, MediaProvider, isHLSProvider, MediaPlayerInstance,  } from '@vidstack/react';
 import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
 
 
 
 // MUI Imports
 import { ButtonBase, IconButton, Button, Tooltip } from "@mui/material";
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import ListItemText from '@mui/material/ListItemText';
-import Select from '@mui/material/Select';
-import Checkbox from '@mui/material/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -35,9 +27,6 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import PublishedWithChangesRoundedIcon from '@mui/icons-material/PublishedWithChangesRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
-
-// Framer motion Imports
-import { AnimatePresence } from 'framer-motion';
 
 // Disqus Imports
 import { DiscussionEmbed } from 'disqus-react';
@@ -58,7 +47,7 @@ import get_watch from "../scripts/get_watch";
 import generate_hls_from_playlist from "../../global/scripts/generate_hls_from_playlist";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { request_item_tags } from "../../global/scripts/manage_tag";
-import { get_watch_state, update_watch_state } from "../scripts/manage_watch_state";
+import { get_watch_state, update_watch_state } from "../../global/scripts/manage_watch_state";
 import { get_local_preview,save_local_preview } from "../../global/scripts/manage_local_preview";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
 
@@ -102,7 +91,6 @@ function Watch() {
                 is_updating_state = true
                 const player_state = media_player_ref.current.state;
 
-                console.log('Current time:', player_state.currentTime);
                 await update_watch_state({source_id,preview_id,watch_id,
                     state:{
                         current_time: player_state.currentTime,
@@ -113,7 +101,7 @@ function Watch() {
 
 
                 is_updating_state = false
-            }, 10000);
+            }, 3000);
         }
         return () => {
             clearInterval(update_state_interval);
@@ -121,6 +109,7 @@ function Watch() {
     }, [is_media_ready,is_in_watchlist]);
 
     const get_data = async ({watch_id,server_type=null,server_id=null,force_update=false}:{watch_id:string,server_type?:string|null,server_id?:string|null,force_update?:boolean}) =>{
+        console.log(server_id,server_type, "HUHH")
         set_is_ready(false);
         set_is_media_ready(false);
         media_player_state_ref.current = {};
@@ -132,8 +121,6 @@ function Watch() {
                 const get_watch_state_result = await get_watch_state({source_id,preview_id,watch_id});
                 if (get_watch_state_result.code === 200) {
                     media_player_state_ref.current = get_watch_state_result.data;
-
-                    console.log("state", media_player_state_ref.current, media_player_state_ref.current.current_time || 0);
                 }
                 set_is_in_watchlist(true)
             }else set_is_in_watchlist(false);
@@ -157,7 +144,6 @@ function Watch() {
         
         if (get_watch_result.code === 200) {
             const data = get_watch_result.result;
-            console.log(data)
 
             SET_SERVER_INFO(data.server_info);
             SET_EPISODE_DATA(data.episodes);
@@ -226,7 +212,11 @@ function Watch() {
                                     <Tooltip title={is_update.message}>
                                         <IconButton color="error" size="large"
                                             onClick={async ()=>{
-                                                // await get_data({mode:"update"});
+                                                await get_data({
+                                                    watch_id,
+                                                    server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
+                                                    force_update:true
+                                                });
                                             }}
                                         >
                                             <ErrorOutlineRoundedIcon color="error" fontSize="medium"/>
@@ -240,7 +230,11 @@ function Watch() {
                                     : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} hours`}>
                                         <IconButton color="primary" size="large"
                                             onClick={async ()=>{
-                                                // await get_data({mode:"update"});
+                                                await get_data({
+                                                    watch_id,
+                                                    server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
+                                                    force_update:true
+                                                });
                                             }}
                                         >
                                             <PublishedWithChangesRoundedIcon color="success" fontSize="large"/>

@@ -52,7 +52,6 @@ const theme = createTheme({
 
 function App() {
 	const navigate = useNavigate();
-	const Memo_Explore = useCallback(() => {return <Explore />;}, []);
 
 	const [fullscreen_snackbar, set_fullscreen_snackbar] = useState<any>({});
 	const [menu, set_menu] = useState<any>({state:false,path:""});
@@ -65,8 +64,8 @@ function App() {
 	
 
 	useEffect(()=>{
-		// navigate(`/${menu.path}`);
-		navigate(`/watch/hianime/i-may-be-a-guild-receptionist-but-ill-solo-any-boss-to-clock-out-on-time-19441/131718`);
+		navigate(`/${menu.path}`);
+		// navigate(`/watch/hianime/i-may-be-a-guild-receptionist-but-ill-solo-any-boss-to-clock-out-on-time-19441/131718`);
 	},[menu])
 
 	const is_run = useRef<boolean>(false);
@@ -152,10 +151,10 @@ function App() {
 				}</>
 				
 				<Routes>
-					<Route path="/" element={<Splash_Screen/>}/>
-					<Route path="/watchlist/*" element={<Watchlist/>} />
-					<Route path="/explore/*" element={<Memo_Explore/>} />
-					<Route path="/preview/:source_id/:preview_id" element={<Preview/>} />
+					<Route path="/" element={<Splash_Screen key={Date.now()}/>}/>
+					<Route path="/watchlist/*" element={<Watchlist key={Date.now()}/>} />
+					<Route path="/explore/*" element={<Explore/>} />
+					<Route path="/preview/:source_id/:preview_id" element={<Preview key={Date.now()} />} />
 					<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch />} />
 				</Routes>
 				{/* Fullscreen event listener snackbar */}

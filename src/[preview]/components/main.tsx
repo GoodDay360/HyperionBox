@@ -18,6 +18,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
+import duration from "dayjs/plugin/duration";
+dayjs.extend(duration);
 
 // MUI Icons
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
@@ -45,6 +47,8 @@ import get_preview from "../scripts/get_preview";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags } from "../../global/scripts/manage_tag";
 import { get_local_preview, save_local_preview, remove_local_preview} from "../../global/scripts/manage_local_preview";
+import { get_watch_state } from "../../global/scripts/manage_watch_state";
+
 
 const FETCH_UPDATE_INTERVAL = 10; // In Minutes
 
@@ -59,6 +63,9 @@ const Preview = () => {
     const [is_online, set_is_online] = useState<boolean>(false);
     
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
+    const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
+    const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
+    const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
     const [INFO, SET_INFO] = useState<any>({});
     const [STATS, SET_STATS] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
@@ -84,8 +91,8 @@ const Preview = () => {
             for (const tag of added_tag) {
                 await request_add_to_tag({tag_name:tag,source_id,preview_id})
             }
+            const local_preview_result = await get_local_preview({source_id,preview_id})
             if (selected_tag.length && added_tag.length){
-                const local_preview_result = await get_local_preview({source_id,preview_id})
                 if (local_preview_result.code === 200){
                     const data = local_preview_result.result
                     await save_local_preview({
@@ -110,6 +117,16 @@ const Preview = () => {
                     });
                 }
                 
+            }else if (selected_tag.length && local_preview_result.code !== 200){
+                await save_local_preview({
+                    source_id,preview_id,
+                    data:{
+                        info:INFO,
+                        stats:STATS,
+                        episodes:EPISODE_DATA,
+                        last_update: dayjs.utc().unix(),
+                    },
+                });
             }else if (!selected_tag.length){
                 await remove_local_preview({source_id,preview_id})
             }
@@ -146,7 +163,10 @@ const Preview = () => {
         else set_is_update({ state:false,error:false, message:""});
         
         const load_tag_result = await load_tag_data();
-        if (load_tag_result.code !== 200) return;
+        if (load_tag_result.code !== 200) {
+            set_is_error({state:true,message:"Unable to load tag data."});
+            return;
+        };
 
         if (mode === "update") set_is_ready(true)
 
@@ -163,19 +183,20 @@ const Preview = () => {
                         source_id,preview_id,
                         data:{
                             ...data,
-                            info:INFO,
-                            stats:STATS,
-                            episodes:EPISODE_DATA,
+                            info:request_preview_result.result.info,
+                            stats:request_preview_result.result.stats,
+                            episodes:request_preview_result.result.episodes,
                             last_update: dayjs.utc().unix(),
                         },
                     });
                 }else{
+                    console.log("IT SHOULD RUN THIS!!!")
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
-                            info:INFO,
-                            stats:STATS,
-                            episodes:EPISODE_DATA,
+                            info:request_preview_result.result.info,
+                            stats:request_preview_result.result.stats,
+                            episodes:request_preview_result.result.episodes,
                             last_update: dayjs.utc().unix(),
                         },
                     });
@@ -204,10 +225,18 @@ const Preview = () => {
             const local_preview_result = await get_local_preview({source_id,preview_id})
             if (local_preview_result.code === 200){
                 const data = local_preview_result.result
+                SET_CURRENT_WATCH_ID(data.watch_id??"");
+                SET_CURRENT_WATCH_INDEX(data.watch_index??-1);
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
                 try{
+                    if (data.watch_id){
+                        const watch_state_result = await get_watch_state({source_id,preview_id,watch_id:data.watch_id});
+                        if (watch_state_result.code === 200){
+                            SET_CURRENT_WATCH_TIME(watch_state_result.data.current_time??0);
+                        }
+                    }
                     if (dayjs.utc().unix() - (data.last_update??0) <= FETCH_UPDATE_INTERVAL * 60) {
                         await load_tag_data();
                         set_is_update({ state:false,error:false, message:"" });
@@ -374,27 +403,29 @@ const Preview = () => {
                                             style={{width:"100%",height:"100%",borderRadius:"inherit"}}
                                             src={INFO.local_cover || INFO.cover}
                                         />
-                                        <div className={styles.cover_overlay}>
-                                            <div
-                                                style={{
-                                                    width:"auto",
-                                                    height:"auto",
-                                                    background:"var(--icon-color-2)",
-                                                    padding: "4px",
-                                                    borderRadius:"6px",
-                                                    display:"flex",
-                                                    alignItems:'center',
-                                                }}
-                                            >
-                                                <span
+                                        <>{CURRENT_WATCH_TIME > 0 &&
+                                            <div className={styles.cover_overlay}>
+                                                <div
                                                     style={{
-                                                        fontFamily:"var(--font-family-medium)",
-                                                        color:"var(--color)",
-                                                        fontSize:"calc((100vw + 100vh) * 0.0225 / 2)",
+                                                        width:"auto",
+                                                        height:"auto",
+                                                        background:"var(--icon-color-2)",
+                                                        padding: "4px",
+                                                        borderRadius:"6px",
+                                                        display:"flex",
+                                                        alignItems:'center',
                                                     }}
-                                                >00:25:00</span>
+                                                >
+                                                    <span
+                                                        style={{
+                                                            fontFamily:"var(--font-family-medium)",
+                                                            color:"var(--color)",
+                                                            fontSize:"calc((100vw + 100vh) * 0.0225 / 2)",
+                                                        }}
+                                                    >{dayjs.duration(CURRENT_WATCH_TIME, "seconds").format("HH:mm:ss")}</span>
+                                                </div>
                                             </div>
-                                        </div>
+                                        }</>
                                     </div>
                                     
                                     <FormControl sx={{ maxWidth: "calc((100vw + 100vh) * 0.2 / 2)"}}>
@@ -492,9 +523,42 @@ const Preview = () => {
                                                 boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
                                                 fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
                                             }}
+                                            onClick={async ()=>{
+                                                if (CURRENT_WATCH_INDEX > 0) {
+                                                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_WATCH_ID}`);
+                                                }else{
+                                                    const watch_id = EPISODE_DATA?.[0]?.[0]?.id;
+                                                    if (watch_id) {
+                                                        set_is_ready(false);
+                                                        const local_preview_result = await get_local_preview({source_id,preview_id});
+                                                        if (local_preview_result.code === 200){
+                                                            const data = local_preview_result.result
+                                                            await save_local_preview({
+                                                                source_id,preview_id,
+                                                                data:{
+                                                                    ...data,
+                                                                    watch_index:1,
+                                                                    watch_id:watch_id
+                                                                },
+                                                            });
+                                                        }
+                                                        navigate(`/watch/${source_id}/${preview_id}/${watch_id}`);
+                                                    }
+                                                }
+                                                
+                                            }}
                                         >
-                                            <span style={{fontFamily: "var(--font-family-bold)"}}>Continues</span>
-                                            <span style={{fontFamily: "var(--font-family-light)"}}>Episode: 1</span>
+                                            <>{CURRENT_WATCH_INDEX > 0
+                                                ? <>
+                                                    <span style={{fontFamily: "var(--font-family-bold)"}}>Continues</span>
+                                                    <span style={{fontFamily: "var(--font-family-light)"}}>Episode: {CURRENT_WATCH_INDEX}</span>
+                                                </>
+                                                : <>
+                                                    <span style={{fontFamily: "var(--font-family-bold)"}}>Watch now</span>
+                                                    <span style={{fontFamily: "var(--font-family-light)"}}>Episode: 1</span>
+                                                </>
+                                            }</>
+                                            
                                         </ButtonBase>
                                     </div>
                                 </div>
@@ -578,7 +642,7 @@ const Preview = () => {
                                         <ButtonBase
                                             style={{
                                                 borderRadius:"12px",
-                                                background:"var(--background-color)",
+                                                background:item.index=== CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : "var(--background-color)",
                                                 color:"var(--color)",
                                                 display:"flex",
                                                 alignItems:"center",
@@ -588,7 +652,20 @@ const Preview = () => {
                                                 fontFamily: "var(--font-family-medium)",
                                                 fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
                                             }}
-                                            onClick={()=>{
+                                            onClick={async ()=>{
+                                                set_is_ready(false);
+                                                const local_preview_result = await get_local_preview({source_id,preview_id});
+                                                if (local_preview_result.code === 200){
+                                                    const data = local_preview_result.result
+                                                    await save_local_preview({
+                                                        source_id,preview_id,
+                                                        data:{
+                                                            ...data,
+                                                            watch_index:parseInt(item.index,10),
+                                                            watch_id:item.id
+                                                        },
+                                                    });
+                                                }
                                                 navigate(`/watch/${source_id}/${preview_id}/${item.id}`);
                                             }}
                                         >

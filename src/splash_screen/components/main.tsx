@@ -54,95 +54,94 @@ function Splash_Screen() {
             const new_width = monitor_size.width*0.25;
             await getCurrentWindow().setSize(new LogicalSize(new_width, new_height));
 
+            try{
+                const config_path = await path.join(await path.appDataDir(),"config.json")
+                const file_exist = await exists(config_path);
+                if (!file_exist) await writeTextFile(config_path, "{}")
+                
+                let config = await read_config();
 
-            const config_path = await path.join(await path.appDataDir(),"config.json")
-            const file_exist = await exists(config_path);
-            if (!file_exist) await writeTextFile(config_path, "{}")
-            
-            let config = await read_config();
+                setFeedback({text:"Checking manifest..."})
 
-            setFeedback({text:"Checking manifest..."})
-
-            const manifest_response:any = await new Promise((resolve,reject) =>{
-                fetch(
-                    "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
-                    {method: "get"}
-                )
-                .then(async (response) => {
-                    const node_manifest = (await response.json());
-                    resolve({data:node_manifest, code:200})
+                const manifest_response:any = await new Promise((resolve,reject) =>{
+                    fetch(
+                        "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
+                        {method: "get"}
+                    )
+                    .then(async (response) => {
+                        const node_manifest = (await response.json());
+                        resolve({data:node_manifest, code:200})
+                    })
+                    .catch(error => {
+                        console.error('Error fetching the data:', error);
+        
+                        reject({message:error, code:500})
+                    });
                 })
-                .catch(error => {
-                    console.error('Error fetching the data:', error);
-    
-                    reject({message:error, code:500})
-                });
-            })
-            
-            if (manifest_response.code === 500) {
-                setFeedback({text:`Failed to check manifest.`, color:"red"})
-                run_state.current = false;
-                return;
-            }
+                
+                if (manifest_response.code === 500) {
+                    setFeedback({text:`Failed to check manifest.`, color:"red"})
+                    return;
+                }
 
-            const check_bin:any = [
-                {"7z": check_7z},
-                {"node": check_node}
+                const check_bin:any = [
+                    {"7z": check_7z},
+                    {"node": check_node}
 
-            ]
+                ]
 
-            if (!config.bin) config.bin = {};
-            for (const item of check_bin){
-                const key = Object.keys(item)[0]
-                const callable:any = item[key]
-                if (!config.bin[key]){
-                    const result = await callable({manifest:manifest_response.data,setFeedback,setProgress});
+                if (!config.bin) config.bin = {};
+                for (const item of check_bin){
+                    const key = Object.keys(item)[0]
+                    const callable:any = item[key]
+                    if (!config.bin[key]){
+                        const result = await callable({manifest:manifest_response.data,setFeedback,setProgress});
+                        if (result?.code === 200) {
+                            config.bin[key] = true;
+                            await write_config(config)
+                        }else{
+                            console.error(result)
+                            setFeedback({text:`Error downloading ${key}`,color:"red"})
+                            return;
+
+                        }
+                    }
+                    setFeedback({text:`Download ${key} successfully.`})
+                }
+
+
+                if (!config.bin.extension_packages){
+                    const result = await check_extension_packages({setFeedback,setProgress});
                     if (result?.code === 200) {
-                        config.bin[key] = true;
+                        config.bin.extension_packages = true;
+                        config.bin.browser_path = result.data.browser_path;
                         await write_config(config)
                     }else{
                         console.error(result)
-                        setFeedback({text:`Error downloading ${key}`,color:"red"})
-                        run_state.current = false
+                        setFeedback({text:`Error downloading extension_packages`,color:"red"})
                         return;
 
                     }
                 }
-                setFeedback({text:`Download ${key} successfully.`})
-            }
+                setFeedback({text:`Download extension_packages successfully.`})
 
-
-            if (!config.bin.extension_packages){
-                const result = await check_extension_packages({setFeedback,setProgress});
-                if (result?.code === 200) {
-                    config.bin.extension_packages = true;
-                    config.bin.browser_path = result.data.browser_path;
-                    await write_config(config)
-                }else{
-                    console.error(result)
-                    setFeedback({text:`Error downloading extension_packages`,color:"red"})
-                    run_state.current = false
-                    return;
-
+                setFeedback({text:`Initiating extension...`})
+                const intiate_result = await initiate_extension();
+                if (intiate_result?.code !== 200) {
+                    setFeedback({text:`Initiating extension failed.`,color:"red"})
+                    return
                 }
+                setFeedback({text:"Launching..."})
+            }catch(e){
+                console.error(e)
+                setFeedback({text:`Error: ${e}`,color:"red"})
             }
-            setFeedback({text:`Download extension_packages successfully.`})
-
-            setFeedback({text:`Initiating extension...`})
-            const intiate_result = await initiate_extension();
-            if (intiate_result?.code !== 200) {
-                setFeedback({text:`Initiating extension failed.`,color:"red"})
-                run_state.current = false
-                return
-            }
-            setFeedback({text:"Launching..."})
-            
             await getCurrentWindow().setMaximizable(true);
             await getCurrentWindow().setResizable(true);
             await getCurrentWindow().setAlwaysOnTop(false);
 
             set_app_ready(true);
-            run_state.current = false
+            
         })();
         
     },[])

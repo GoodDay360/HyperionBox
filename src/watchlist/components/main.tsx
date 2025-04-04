@@ -55,6 +55,7 @@ function Watchlist() {
         const result:any = await request_content_from_tag({tag_name,page});
         if (result.code === 200){
             SET_DATA(result.data);
+            console.log(result.data)
             set_max_page(result.max_page);
         }
     }
@@ -195,7 +196,7 @@ function Watchlist() {
                                 </div>
                                 <div className={styles.body_box_1}>
                                     <>{DATA.filter((item:any)=>{
-                                        if (item.title.toLowerCase().includes(search.toLowerCase())) return true;
+                                        if (item.title??"?".toLowerCase().includes(search.toLowerCase())) return true;
                                         else if (item.source_id.toLowerCase().includes(search.toLowerCase())) return true;
                                         else if (item.preview_id.toLowerCase().includes(search.toLowerCase())) return true;
                                         else return false;

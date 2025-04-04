@@ -1,13 +1,10 @@
 import { writeTextFile, exists, mkdir, BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 import { path } from "@tauri-apps/api";
-import { convertFileSrc } from "@tauri-apps/api/core";
 
 export const update_watch_state = async (
     {source_id,preview_id,watch_id,state}
     :{source_id:string,preview_id:string,watch_id:string,state:any}
 ) => {
-
-    console.log(source_id,preview_id,watch_id,state)
     const watch_state_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "watch_state");
     if (!await exists(watch_state_dir)) await mkdir(watch_state_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
 
