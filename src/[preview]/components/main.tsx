@@ -25,7 +25,8 @@ import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import PublishedWithChangesRoundedIcon from '@mui/icons-material/PublishedWithChangesRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 
-// Images Imports
+
+// Media Imports
 import Blocks_Loading from "../../assets/images/blocks_loading.svg";
 
 // Disqus Imports
@@ -49,13 +50,14 @@ const FETCH_UPDATE_INTERVAL = 10; // In Minutes
 
 const Preview = () => {
     const navigate = useNavigate();
-
+    const { source_id, preview_id }:any = useParams();
+    
     const { app_ready } = useContext<any>(global_context);
 
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [is_update, set_is_update] = useState<any>({state:false,error:false,message:""})
     const [is_online, set_is_online] = useState<boolean>(false);
-    const { source_id, preview_id }:any = useParams();
+    
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
     const [INFO, SET_INFO] = useState<any>({});
     const [STATS, SET_STATS] = useState<any>({});
@@ -83,15 +85,31 @@ const Preview = () => {
                 await request_add_to_tag({tag_name:tag,source_id,preview_id})
             }
             if (selected_tag.length && added_tag.length){
-                await save_local_preview({
-                    source_id,preview_id,
-                    data:{
-                        info:INFO,
-                        stats:STATS,
-                        episodes:EPISODE_DATA,
-                        last_update: dayjs.utc().unix(),
-                    },
-                });
+                const local_preview_result = await get_local_preview({source_id,preview_id})
+                if (local_preview_result.code === 200){
+                    const data = local_preview_result.result
+                    await save_local_preview({
+                        source_id,preview_id,
+                        data:{
+                            ...data,
+                            info:INFO,
+                            stats:STATS,
+                            episodes:EPISODE_DATA,
+                            last_update: dayjs.utc().unix(),
+                        },
+                    });
+                }else{
+                    await save_local_preview({
+                        source_id,preview_id,
+                        data:{
+                            info:INFO,
+                            stats:STATS,
+                            episodes:EPISODE_DATA,
+                            last_update: dayjs.utc().unix(),
+                        },
+                    });
+                }
+                
             }else if (!selected_tag.length){
                 await remove_local_preview({source_id,preview_id})
             }
@@ -138,15 +156,30 @@ const Preview = () => {
             SET_STATS(request_preview_result.result.stats);
             SET_EPISODE_DATA(request_preview_result.result.episodes);
             if (mode === "update") {
-                await save_local_preview({
-                    source_id,preview_id,
-                    data:{
-                        info:request_preview_result.result.info,
-                        stats:request_preview_result.result.stats,
-                        episodes:request_preview_result.result.episodes,
-                        last_update: dayjs.utc().unix(),
-                    }
-                });
+                const local_preview_result = await get_local_preview({source_id,preview_id})
+                if (local_preview_result.code === 200){
+                    const data = local_preview_result.result
+                    await save_local_preview({
+                        source_id,preview_id,
+                        data:{
+                            ...data,
+                            info:INFO,
+                            stats:STATS,
+                            episodes:EPISODE_DATA,
+                            last_update: dayjs.utc().unix(),
+                        },
+                    });
+                }else{
+                    await save_local_preview({
+                        source_id,preview_id,
+                        data:{
+                            info:INFO,
+                            stats:STATS,
+                            episodes:EPISODE_DATA,
+                            last_update: dayjs.utc().unix(),
+                        },
+                    });
+                }
             }
             
         }else if (mode === "get") {
@@ -554,6 +587,9 @@ const Preview = () => {
                                                 border:"2px solid var(--background-color-layer-1)",
                                                 fontFamily: "var(--font-family-medium)",
                                                 fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
+                                            }}
+                                            onClick={()=>{
+                                                navigate(`/watch/${source_id}/${preview_id}/${item.id}`);
                                             }}
                                         >
                                             <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>

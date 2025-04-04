@@ -16,7 +16,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 // Material UI Icons
 import ViewListIcon from '@mui/icons-material/ViewList';
-import HistoryIcon from '@mui/icons-material/History';
 import ExploreIcon from '@mui/icons-material/Explore';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -41,6 +40,7 @@ const Watchlist = lazy(() => import('../../watchlist/components/main'));
 const Splash_Screen = lazy(() => import('../../splash_screen/components/main'));
 const Explore = lazy(() => import('../../explore/components/main'));
 const Preview = lazy(() => import('../../[preview]/components/main'));
+const Watch = lazy(() => import('../../[watch]/components/main'));
 
 const theme = createTheme({
     typography: {
@@ -65,7 +65,8 @@ function App() {
 	
 
 	useEffect(()=>{
-		navigate(`/${menu.path}`);
+		// navigate(`/${menu.path}`);
+		navigate(`/watch/hianime/i-may-be-a-guild-receptionist-but-ill-solo-any-boss-to-clock-out-on-time-19441/131718`);
 	},[menu])
 
 	const is_run = useRef<boolean>(false);
@@ -155,6 +156,7 @@ function App() {
 					<Route path="/watchlist/*" element={<Watchlist/>} />
 					<Route path="/explore/*" element={<Memo_Explore/>} />
 					<Route path="/preview/:source_id/:preview_id" element={<Preview/>} />
+					<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch />} />
 				</Routes>
 				{/* Fullscreen event listener snackbar */}
 				<Snackbar 

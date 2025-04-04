@@ -20,6 +20,7 @@ import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRound
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Pagination from '@mui/material/Pagination';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
 // Framer motion Imports
 import { AnimatePresence } from 'framer-motion';
@@ -42,7 +43,7 @@ function Watchlist() {
     const tag_container_ref:any = useRef({});
     const { events } = useDraggable(tag_container_ref); 
 
-
+    const [search, set_search] = useState<string>("");
     const [tag_data, set_tag_data] = useState<any>([]);
     const [selected_tag, set_selected_tag] = useState<string>("");
     const [DATA, SET_DATA] = useState<any>([]);
@@ -62,7 +63,6 @@ function Watchlist() {
     useEffect(()=>{
         (async ()=>{
             if (!selected_tag) return;
-            console.log("ERRRR", selected_tag)
             await get_data({tag_name:selected_tag,page:1});
         })();
     },[selected_tag])
@@ -174,11 +174,36 @@ function Watchlist() {
                 ? <>
                     {DATA.length
                         ? <div className={styles.body}>
-                            <div className={styles.body_box_1}>
-                                <>{DATA.map((item:any,index:number)=>(
-                                    <RenderItem key={index} item={item}/>
-                                ))}</>
-                                
+                            <div
+                                style={{
+                                    backgroundColor:"var(--background-color)",
+                                    display:"flex",
+                                    flexDirection:"column",
+                                    width:"100%",
+                                    height:"auto",
+                                    boxSizing:"border-box",
+                                    gap:"25px"
+                                }}
+                            >
+                                <div className={styles.filter_box}>
+                                    <div className={styles.search_box}>
+                                        <SearchRoundedIcon sx={{color:"var(--color)"}} fontSize='medium'/>
+                                        <input type='text' placeholder='Search' value={search}
+                                            onChange={(e)=>{set_search(e.target.value)}}
+                                        ></input>
+                                    </div>
+                                </div>
+                                <div className={styles.body_box_1}>
+                                    <>{DATA.filter((item:any)=>{
+                                        if (item.title.toLowerCase().includes(search.toLowerCase())) return true;
+                                        else if (item.source_id.toLowerCase().includes(search.toLowerCase())) return true;
+                                        else if (item.preview_id.toLowerCase().includes(search.toLowerCase())) return true;
+                                        else return false;
+                                    }).map((item:any,index:number)=>(
+                                        <RenderItem key={index} item={item}/>
+                                    ))}</>
+                                    
+                                </div>
                             </div>
                             <div className={styles.body_box_2}>
                                 <Pagination count={max_page} page={current_page} color="primary" showFirstButton showLastButton

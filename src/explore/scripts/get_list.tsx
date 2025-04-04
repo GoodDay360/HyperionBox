@@ -11,11 +11,10 @@ const get_list = async ({source_id, search}:{source_id:string,search:string}) =>
         const config = await read_config();
         const body = {
             "browser_path": config.bin.browser_path,
-            "source": source_id,
+            "source_id": source_id,
             "method": "get_list",
             "search": search,
         }
-        console.log(`http://localhost:${port}/request_extension`)
         axios({
             method: 'POST',
             url: `http://localhost:${port}/request_extension`,

@@ -16,7 +16,7 @@ const get_preview = async ({source_id,preview_id}:{source_id:string,preview_id:s
         const config = await read_config();
         const body = {
             "browser_path": config.bin.browser_path,
-            "source": source_id,
+            "source_id": source_id,
             "method": "get_preview",
             "preview_id": preview_id,
         }

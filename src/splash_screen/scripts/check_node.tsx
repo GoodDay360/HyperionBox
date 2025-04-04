@@ -42,7 +42,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         const extract_dir = await path.join(bin_dir,"node")
         if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
-        const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-*/ -aoa -md=32m -mmt=6`
+        const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-*/ -aoa -md=32m -mmt=3`
         const result = await execute_command({title:"extract",command:command})
         if (result.stderr) return {code:500, message:result.stderr, at:"check_node.tsx -> excute_command -> extract"};
         
