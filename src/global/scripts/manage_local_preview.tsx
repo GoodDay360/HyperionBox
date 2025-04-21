@@ -6,7 +6,7 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 export const get_local_preview = async ({source_id,preview_id}:{source_id:string,preview_id:string}) => {
     const DATA_DIR = await path.join(await path.appDataDir(), "data")
     const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
-    if (!(await exists(preview_dir))) await mkdir(preview_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)})
+    if (!(await exists(preview_dir))) return {code:404,message:"Not exist"}
     const manifest_path = await path.join(preview_dir,"manifest.json")
     let manifest_data
     if (await exists(manifest_path)){
@@ -27,13 +27,28 @@ export const get_local_preview = async ({source_id,preview_id}:{source_id:string
 }
 
 
-export const save_local_preview = async ({source_id,preview_id,data}:{source_id:string,preview_id:string,data:any}) => {
+export const save_local_preview = async (
+    {source_id,preview_id,data}:{source_id:string,preview_id:string,data:any}, 
+    options?: { update_cover: "require" | "optional" | "ignore" }
+) => {
+    const { 
+        
+        update_cover = options?.update_cover||"require" 
+
+    } = options || {};
+
     const DATA_DIR = await path.join(await path.appDataDir(), "data")
     const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
     if (!(await exists(preview_dir))) await mkdir(preview_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)})
     const manifest_path = await path.join(preview_dir,"manifest.json")
-    await download_file_in_chunks({url:data.info.cover, output_file: await path.join(preview_dir,"cover.jpg")})
-    
+    const cover_path = await path.join(preview_dir,"cover.jpg")
+
+    if (update_cover === "require"){
+        await download_file_in_chunks({url:data.info.cover, output_file: cover_path})
+    }else if (update_cover === "optional" && !await exists(cover_path)){
+        await download_file_in_chunks({url:data.info.cover, output_file: cover_path})
+    }
+
     await writeTextFile(manifest_path,JSON.stringify(data), {baseDir:BaseDirectory.AppData, create:true}).catch((e)=>{console.error(e)})
 }
 

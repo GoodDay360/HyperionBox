@@ -26,4 +26,6 @@
     font-style: normal;
     text-align: center;
     user-select: none;
+    white-space: pre-line;
+
 }

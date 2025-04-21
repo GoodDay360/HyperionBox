@@ -95,7 +95,6 @@
     flex-direction: column;
     box-sizing: border-box;
     background: var(--background-color);
-    border-radius: 8px;
     gap: 8px;
 }
 
@@ -114,6 +113,19 @@
     color: var(--color);
     font-family: var(--font-family-medium);
     word-break: break-word;
+}
+
+.cover_overlay{
+    position:relative;
+    top: -100%;left: 0;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom:8px;
+    
 }
 
 .action_button_container{

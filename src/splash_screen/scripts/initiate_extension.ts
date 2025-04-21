@@ -8,24 +8,14 @@ import { readTextFile, exists, BaseDirectory, mkdir, remove } from '@tauri-apps/
 import execute_command from "../../global/scripts/excute_command"
 import get_extension_directory from "../../global/scripts/get_extension_directory"
 import get_node_path from "../../global/scripts/node/get_node_path"
-import release_port from '../../global/scripts/release_port';
 import { read_config, write_config } from '../../global/scripts/manage_config';
 import write_crash_log from '../../global/scripts/write_crash_log';
+import shutdown_extension from './shutdown_extension';
 
 let port:any = null;
 let executor:any;
 getCurrentWindow().onCloseRequested(async () => {
-    try{
-        executor.kill();
-        if (port){
-            await release_port(port)
-        }
-    }catch{(e:any)=>{
-        console.error(e)
-        write_crash_log(`[Mode:STRING] ${e}`);
-        write_crash_log(`[Mode:JSON] ${JSON.stringify(e)}`);
-    }}
-    
+    await shutdown_extension();
 });
 
 const initiate_extension = async () => {
@@ -34,8 +24,15 @@ const initiate_extension = async () => {
         config.exstension_port = 49152;
         await write_config(config);
     };
+    sessionStorage.setItem("extension_port", config.exstension_port);
 
-    await release_port(config.exstension_port);
+    const request_shutdown_result = await shutdown_extension();
+    
+    if (request_shutdown_result.code === 200){
+        const message = "Seem like last session is not shutdown properly and it forcefully reconfigured.\nPlease restart the app."
+        await write_crash_log(message);
+        return {code:500, message};
+    }
 
     const extension_directory = await get_extension_directory;
     const node_path = await get_node_path;
@@ -52,6 +49,7 @@ const initiate_extension = async () => {
 
     executor = await execute_command({command:command, title:"initiate_extension",wait:false},{cwd:extension_directory});
 
+    // Waiting for extension to load before continous
     const max_check = 10
     let current_check = 0;
     const get_port = () => new Promise(async (resolve) => {
@@ -80,9 +78,11 @@ const initiate_extension = async () => {
         sessionStorage.setItem("extension_port", port);
         return {code:200, message:"OK", port:port}
     }else {
+        await write_crash_log("Failed to initiate extension");
         console.error({code:500, message:"Failed to initiate extension"})
         return {code:500, message:"Failed to initiate extension"}
     }
+    // =====================
 }
 
 

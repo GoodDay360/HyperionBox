@@ -37,7 +37,6 @@ import Blocks_Loading from "../../assets/images/blocks_loading.svg";
 
 // Styles Imports
 import styles from "../styles/main.module.css";
-
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 
@@ -79,29 +78,31 @@ function Watch() {
     let update_state_interval:any = null;
     let is_updating_state = false
     useEffect(() => {
-        if (!is_media_ready || !is_in_watchlist){
-            clearInterval(update_state_interval);
-            return;
-        }
         if (media_player_ref.current) {
-            media_player_ref.current.currentTime = media_player_state_ref.current.current_time || 0;
+            if (!is_media_ready || !is_in_watchlist){
+                media_player_ref.current.currentTime = 0;
+                clearInterval(update_state_interval);
+                return;
+            }else{
+                media_player_ref.current.currentTime = media_player_state_ref.current.current_time??0;
 
-            update_state_interval = setInterval(async () => {
-                if (is_updating_state) return;
-                is_updating_state = true
-                const player_state = media_player_ref.current.state;
+                update_state_interval = setInterval(async () => {
+                    if (is_updating_state) return;
+                    is_updating_state = true
+                    const player_state = media_player_ref.current.state;
 
-                await update_watch_state({source_id,preview_id,watch_id,
-                    state:{
-                        current_time: player_state.currentTime,
-                        server_id: SERVER_INFO.current_server_id,
-                        server_type: SERVER_INFO.current_server_type
-                    }
-                });
+                    await update_watch_state({source_id,preview_id,watch_id,
+                        state:{
+                            current_time: player_state.currentTime,
+                            server_id: SERVER_INFO.current_server_id,
+                            server_type: SERVER_INFO.current_server_type
+                        }
+                    });
 
 
-                is_updating_state = false
-            }, 3000);
+                    is_updating_state = false
+                }, 3000);
+            }
         }
         return () => {
             clearInterval(update_state_interval);
@@ -109,54 +110,60 @@ function Watch() {
     }, [is_media_ready,is_in_watchlist]);
 
     const get_data = async ({watch_id,server_type=null,server_id=null,force_update=false}:{watch_id:string,server_type?:string|null,server_id?:string|null,force_update?:boolean}) =>{
-        console.log(server_id,server_type, "HUHH")
         set_is_ready(false);
         set_is_media_ready(false);
+        set_is_update({state:true,error:false,message:""});
         media_player_state_ref.current = {};
-        const is_online_result = await check_internet_connection();
-        set_is_online(is_online_result);
-        const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
-        if (request_item_tags_result?.code === 200) {
-            if (request_item_tags_result?.data?.length > 0) {
-                const get_watch_state_result = await get_watch_state({source_id,preview_id,watch_id});
-                if (get_watch_state_result.code === 200) {
-                    media_player_state_ref.current = get_watch_state_result.data;
-                }
-                set_is_in_watchlist(true)
+        try{
+            const is_online_result = await check_internet_connection();
+            set_is_online(is_online_result);
+            const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
+            if (request_item_tags_result?.code === 200) {
+                if (request_item_tags_result?.data?.length > 0) {
+                    const get_watch_state_result = await get_watch_state({source_id,preview_id,watch_id});
+                    if (get_watch_state_result.code === 200) {
+                        media_player_state_ref.current = get_watch_state_result.data;
+                    }
+                    set_is_in_watchlist(true)
+                }else set_is_in_watchlist(false);
             }else set_is_in_watchlist(false);
-        }else set_is_in_watchlist(false);
 
-        let get_watch_result;
-        if (request_item_tags_result?.data?.length > 0){
-            get_watch_result = await get_watch({
-                source_id,preview_id,watch_id,
-                server_type: server_type || media_player_state_ref.current.server_type, server_id: server_id || media_player_state_ref.current.server_id,
-                force_update,
-            });
+            let get_watch_result;
+            if (request_item_tags_result?.data?.length > 0){
+                get_watch_result = await get_watch({
+                    source_id,preview_id,watch_id,
+                    server_type: server_type || media_player_state_ref.current.server_type, server_id: server_id || media_player_state_ref.current.server_id,
+                    force_update,
+                });
 
-        }else{
-            get_watch_result = await get_watch({
-                source_id,preview_id,watch_id,
-                server_type,server_id,
-                force_update,
-            });
-        }
-        
-        if (get_watch_result.code === 200) {
-            const data = get_watch_result.result;
-
-            SET_SERVER_INFO(data.server_info);
-            SET_EPISODE_DATA(data.episodes);
-            const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "current_playlist.m3u8")
-            const generate_hls_result = await generate_hls_from_playlist({
-                source:data.media_info.source,
-                output: playlist_path,
-            })
-            if (generate_hls_result.code === 200){
-                SET_MEDIA_SRC(convertFileSrc(playlist_path));
-                SET_MEDIA_CC(data.media_info.cc);
+            }else{
+                get_watch_result = await get_watch({
+                    source_id,preview_id,watch_id,
+                    server_type,server_id,
+                    force_update,
+                });
             }
+            
+            if (get_watch_result.code === 200) {
+                const data = get_watch_result.result;
+
+                SET_SERVER_INFO(data.server_info);
+                SET_EPISODE_DATA(data.episodes);
+                const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "current_playlist.m3u8")
+                const generate_hls_result = await generate_hls_from_playlist({
+                    source:data.media_info.source,
+                    output: playlist_path,
+                })
+                if (generate_hls_result.code === 200){
+                    SET_MEDIA_SRC(convertFileSrc(playlist_path));
+                    SET_MEDIA_CC(data.media_info.cc);
+                }
+            }
+        }catch(e){
+            set_is_update({state:false,error:true,message:"Failed to request data. Check your crash log and report to developer."});
+            console.error(e);
         }
+        set_is_update({state:false,error:false,message:""});
         set_is_ready(true);
     }
 

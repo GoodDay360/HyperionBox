@@ -22,6 +22,13 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import Pagination from '@mui/material/Pagination';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
+// Dayjs Imports
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
+import duration from "dayjs/plugin/duration";
+dayjs.extend(duration);
+
 // Framer motion Imports
 import { AnimatePresence } from 'framer-motion';
 
@@ -55,7 +62,7 @@ function Watchlist() {
         const result:any = await request_content_from_tag({tag_name,page});
         if (result.code === 200){
             SET_DATA(result.data);
-            console.log(result.data)
+            console.log("AGA", result.data)
             set_max_page(result.max_page);
         }
     }
@@ -93,12 +100,45 @@ function Watchlist() {
                     navigate(`/preview/${item.source_id}/${item.preview_id}`);
                 }}
             >
-                <LazyLoadImage className={styles.cover}
-                    src={item.cover}
-                />
+                <div className={styles.cover}>                
+                    <LazyLoadImage 
+                        style={{
+                            width:"100%",
+                            height:"100%",
+                            objectFit:"cover",
+                            borderRadius:"inherit",
+                        }}
+                        src={item.cover}
+                    />
+                    <>{item.current_time &&
+                        <div className={styles.cover_overlay}>
+                            <div
+                                style={{
+                                    width:"auto",
+                                    height:"auto",
+                                    background:"var(--icon-color-2)",
+                                    padding: "4px",
+                                    borderRadius:"6px",
+                                    display:"flex",
+                                    alignItems:'center',
+                                    boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px"
+                                }}
+                            >
+                                <span
+                                    style={{
+                                        fontFamily:"var(--font-family-medium)",
+                                        color:"var(--color)",
+                                        fontSize:"calc((100vw + 100vh) * 0.0165 / 2)",
+                                    }}
+                                >{dayjs.duration(item.current_time, "seconds").format("HH:mm:ss")}</span>
+                            </div>
+                        </div>
+                    }</>
+                </div>
                 <span className={styles.cover_title}>
                     {item.title??"?"}
                 </span>
+                
             </ButtonBase>
         </div>)
     },[])

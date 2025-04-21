@@ -50,7 +50,7 @@ import { get_local_preview, save_local_preview, remove_local_preview} from "../.
 import { get_watch_state } from "../../global/scripts/manage_watch_state";
 
 
-const FETCH_UPDATE_INTERVAL = 10; // In Minutes
+const FETCH_UPDATE_INTERVAL = 30; // In Minutes
 
 const Preview = () => {
     const navigate = useNavigate();
@@ -104,7 +104,7 @@ const Preview = () => {
                             episodes:EPISODE_DATA,
                             last_update: dayjs.utc().unix(),
                         },
-                    });
+                    },{update_cover:"optional"});
                 }else{
                     await save_local_preview({
                         source_id,preview_id,
@@ -114,7 +114,7 @@ const Preview = () => {
                             episodes:EPISODE_DATA,
                             last_update: dayjs.utc().unix(),
                         },
-                    });
+                    },{update_cover:"optional"});
                 }
                 
             }else if (selected_tag.length && local_preview_result.code !== 200){
@@ -126,7 +126,7 @@ const Preview = () => {
                         episodes:EPISODE_DATA,
                         last_update: dayjs.utc().unix(),
                     },
-                });
+                },{update_cover:"optional"});
             }else if (!selected_tag.length){
                 await remove_local_preview({source_id,preview_id})
             }
@@ -190,7 +190,6 @@ const Preview = () => {
                         },
                     });
                 }else{
-                    console.log("IT SHOULD RUN THIS!!!")
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
@@ -414,6 +413,7 @@ const Preview = () => {
                                                         borderRadius:"6px",
                                                         display:"flex",
                                                         alignItems:'center',
+                                                        boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px"
                                                     }}
                                                 >
                                                     <span
@@ -528,7 +528,8 @@ const Preview = () => {
                                                     navigate(`/watch/${source_id}/${preview_id}/${CURRENT_WATCH_ID}`);
                                                 }else{
                                                     const watch_id = EPISODE_DATA?.[0]?.[0]?.id;
-                                                    if (watch_id) {
+                                                    const watch_index = EPISODE_DATA?.[0]?.[0]?.index;
+                                                    if (watch_id && watch_index) {
                                                         set_is_ready(false);
                                                         const local_preview_result = await get_local_preview({source_id,preview_id});
                                                         if (local_preview_result.code === 200){
@@ -537,7 +538,7 @@ const Preview = () => {
                                                                 source_id,preview_id,
                                                                 data:{
                                                                     ...data,
-                                                                    watch_index:1,
+                                                                    watch_index: watch_index,
                                                                     watch_id:watch_id
                                                                 },
                                                             });

@@ -1,6 +1,7 @@
 
 // React import
 import { useEffect, useState, useRef, useContext } from 'react';
+import { flushSync } from 'react-dom';
 
 // Tauri Plugins
 import { path } from '@tauri-apps/api';
@@ -27,15 +28,9 @@ import { read_config, write_config } from '../../global/scripts/manage_config';
 // Context Imports
 import global_context from '../../global/scripts/contexts';
 
-
-
-
-
+let RUN_INTERVAL:any;
 
 function Splash_Screen() {
-    
-
-    const run_state = useRef<boolean>(false)
     const [feedback, setFeedback] = useState<any>({})
     const [progress, setProgress] = useState<any>({state:false,value:0})
 
@@ -43,9 +38,10 @@ function Splash_Screen() {
 
 
     useEffect(()=>{
-        if(run_state.current) return;
-        run_state.current = true;
-        (async ()=>{
+        // The reason I use weird interval because of strict mode in development mode. Once use in production this won't effect the speed.
+        clearInterval(RUN_INTERVAL);
+        RUN_INTERVAL = setInterval(async ()=>{
+            clearInterval(RUN_INTERVAL);
             await getCurrentWindow().setMaximizable(false);
             await getCurrentWindow().setResizable(false);
             await getCurrentWindow().setAlwaysOnTop(true);
@@ -61,7 +57,7 @@ function Splash_Screen() {
                 
                 let config = await read_config();
 
-                setFeedback({text:"Checking manifest..."})
+                setFeedback({text:"Checking manifest..."});
 
                 const manifest_response:any = await new Promise((resolve,reject) =>{
                     fetch(
@@ -128,22 +124,27 @@ function Splash_Screen() {
                 setFeedback({text:`Initiating extension...`})
                 const intiate_result = await initiate_extension();
                 if (intiate_result?.code !== 200) {
-                    setFeedback({text:`Initiating extension failed.`,color:"red"})
-                    return
+                    setFeedback({text:intiate_result.message,color:"red"})
+                    return;
                 }
                 setFeedback({text:"Launching..."})
+
+                await getCurrentWindow().setMaximizable(true);
+                await getCurrentWindow().setResizable(true);
+                await getCurrentWindow().setAlwaysOnTop(false);
+
+                set_app_ready(true);
             }catch(e){
                 console.error(e)
                 setFeedback({text:`Error: ${e}`,color:"red"})
+                return;
             }
-            await getCurrentWindow().setMaximizable(true);
-            await getCurrentWindow().setResizable(true);
-            await getCurrentWindow().setAlwaysOnTop(false);
-
-            set_app_ready(true);
             
-        })();
-        
+            
+
+        }, import.meta.env.DEV ? 1500 : 0);
+
+        return ()=>clearInterval(RUN_INTERVAL)
     },[])
 
     return (
