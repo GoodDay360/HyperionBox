@@ -254,9 +254,7 @@ function Watch() {
                             
                             
                             
-                            <IconButton color="primary" size="large">
-                                <DownloadRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
-                            </IconButton>
+                            
                         </div>
                     </div>
                     <div className={styles.body}>

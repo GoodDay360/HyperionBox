@@ -1,7 +1,7 @@
 
 // React import
 import { useEffect, useState, useRef, useContext } from 'react';
-import { flushSync } from 'react-dom';
+import { useNavigate } from 'react-router';
 
 // Tauri Plugins
 import { path } from '@tauri-apps/api';
@@ -28,9 +28,14 @@ import { read_config, write_config } from '../../global/scripts/manage_config';
 // Context Imports
 import global_context from '../../global/scripts/contexts';
 
+
+let DEV_MODE_CHECK_UPDATE = false;
 let RUN_INTERVAL:any;
 
+
 function Splash_Screen() {
+    const navigate = useNavigate();
+
     const [feedback, setFeedback] = useState<any>({})
     const [progress, setProgress] = useState<any>({state:false,value:0})
 
@@ -39,9 +44,9 @@ function Splash_Screen() {
 
     useEffect(()=>{
         // The reason I use weird interval because of strict mode in development mode. Once use in production this won't effect the speed.
-        clearInterval(RUN_INTERVAL);
-        RUN_INTERVAL = setInterval(async ()=>{
-            clearInterval(RUN_INTERVAL);
+        clearTimeout(RUN_INTERVAL);
+        RUN_INTERVAL = setTimeout(async ()=>{
+            clearTimeout(RUN_INTERVAL);
             await getCurrentWindow().setMaximizable(false);
             await getCurrentWindow().setResizable(false);
             await getCurrentWindow().setAlwaysOnTop(true);
@@ -57,70 +62,72 @@ function Splash_Screen() {
                 
                 let config = await read_config();
 
-                setFeedback({text:"Checking manifest..."});
+                if (!import.meta.env.DEV || DEV_MODE_CHECK_UPDATE){
 
-                const manifest_response:any = await new Promise((resolve,reject) =>{
-                    fetch(
-                        "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
-                        {method: "get"}
-                    )
-                    .then(async (response) => {
-                        const node_manifest = (await response.json());
-                        resolve({data:node_manifest, code:200})
+                    setFeedback({text:"Checking manifest..."});
+
+                    const manifest_response:any = await new Promise((resolve,reject) =>{
+                        fetch(
+                            "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
+                            {method: "get"}
+                        )
+                        .then(async (response) => {
+                            const node_manifest = (await response.json());
+                            resolve({data:node_manifest, code:200})
+                        })
+                        .catch(error => {
+                            console.error('Error fetching the data:', error);
+            
+                            reject({message:error, code:500})
+                        });
                     })
-                    .catch(error => {
-                        console.error('Error fetching the data:', error);
-        
-                        reject({message:error, code:500})
-                    });
-                })
-                
-                if (manifest_response.code === 500) {
-                    setFeedback({text:`Failed to check manifest.`, color:"red"})
-                    return;
-                }
+                    
+                    if (manifest_response.code === 500) {
+                        setFeedback({text:`Failed to check manifest.`, color:"red"})
+                        return;
+                    }
 
-                const check_bin:any = [
-                    {"7z": check_7z},
-                    {"node": check_node}
+                    const check_bin:any = [
+                        {"7z": check_7z},
+                        {"node": check_node}
 
-                ]
+                    ]
 
-                if (!config.bin) config.bin = {};
-                for (const item of check_bin){
-                    const key = Object.keys(item)[0]
-                    const callable:any = item[key]
-                    if (!config.bin[key]){
-                        const result = await callable({manifest:manifest_response.data,setFeedback,setProgress});
+                    if (!config.bin) config.bin = {};
+                    for (const item of check_bin){
+                        const key = Object.keys(item)[0]
+                        const callable:any = item[key]
+                        if (!config.bin[key]){
+                            const result = await callable({manifest:manifest_response.data,setFeedback,setProgress});
+                            if (result?.code === 200) {
+                                config.bin[key] = true;
+                                await write_config(config)
+                            }else{
+                                console.error(result)
+                                setFeedback({text:`Error downloading ${key}`,color:"red"})
+                                return;
+
+                            }
+                        }
+                        setFeedback({text:`Download ${key} successfully.`})
+                    }
+
+
+                    if (!config.bin.extension_packages){
+                        const result = await check_extension_packages({setFeedback,setProgress});
                         if (result?.code === 200) {
-                            config.bin[key] = true;
+                            config.bin.extension_packages = true;
+                            config.bin.browser_path = result.data.browser_path;
                             await write_config(config)
                         }else{
                             console.error(result)
-                            setFeedback({text:`Error downloading ${key}`,color:"red"})
+                            setFeedback({text:`Error downloading extension_packages`,color:"red"})
                             return;
 
                         }
                     }
-                    setFeedback({text:`Download ${key} successfully.`})
+                    setFeedback({text:`Download extension_packages successfully.`})
                 }
-
-
-                if (!config.bin.extension_packages){
-                    const result = await check_extension_packages({setFeedback,setProgress});
-                    if (result?.code === 200) {
-                        config.bin.extension_packages = true;
-                        config.bin.browser_path = result.data.browser_path;
-                        await write_config(config)
-                    }else{
-                        console.error(result)
-                        setFeedback({text:`Error downloading extension_packages`,color:"red"})
-                        return;
-
-                    }
-                }
-                setFeedback({text:`Download extension_packages successfully.`})
-
                 setFeedback({text:`Initiating extension...`})
                 const intiate_result = await initiate_extension();
                 if (intiate_result?.code !== 200) {
@@ -134,6 +141,7 @@ function Splash_Screen() {
                 await getCurrentWindow().setAlwaysOnTop(false);
 
                 set_app_ready(true);
+            
             }catch(e){
                 console.error(e)
                 setFeedback({text:`Error: ${e}`,color:"red"})
@@ -144,7 +152,7 @@ function Splash_Screen() {
 
         }, import.meta.env.DEV ? 1500 : 0);
 
-        return ()=>clearInterval(RUN_INTERVAL)
+        return ()=>clearTimeout(RUN_INTERVAL)
     },[])
 
     return (

@@ -65,7 +65,7 @@ function App() {
 
 	useEffect(()=>{
 		navigate(`/${menu.path}`);
-		// navigate(`/watch/hianime/i-may-be-a-guild-receptionist-but-ill-solo-any-boss-to-clock-out-on-time-19441/131718`);
+		// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413");
 	},[menu])
 
 	const is_run = useRef<boolean>(false);
@@ -77,8 +77,8 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			set_menu({state:true,path:"watchlist"});
-			
+			// set_menu({state:true,path:"watchlist"});
+			navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 		})();
 	},[app_ready])
 

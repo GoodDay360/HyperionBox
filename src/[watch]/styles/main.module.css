@@ -43,7 +43,8 @@
     flex-direction: row;
     justify-content: space-between;
     gap:8px;
-    overflow: auto;
+    overflow: hidden;
+    overflow-x: auto;
 }
 
 .body_box_2{

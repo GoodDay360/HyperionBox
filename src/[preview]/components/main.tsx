@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, Fragment, useMemo, useCallback, useContext } from "react";
 import { useNavigate, useParams } from "react-router";
 
-// MUI Imports
+// MUI Component Imports
 import { ButtonBase, IconButton, Button, Tooltip } from "@mui/material";
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
@@ -13,6 +13,8 @@ import Select from '@mui/material/Select';
 import Checkbox from '@mui/material/Checkbox';
 import Pagination from '@mui/material/Pagination';
 import CircularProgress from '@mui/material/CircularProgress';
+import SelectAllRoundedIcon from '@mui/icons-material/SelectAllRounded';
+import Fab from '@mui/material/Fab';
 
 // Dayjs Imports
 import dayjs from 'dayjs';
@@ -26,7 +28,12 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import PublishedWithChangesRoundedIcon from '@mui/icons-material/PublishedWithChangesRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import DeselectRoundedIcon from '@mui/icons-material/DeselectRounded';
+import DownloadForOfflineRoundedIcon from '@mui/icons-material/DownloadForOfflineRounded';
 
+// Framer Motion
+import { AnimatePresence } from 'framer-motion';
 
 // Media Imports
 import Blocks_Loading from "../../assets/images/blocks_loading.svg";
@@ -41,6 +48,9 @@ import global_context from "../../global/scripts/contexts";
 import styles from '../styles/main.module.css';
 import randomColor from "randomcolor";
 
+// Custom Components
+
+
 // Custom Imports
 import check_internet_connection from "../../global/scripts/check_internet_connection";
 import get_preview from "../scripts/get_preview";
@@ -54,6 +64,9 @@ const FETCH_UPDATE_INTERVAL = 30; // In Minutes
 
 const Preview = () => {
     const navigate = useNavigate();
+
+    const source_random_color = useRef(randomColor({luminosity:"bright",format: 'rgba',alpha:0.8}));
+
     const { source_id, preview_id }:any = useParams();
     
     const { app_ready } = useContext<any>(global_context);
@@ -61,11 +74,14 @@ const Preview = () => {
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [is_update, set_is_update] = useState<any>({state:false,error:false,message:""})
     const [is_online, set_is_online] = useState<boolean>(false);
+    const [download_mode, set_download_mode] = useState<any>({state:false,select_type:"manual"});
+    const selected_download_data = useRef<any>([])
     
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
     const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
     const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
     const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
+    const [TYPE_SCHEME, SET_TYPE_SCHEME] = useState<number>(0);
     const [INFO, SET_INFO] = useState<any>({});
     const [STATS, SET_STATS] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
@@ -80,9 +96,8 @@ const Preview = () => {
 
     // Manage Tag Event
     useEffect(()=>{
-        
+        if (!is_ready) return;
         (async () => {
-            if (!is_ready) return;
             const removed_tag = last_selected_tag.current.filter((item:string) => !selected_tag.includes(item));
             for (const tag of removed_tag) {
                 await request_remove_from_tag({tag_name:tag,source_id,preview_id})
@@ -99,6 +114,7 @@ const Preview = () => {
                         source_id,preview_id,
                         data:{
                             ...data,
+                            type_scheme:TYPE_SCHEME,
                             info:INFO,
                             stats:STATS,
                             episodes:EPISODE_DATA,
@@ -109,6 +125,7 @@ const Preview = () => {
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
+                            type_scheme:TYPE_SCHEME,
                             info:INFO,
                             stats:STATS,
                             episodes:EPISODE_DATA,
@@ -121,6 +138,7 @@ const Preview = () => {
                 await save_local_preview({
                     source_id,preview_id,
                     data:{
+                        type_scheme:TYPE_SCHEME,
                         info:INFO,
                         stats:STATS,
                         episodes:EPISODE_DATA,
@@ -172,6 +190,7 @@ const Preview = () => {
 
         const request_preview_result = await get_preview({source_id,preview_id});
         if (request_preview_result.code === 200) {
+            SET_TYPE_SCHEME(request_preview_result.result.type_scheme)
             SET_INFO(request_preview_result.result.info);
             SET_STATS(request_preview_result.result.stats);
             SET_EPISODE_DATA(request_preview_result.result.episodes);
@@ -183,6 +202,7 @@ const Preview = () => {
                         source_id,preview_id,
                         data:{
                             ...data,
+                            type_scheme: request_preview_result.result.type_scheme,
                             info:request_preview_result.result.info,
                             stats:request_preview_result.result.stats,
                             episodes:request_preview_result.result.episodes,
@@ -193,6 +213,7 @@ const Preview = () => {
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
+                            type_scheme: request_preview_result.result.type_scheme,
                             info:request_preview_result.result.info,
                             stats:request_preview_result.result.stats,
                             episodes:request_preview_result.result.episodes,
@@ -226,6 +247,7 @@ const Preview = () => {
                 const data = local_preview_result.result
                 SET_CURRENT_WATCH_ID(data.watch_id??"");
                 SET_CURRENT_WATCH_INDEX(data.watch_index??-1);
+                SET_TYPE_SCHEME(data.type_scheme)
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
@@ -278,6 +300,88 @@ const Preview = () => {
             </div>
         )
     },[STATS])
+
+    const EPISODE_COMPONENT = useCallback(({item}:any)=>{
+        const [is_checked_for_download, set_is_checked_for_download] = useState<boolean>(false)
+        useEffect(()=>{
+            if (!download_mode.state) return;
+            if (download_mode.select_type === "all"){
+                set_is_checked_for_download(true)
+            }else{
+                if (selected_download_data.current.some((i:any) => i.index === item.index && i.id === item.id)){
+                    set_is_checked_for_download(true)
+                }else{
+                    set_is_checked_for_download(false)
+                }
+            }
+        },[download_mode])
+
+        return <div
+            style={{
+                display:"flex",
+                flexDirection:"row",
+                width:"100%",
+                height: "auto",
+                alignItems:"center",
+            }}
+        >
+            
+            <ButtonBase
+                style={{
+                    flex:1,
+                    borderRadius:"12px",
+                    background:item.index=== CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : "var(--background-color)",
+                    color:"var(--color)",
+                    display:"flex",
+                    alignItems:"center",
+                    justifyContent:"flex-start",
+                    padding:"12px",
+                    border:"2px solid var(--background-color-layer-1)",
+                    fontFamily: "var(--font-family-medium)",
+                    fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
+                    boxSizing:"border-box",
+                    
+                }}
+                onClick={async ()=>{
+                    set_is_ready(false);
+                    const local_preview_result = await get_local_preview({source_id,preview_id});
+                    if (local_preview_result.code === 200){
+                        const data = local_preview_result.result
+                        await save_local_preview({
+                            source_id,preview_id,
+                            data:{
+                                ...data,
+                                watch_index:parseInt(item.index,10),
+                                watch_id:item.id
+                            },
+                        });
+                    }
+                    navigate(`/watch/${source_id}/${preview_id}/${item.id}`);
+                }}
+            >
+                <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
+            </ButtonBase>
+            <>{download_mode.state &&
+                <Checkbox sx={{color:"var(--color)"}} 
+                    checked={is_checked_for_download}
+                    onChange={(e)=>{
+                        const is_check = e.target.checked;
+                        if (is_check){
+                            selected_download_data.current.push(item)
+                            set_is_checked_for_download(true)
+                        }else{
+                            const update_select = selected_download_data.current.filter((i:any) => !(i.index === item.index && i.id === item.id))
+                            selected_download_data.current = update_select;
+                            if (download_mode.select_type != "manual") set_download_mode({...download_mode, select_type:"manual"});
+                            set_is_checked_for_download(false)
+                        }
+                    }}
+                    
+                />
+
+            }</>
+        </div>
+    },[download_mode,CURRENT_WATCH_INDEX])
 
 
     return (
@@ -370,10 +474,21 @@ const Preview = () => {
                                 }</>
                                 
                                 
-                                
-                                <IconButton color="primary" size="large">
-                                    <DownloadRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
-                                </IconButton>
+                                <>{selected_tag.length > 0 &&
+                                    <IconButton color="primary" size="large"
+                                        onClick={()=>{
+                                            set_download_mode({...download_mode,state:!download_mode.state,select_type:"manual"});
+                                            if (download_mode.state) {
+                                                selected_download_data.current = []
+                                            }
+                                        }}
+                                    >
+                                        {download_mode.state
+                                            ? <CloseRoundedIcon sx={{color:"red"}} fontSize="large"/>
+                                            : <DownloadRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                                        }
+                                    </IconButton>
+                                }</>
                             </div>
                         </div>
                         <div className={styles.body}>
@@ -487,7 +602,7 @@ const Preview = () => {
                                     <div className={styles.stats_container}>
                                         <div className={styles.stats_box} 
                                             style={{
-                                                background: randomColor({luminosity:"bright",format: 'rgba',alpha:0.8})
+                                                background: source_random_color.current,
                                             }}
                                         >
                                             <span className={styles.stats_text}>
@@ -630,7 +745,10 @@ const Preview = () => {
                                                     fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
                                                     wordBreak:"break-word",
                                                 }}
-                                            ><span style={{fontFamily: "var(--font-family-bold)"}}>{item_key[0].toUpperCase() + item_key.slice(1)}</span> {INFO[item_key]}</span>
+                                            >
+                                                <span style={{fontFamily: "var(--font-family-bold)"}}>
+                                                {item_key[0].toUpperCase() + item_key.slice(1)}</span> {INFO[item_key]}
+                                            </span>
                                         )}</>
                                     </Fragment>))
                                     }</>
@@ -638,41 +756,50 @@ const Preview = () => {
 
                             </div>
                             <div className={styles.body_box_3}>
-                                <>{EPISODE_DATA?.length 
-                                    ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(<Fragment key={index}>
-                                        <ButtonBase
-                                            style={{
-                                                borderRadius:"12px",
-                                                background:item.index=== CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : "var(--background-color)",
-                                                color:"var(--color)",
-                                                display:"flex",
-                                                alignItems:"center",
-                                                justifyContent:"flex-start",
-                                                padding:"12px",
-                                                border:"2px solid var(--background-color-layer-1)",
-                                                fontFamily: "var(--font-family-medium)",
-                                                fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
-                                            }}
-                                            onClick={async ()=>{
-                                                set_is_ready(false);
-                                                const local_preview_result = await get_local_preview({source_id,preview_id});
-                                                if (local_preview_result.code === 200){
-                                                    const data = local_preview_result.result
-                                                    await save_local_preview({
-                                                        source_id,preview_id,
-                                                        data:{
-                                                            ...data,
-                                                            watch_index:parseInt(item.index,10),
-                                                            watch_id:item.id
-                                                        },
-                                                    });
+                                <>{download_mode.state &&
+                                    <div
+                                        style={{
+                                            width:"100%",
+                                            height:"auto",
+                                            display:"flex",
+                                            justifyContent:"flex-end"
+                                        }}
+                                    >
+                                        <Tooltip title={download_mode.select_type === "all" ? "Deselect All" : "Select All"}>
+                                            <ButtonBase
+                                                sx={{
+                                                    color:"var(--color)",
+                                                    borderRadius:"8px"
+                                                }}
+                                                onClick={()=>{
+                                                    if (download_mode.select_type != "all"){
+                                                        const new_data:any = []
+                                                        for (const item of EPISODE_DATA){
+                                                            new_data.push(...item)
+                                                        }
+                                                        selected_download_data.current = new_data;
+                                                    }else{
+                                                        selected_download_data.current = [];
+                                                    }
+                                                    set_download_mode({
+                                                        ...download_mode,
+                                                        select_type: download_mode.select_type === "all" ? "manual" : "all",
+                                                    })
+                                                }}
+                                            >
+                                                {download_mode.select_type === "all"
+                                                    ? <DeselectRoundedIcon fontSize="large"/>
+                                                    : <SelectAllRoundedIcon fontSize="large"/>
                                                 }
-                                                navigate(`/watch/${source_id}/${preview_id}/${item.id}`);
-                                            }}
-                                        >
-                                            <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
-                                        </ButtonBase>
-                                    </Fragment>))}</>
+                                                
+                                            </ButtonBase>
+                                        </Tooltip>
+                                    </div>
+                                }</>
+                                <>{EPISODE_DATA?.length 
+                                    ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(
+                                        <EPISODE_COMPONENT key={index} item={item}/>
+                                    ))}</>
                                     : <></>
                                 }</>
                             </div>
@@ -724,6 +851,32 @@ const Preview = () => {
                     
                 }</>
             }</>
+
+            <>{download_mode.state &&
+                <div
+                    style={{
+                        position:"absolute",
+                        width:"100vw",
+                        height:"100vh",
+                        top:0,left:0,
+                        background:"transparent",
+                        display:"flex",
+                        justifyContent:"flex-end",
+                        alignItems:"flex-end",
+                        pointerEvents:"none",
+                        padding:"12px",
+                    }}
+                >
+                    <div style={{pointerEvents:"all"}}>
+                        <Fab color="secondary" variant="extended">
+                            
+                            Add to Download Task
+                            <DownloadForOfflineRoundedIcon />
+                        </Fab>
+                    </div>
+                </div>
+            }</>
+            
         </div>
         
     );
