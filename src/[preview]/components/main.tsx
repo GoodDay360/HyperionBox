@@ -762,7 +762,9 @@ const Preview = () => {
                                             width:"100%",
                                             height:"auto",
                                             display:"flex",
-                                            justifyContent:"flex-end"
+                                            justifyContent:"flex-end",
+                                            borderBottom:"3px solid var(--background-color-layer-1)",
+                                            padding:"8px",
                                         }}
                                     >
                                         <Tooltip title={download_mode.select_type === "all" ? "Deselect All" : "Select All"}>
