@@ -55,7 +55,7 @@ import randomColor from "randomcolor";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
 import get_preview from "../scripts/get_preview";
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags } from "../../global/scripts/manage_tag";
+import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags, request_update_tag } from "../../global/scripts/manage_tag";
 import { get_local_preview, save_local_preview, remove_local_preview} from "../../global/scripts/manage_local_preview";
 import { get_watch_state } from "../../global/scripts/manage_watch_state";
 
@@ -104,7 +104,7 @@ const Preview = () => {
             }
             const added_tag = selected_tag.filter((item:string) => !last_selected_tag.current.includes(item));
             for (const tag of added_tag) {
-                await request_add_to_tag({tag_name:tag,source_id,preview_id})
+                await request_add_to_tag({tag_name:tag,source_id,preview_id,title:INFO.title})
             }
             const local_preview_result = await get_local_preview({source_id,preview_id})
             if (selected_tag.length && added_tag.length){
@@ -165,13 +165,14 @@ const Preview = () => {
 
         const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
         if (request_item_tags_result.code === 200){
+            console.log("HAHA", request_item_tags_result)
             last_selected_tag.current = request_item_tags_result.data;
             set_selected_tag(request_item_tags_result.data);
         }else{
             set_is_error({state:true,message:"Failed to request item tags."});
             return {code:500,message:"Failed to request item tags."};
         }
-        return {code:200,message:"OK"}
+        return {code:200,message:"OK",data:request_tag_data_result.data}
     },[])
 
     const get_data = useCallback(async ({mode}:{mode:string}) => {
@@ -180,12 +181,6 @@ const Preview = () => {
         if (mode === "update") set_is_update({...is_update, state:true,error:false})
         else set_is_update({ state:false,error:false, message:""});
         
-        const load_tag_result = await load_tag_data();
-        if (load_tag_result.code !== 200) {
-            set_is_error({state:true,message:"Unable to load tag data."});
-            return;
-        };
-
         if (mode === "update") set_is_ready(true)
 
         const request_preview_result = await get_preview({source_id,preview_id});
@@ -220,7 +215,8 @@ const Preview = () => {
                             last_update: dayjs.utc().unix(),
                         },
                     });
-                }
+                };
+                await request_update_tag({source_id,preview_id,title:request_preview_result.result.info.title})
             }
             
         }else if (mode === "get") {
@@ -234,16 +230,24 @@ const Preview = () => {
         set_is_ready(true);
     },[])
 
+    // Main Running event
     const is_run = useRef<boolean>(false);
     useEffect(()=>{
         if (is_run.current || !app_ready) return;
         is_run.current = true;
         set_is_ready(false);
         (async () => {
+            const load_tag_result = await load_tag_data();
+            if (load_tag_result.code !== 200) {
+                set_is_error({state:true,message:load_tag_result.message});
+                return;
+            };
+            
             const is_online_result = await check_internet_connection();
             set_is_online(is_online_result);
             const local_preview_result = await get_local_preview({source_id,preview_id})
-            if (local_preview_result.code === 200){
+            if (load_tag_result.data.length > 0 && local_preview_result.code === 200){
+                console.log("LL IT GO HERE", load_tag_result.data.length)
                 const data = local_preview_result.result
                 SET_CURRENT_WATCH_ID(data.watch_id??"");
                 SET_CURRENT_WATCH_INDEX(data.watch_index??-1);
@@ -259,7 +263,6 @@ const Preview = () => {
                         }
                     }
                     if (dayjs.utc().unix() - (data.last_update??0) <= FETCH_UPDATE_INTERVAL * 60) {
-                        await load_tag_data();
                         set_is_update({ state:false,error:false, message:"" });
                         set_is_ready(true);
                     }else{
@@ -278,6 +281,7 @@ const Preview = () => {
         })();
         
     },[app_ready])
+    // ====================
 
     const TAG_BOX_COMPONENT = useCallback(({item_key}:any)=>{
         const bg_color = useMemo(()=>randomColor({luminosity:"bright",format: 'rgba',alpha:0.8}),[STATS])

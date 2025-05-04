@@ -11,8 +11,9 @@ export const check_fullscreen = async ({fullscreen_snackbar, set_fullscreen_snac
                 ...fullscreen_snackbar, state: true, 
                 text: config.options.fullscreen ? 'Exit fullscreen' : 'Enter fullscreen, press F11 to exit.',
             });
-            config.options.fullscreen ? await getCurrentWindow().setFullscreen(false) : await getCurrentWindow().setFullscreen(true);
+            config.options.fullscreen || sessionStorage.getItem("fullscreen") === "yes" ? await getCurrentWindow().setFullscreen(false) : await getCurrentWindow().setFullscreen(true);
             config.options.fullscreen = !config.options.fullscreen
+            sessionStorage.getItem("fullscreen") === "yes" ? sessionStorage.setItem("fullscreen", "no") : null
             await write_config(config);
         }
     });

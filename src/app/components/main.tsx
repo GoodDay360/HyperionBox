@@ -77,8 +77,8 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			// set_menu({state:true,path:"watchlist"});
-			navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
+			set_menu({state:true,path:"watchlist"});
+			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 		})();
 	},[app_ready])
 

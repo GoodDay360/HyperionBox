@@ -2,6 +2,7 @@
 
 // Tauri Plugins
 import { path } from "@tauri-apps/api";
+import { getCurrentWindow } from "@tauri-apps/api/window"
 
 // React Imports
 import { useEffect, useState, useRef, useContext, Fragment, } from 'react';
@@ -13,7 +14,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 // Vidstack Imports
 import { MediaPlayer, MediaProvider, isHLSProvider, MediaPlayerInstance,  } from '@vidstack/react';
 import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
-
+import { useMediaState } from "@vidstack/react";
 
 
 // MUI Imports
@@ -62,6 +63,7 @@ function Watch() {
     const [is_online, set_is_online] = useState<boolean>(false);
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [is_media_ready, set_is_media_ready] = useState<boolean>(false);
+    
     const [is_update, set_is_update] = useState<any>({state:false,error:false,message:""})
     const [is_in_watchlist, set_is_in_watchlist] = useState<boolean>(false);
     const [current_page, set_current_page] = useState<number>(1);
@@ -72,8 +74,22 @@ function Watch() {
     const [MEDIA_CC, SET_MEDIA_CC] = useState<any>([]);
 
     const media_player_ref:any = useRef<MediaPlayerInstance>(null);
+    const isFullscreen = useMediaState("fullscreen", media_player_ref);
     const media_player_state_ref = useRef<any>({});
 
+    useEffect(()=>{
+        (async ()=>{
+            console.log(isFullscreen)
+            if (isFullscreen){
+                await getCurrentWindow().setFullscreen(true)
+                sessionStorage.setItem("fullscreen", "yes")
+            }else{
+                await getCurrentWindow().setFullscreen(false)
+                sessionStorage.setItem("fullscreen", "no")
+            }
+        })();
+        return;
+    },[isFullscreen])
 
     let update_state_interval:any = null;
     let is_updating_state = false
@@ -278,6 +294,9 @@ function Watch() {
                                         set_is_media_ready(true);
                                     }}
                                     storage="vidstack"
+                                    streamType='on-demand'
+                                    viewType='video'
+                                    playsInline crossOrigin
                                 >
                                     <MediaProvider>
                                         {MEDIA_CC.map((entry:string, index:any) => {
@@ -295,8 +314,10 @@ function Watch() {
                                         })}
                                     </MediaProvider>
                                     <DefaultVideoLayout
+                                        colorScheme="dark"
                                         icons={defaultLayoutIcons}
                                     />
+                                    {/* <PlyrLayout  icons={plyrLayoutIcons} /> */}
                                 </MediaPlayer>
                             </div>
                             <div

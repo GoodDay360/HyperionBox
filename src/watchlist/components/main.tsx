@@ -12,7 +12,7 @@ import { useNavigate } from "react-router";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // MUI Imports
-import { ButtonBase, Tooltip, Button } from '@mui/material';
+import { ButtonBase, Tooltip, Button, IconButton } from '@mui/material';
 import Fab from '@mui/material/Fab';
 
 // MUI Icons
@@ -38,8 +38,7 @@ import ManageTagWidget from '../../global/components/manage_tag_widget';
 // Custom Imports
 import styles from "../styles/main.module.css";
 import global_context from '../../global/scripts/contexts';
-import { request_tag_data } from '../../global/scripts/manage_tag';
-import request_content_from_tag from '../../global/scripts/request_content_from_tag';
+import { request_tag_data, request_content_from_tag } from '../../global/scripts/manage_tag';
 
 
 function Watchlist() {
@@ -51,6 +50,7 @@ function Watchlist() {
     const { events } = useDraggable(tag_container_ref); 
 
     const [search, set_search] = useState<string>("");
+    const [search_mode, set_search_mode] = useState<Boolean>(false)
     const [tag_data, set_tag_data] = useState<any>([]);
     const [selected_tag, set_selected_tag] = useState<string>("");
     const [DATA, SET_DATA] = useState<any>([]);
@@ -58,8 +58,8 @@ function Watchlist() {
     const [current_page, set_current_page] = useState<number>(1);
     const [widget, set_widget] = useState<string>("");
 
-    const get_data = async ({tag_name,page=1}:{tag_name:string,page:number})=>{
-        const result:any = await request_content_from_tag({tag_name,page});
+    const get_data = async ({tag_name,page=1,search=""}:{tag_name:string,page:number,search:string})=>{
+        const result:any = await request_content_from_tag({tag_name,page,search});
         if (result.code === 200){
             SET_DATA(result.data);
             console.log("AGA", result.data)
@@ -71,16 +71,15 @@ function Watchlist() {
     useEffect(()=>{
         (async ()=>{
             if (!selected_tag) return;
-            await get_data({tag_name:selected_tag,page:1});
+            set_current_page(1);
+            await get_data({tag_name:selected_tag,page:1,search});
         })();
     },[selected_tag])
     // =========================
 
     // Check if app is ready to use then load the page content
-    const isRun = useRef<boolean>(false);
     useEffect(()=>{
-        if (isRun.current || !app_ready) return;
-        isRun.current = true;
+        if (!app_ready) return;
         (async () => {
             const tag_data_result = await request_tag_data();
             if (tag_data_result.code === 200){
@@ -146,105 +145,103 @@ function Watchlist() {
     return (<>
         <div className={styles.container}>
             <div className={styles.header}>
-                <>{tag_data.length 
-                    ? <Tooltip title="Scroll left">
-                        <ButtonBase
-                            sx={{
-                                color:"var(--icon-color-1)",
-                                backgroundColor:"var(--background-color-layer-1)",
-                            }}
-                            onClick={()=>{
-                                tag_container_ref.current.scrollBy({
-                                    top: 0,
-                                    left:  - tag_container_ref.current.clientWidth * 0.25, 
-                                    behavior: 'smooth', 
-                                });
-                            }}
-                        >
-                            <ArrowBackIosRoundedIcon/>
-                        </ButtonBase>
-                    </Tooltip>
-                    : <></>
-                }</>
-                <div className={styles.tag_container} {...events} ref={tag_container_ref}>
-                    <div className={styles.tag_box}>
-                        <>{tag_data.map((item:any, index:number)=>(
-                            <ButtonBase key={index}
+                <div className={styles.navigate_box}>
+                    <>{tag_data.length 
+                        ? <Tooltip title="Scroll left">
+                            <ButtonBase
                                 sx={{
-                                    padding: "12px", 
-                                    backgroundColor: item === selected_tag ? "var(--selected-tag-color)" : "var(--background-color-layer-1)", 
-                                    color:"var(--color)",
-                                    boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                                    color:"var(--icon-color-1)",
+                                    backgroundColor:"var(--background-color-layer-1)",
                                 }}
                                 onClick={()=>{
-                                    set_selected_tag(item);
-                                    
+                                    tag_container_ref.current.scrollBy({
+                                        top: 0,
+                                        left:  - tag_container_ref.current.clientWidth * 0.25, 
+                                        behavior: 'smooth', 
+                                    });
                                 }}
-                            >{item}</ButtonBase>
+                            >
+                                <ArrowBackIosRoundedIcon/>
+                            </ButtonBase>
+                        </Tooltip>
+                        : <></>
+                    }</>
+                    <div className={styles.tag_container} {...events} ref={tag_container_ref}>
+                        <div className={styles.tag_box}>
+                            <>{tag_data.map((item:any, index:number)=>(
+                                <ButtonBase key={index}
+                                    sx={{
+                                        padding: "12px", 
+                                        backgroundColor: item === selected_tag ? "var(--selected-tag-color)" : "var(--background-color-layer-1)", 
+                                        color:"var(--color)",
+                                        boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                                    }}
+                                    onClick={()=>{
+                                        set_selected_tag(item);
+                                        
+                                    }}
+                                >{item}</ButtonBase>
 
-                        ))}</>
-                        
-                        
+                            ))}</>
+                            
+                            
 
-                        
+                            
+                        </div>
                     </div>
+                    <>{tag_data.length 
+                        ? <Tooltip title="Scroll right">
+                            <ButtonBase
+                                sx={{
+                                    color:"var(--icon-color-1)",
+                                    backgroundColor:"var(--background-color-layer-1)",
+                                }}
+                                onClick={()=>{
+                                    tag_container_ref.current.scrollBy({
+                                        top: 0,
+                                        left: tag_container_ref.current.clientWidth * 0.25, 
+                                        behavior: 'smooth', 
+                                    });
+                                }}
+                            >
+                                <ArrowForwardIosRoundedIcon/>
+                            </ButtonBase>
+                        </Tooltip>
+                        : <></>
+                    }</>
                 </div>
-                <>{tag_data.length 
-                    ? <Tooltip title="Scroll right">
-                        <ButtonBase
-                            sx={{
-                                color:"var(--icon-color-1)",
-                                backgroundColor:"var(--background-color-layer-1)",
-                            }}
-                            onClick={()=>{
-                                tag_container_ref.current.scrollBy({
-                                    top: 0,
-                                    left: tag_container_ref.current.clientWidth * 0.25, 
-                                    behavior: 'smooth', 
-                                });
+
+                <div className={styles.filter_box}>
+                    <form className={styles.search_container} onSubmit={(e)=>{e.preventDefault()}}>
+                        <div className={styles.search_box}>
+                            <input type='text' placeholder='Search' value={search}
+                                onChange={(e)=>{set_search(e.target.value)}}
+                            ></input>
+                        </div>
+                        <IconButton color="primary" size='large' type="submit" 
+                            onClick={async ()=>{
+                                if (!search)set_search_mode(false);
+                                else set_search_mode(true);
+                                await get_data({tag_name:selected_tag,page:1,search})
+                                set_current_page(1)
                             }}
                         >
-                            <ArrowForwardIosRoundedIcon/>
-                        </ButtonBase>
-                    </Tooltip>
-                    : <></>
-                }</>
+                            <SearchRoundedIcon sx={{color:"var(--icon-color-1)"}} />
+                        </IconButton>
+                    </form>
+                </div>
             </div>
             <>{tag_data.length
 
                 ? <>
                     {DATA.length
                         ? <div className={styles.body}>
-                            <div
-                                style={{
-                                    backgroundColor:"var(--background-color)",
-                                    display:"flex",
-                                    flexDirection:"column",
-                                    width:"100%",
-                                    height:"auto",
-                                    boxSizing:"border-box",
-                                    gap:"25px"
-                                }}
-                            >
-                                <div className={styles.filter_box}>
-                                    <div className={styles.search_box}>
-                                        <SearchRoundedIcon sx={{color:"var(--color)"}} fontSize='medium'/>
-                                        <input type='text' placeholder='Search' value={search}
-                                            onChange={(e)=>{set_search(e.target.value)}}
-                                        ></input>
-                                    </div>
-                                </div>
-                                <div className={styles.body_box_1}>
-                                    <>{DATA.filter((item:any)=>{
-                                        if (item.title??"?".toLowerCase().includes(search.toLowerCase())) return true;
-                                        else if (item.source_id.toLowerCase().includes(search.toLowerCase())) return true;
-                                        else if (item.preview_id.toLowerCase().includes(search.toLowerCase())) return true;
-                                        else return false;
-                                    }).map((item:any,index:number)=>(
-                                        <RenderItem key={index} item={item}/>
-                                    ))}</>
-                                    
-                                </div>
+                            
+                            <div className={styles.body_box_1}>
+                                <>{DATA.map((item:any,index:number)=>(
+                                    <RenderItem key={index} item={item}/>
+                                ))}</>
+                                
                             </div>
                             <div className={styles.body_box_2}>
                                 <Pagination count={max_page} page={current_page} color="primary" showFirstButton showLastButton
@@ -257,7 +254,7 @@ function Watchlist() {
                                     }}
                                     onChange={async (_, page:number)=>{
                                         set_current_page(page);
-                                        await get_data({tag_name:selected_tag,page:page});
+                                        await get_data({tag_name:selected_tag,page:page,search});
                                     }}
                                 />
                                 
@@ -280,7 +277,7 @@ function Watchlist() {
                                     fontFamily:"var(--font-family-bold)",
                                     fontSize: "calc((100vw + 100vh)*0.0325/2)",
                                 }}
-                            >No content inside this tag.</span>
+                            >{search_mode ? "Search no result." : "No content inside this tag."}</span>
                             <Button color="primary" variant="contained"
                                 sx={{
                                     color:"var(--color)",
