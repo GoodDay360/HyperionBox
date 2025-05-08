@@ -30,7 +30,7 @@ import global_context from '../../global/scripts/contexts';
 
 
 let DEV_MODE_CHECK_UPDATE = false;
-let RUN_INTERVAL:any;
+let FIRST_RUN_TIMEOUT:any;
 
 
 function Splash_Screen() {
@@ -44,9 +44,9 @@ function Splash_Screen() {
 
     useEffect(()=>{
         // The reason I use weird interval because of strict mode in development mode. Once use in production this won't effect the speed.
-        clearTimeout(RUN_INTERVAL);
-        RUN_INTERVAL = setTimeout(async ()=>{
-            clearTimeout(RUN_INTERVAL);
+        clearTimeout(FIRST_RUN_TIMEOUT);
+        FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
+            clearTimeout(FIRST_RUN_TIMEOUT);
             await getCurrentWindow().setMaximizable(false);
             await getCurrentWindow().setResizable(false);
             await getCurrentWindow().setAlwaysOnTop(true);
@@ -152,7 +152,7 @@ function Splash_Screen() {
 
         }, import.meta.env.DEV ? 1500 : 0);
 
-        return ()=>clearTimeout(RUN_INTERVAL)
+        return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
     },[])
 
     return (

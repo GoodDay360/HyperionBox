@@ -25,7 +25,7 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,fo
 }) => {
     return await new Promise<any>(async (resolve, _) => {
         try{
-                
+            console.log("MASIVE RUN XX")
             const cache_dir = await path.join(await path.appDataDir(), ".cache", "watch", source_id, preview_id, watch_id);
             const manifest_path = await path.join(cache_dir, "manifest.json")
             if (!force_update && await exists(manifest_path)) {
@@ -40,9 +40,7 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,fo
                 }
             }
             const port = sessionStorage.getItem("extension_port");
-            const config = await read_config();
             const body = {
-                "browser_path": config.bin.browser_path,
                 "cache_dir": await path.join(await path.appDataDir(), ".cache"),
                 "method": "get_watch",
                 "source_id": source_id,

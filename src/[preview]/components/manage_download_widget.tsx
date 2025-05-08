@@ -1,0 +1,130 @@
+// React Imports
+import { useEffect, useState, useRef } from 'react';
+
+// MUI Imports
+import { ButtonBase, IconButton, Tooltip, Button } from '@mui/material';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import ListItemText from '@mui/material/ListItemText';
+import Select from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
+
+// MUI Icons
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
+
+// Framer motion
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Custom Imports
+
+
+// Styles
+import styles from "../styles/manage_download_widget.module.css";
+
+const ManageDownloadWidget  = ({onClose=()=>{}, onSubmit=({})=>{}}:any) => {
+
+    const [quality, set_quality] = useState<number>(4);
+
+
+    useEffect(()=>{
+        
+    },[])
+
+    
+    return (<>
+        <div className={styles.container}>
+            <motion.div className={styles.box}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                variants={{
+                    hidden: { scale: 0, opacity: 0 },
+                    visible: { 
+                        scale: 1, 
+                        opacity: 1, 
+                        transition: { type: 'spring', stiffness: 175, damping: 25 } 
+                    },
+                    exit: { 
+                        opacity: 0, 
+                        transition: { duration: 0.2 } 
+                    },
+                }}
+            >
+                <div className={styles.header}>
+                    <h3 className={styles.title}>Manage Download</h3>
+                    <IconButton 
+                        sx={{
+                            background:"red", color:"var(--icon-color-1)",
+                            '&:hover': {
+                                background: "red"
+                            }
+                        }}
+                        onClick={()=>{onClose()}}
+                    >
+                        <CloseRoundedIcon />
+                    </IconButton>
+                </div>
+                <div className={styles.body}>
+                    <div className={styles.body_box_1}>
+
+                        <Tooltip placement='top' title={"Since there is no way to directly select quality due to bulk requests, quality is automatically selected based on this value during download."}>
+                            <FormControl sx={{ minWidth: "200px", width:"calc((100vw + 100vh) * 0.5 / 2)"}}>
+                                <InputLabel sx={{color:"var(--color)"}}>Quality</InputLabel>
+                                <Select
+                                    sx={{color:"var(--color)", background:"var(--background-color-layer-1)"}}
+                                    labelId="demo-multiple-checkbox-label"
+                                    id="demo-multiple-checkbox"
+                                    value={quality}
+                                    onChange={(event:any)=>{
+                                        const value = event.target.value;
+                                        set_quality(value);
+                                    }}
+                                    input={<OutlinedInput label="Quality"/>}
+                                    // renderValue={(selected) => selected.join(', ')}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            style: {
+                                                maxHeight: "calc((100vw + 100vh) * 0.4 / 2)",
+                                                width: "calc((100vw + 100vh) * 0.3 / 2)",
+                                                background:"var(--background-color-layer-1)",
+                                                color:"var(--color)",
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <MenuItem value={4}>High</MenuItem>
+                                    <MenuItem value={3}>Medium High</MenuItem>
+                                    <MenuItem value={2}>Medium Low</MenuItem>
+                                    <MenuItem value={1}>Low</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Tooltip>
+                    </div>
+                    <div className={styles.body_box_2}>
+                        
+                        <Button
+                            variant='contained'
+                            color='primary'
+                            onClick={async ()=>{
+                                await onSubmit({
+                                    quality,
+                                })
+                            }}
+                        >
+                            Submit
+                        </Button>
+                    </div>
+                </div>
+            </motion.div>
+        </div>
+    </>)
+}
+
+export default ManageDownloadWidget;

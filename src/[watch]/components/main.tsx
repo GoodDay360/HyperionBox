@@ -52,6 +52,7 @@ import { get_local_preview,save_local_preview } from "../../global/scripts/manag
 import check_internet_connection from "../../global/scripts/check_internet_connection";
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
+let FIRST_RUN_TIMEOUT:any;
 
 function Watch() {
     const navigate = useNavigate();
@@ -79,7 +80,6 @@ function Watch() {
 
     useEffect(()=>{
         (async ()=>{
-            console.log(isFullscreen)
             if (isFullscreen){
                 await getCurrentWindow().setFullscreen(true)
                 sessionStorage.setItem("fullscreen", "yes")
@@ -186,16 +186,17 @@ function Watch() {
     useEffect(()=>{
         if (!app_ready) return;
         set_is_ready(false);
-        (async () => {
-            
+        clearTimeout(FIRST_RUN_TIMEOUT);
+        FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
             await get_data({
                 watch_id,
-                server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
+                server_type:searchParams.get("server_type"),
+                server_id:searchParams.get("server_id"),
                 force_update:false
             });
             set_is_ready(true);
-        })();
-        
+        }, import.meta.env.DEV ? 1500 : 0);
+        return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
     },[app_ready]);
 
     const onProviderChange = (provider:any) => {
@@ -317,7 +318,6 @@ function Watch() {
                                         colorScheme="dark"
                                         icons={defaultLayoutIcons}
                                     />
-                                    {/* <PlyrLayout  icons={plyrLayoutIcons} /> */}
                                 </MediaPlayer>
                             </div>
                             <div

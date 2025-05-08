@@ -49,7 +49,7 @@ import styles from '../styles/main.module.css';
 import randomColor from "randomcolor";
 
 // Custom Components
-
+import ManageDownloadWidget from "./manage_download_widget";
 
 // Custom Imports
 import check_internet_connection from "../../global/scripts/check_internet_connection";
@@ -58,7 +58,7 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_item_tags, request_update_tag } from "../../global/scripts/manage_tag";
 import { get_local_preview, save_local_preview, remove_local_preview} from "../../global/scripts/manage_local_preview";
 import { get_watch_state } from "../../global/scripts/manage_watch_state";
-
+import { request_add_download_task } from "../../global/scripts/manage_download";
 
 const FETCH_UPDATE_INTERVAL = 30; // In Minutes
 
@@ -71,6 +71,7 @@ const Preview = () => {
     
     const { app_ready } = useContext<any>(global_context);
 
+    const [widget, set_widget] = useState<string>("");
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [is_update, set_is_update] = useState<any>({state:false,error:false,message:""})
     const [is_online, set_is_online] = useState<boolean>(false);
@@ -81,7 +82,7 @@ const Preview = () => {
     const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
     const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
     const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
-    const [TYPE_SCHEME, SET_TYPE_SCHEME] = useState<number>(0);
+    const [TYPE_SCHEMA, SET_TYPE_SCHEMA] = useState<number>(0);
     const [INFO, SET_INFO] = useState<any>({});
     const [STATS, SET_STATS] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
@@ -114,7 +115,7 @@ const Preview = () => {
                         source_id,preview_id,
                         data:{
                             ...data,
-                            type_scheme:TYPE_SCHEME,
+                            type_schema:TYPE_SCHEMA,
                             info:INFO,
                             stats:STATS,
                             episodes:EPISODE_DATA,
@@ -125,7 +126,7 @@ const Preview = () => {
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
-                            type_scheme:TYPE_SCHEME,
+                            type_schema:TYPE_SCHEMA,
                             info:INFO,
                             stats:STATS,
                             episodes:EPISODE_DATA,
@@ -138,7 +139,7 @@ const Preview = () => {
                 await save_local_preview({
                     source_id,preview_id,
                     data:{
-                        type_scheme:TYPE_SCHEME,
+                        type_schema:TYPE_SCHEMA,
                         info:INFO,
                         stats:STATS,
                         episodes:EPISODE_DATA,
@@ -185,7 +186,7 @@ const Preview = () => {
 
         const request_preview_result = await get_preview({source_id,preview_id});
         if (request_preview_result.code === 200) {
-            SET_TYPE_SCHEME(request_preview_result.result.type_scheme)
+            SET_TYPE_SCHEMA(request_preview_result.result.type_schema)
             SET_INFO(request_preview_result.result.info);
             SET_STATS(request_preview_result.result.stats);
             SET_EPISODE_DATA(request_preview_result.result.episodes);
@@ -197,7 +198,7 @@ const Preview = () => {
                         source_id,preview_id,
                         data:{
                             ...data,
-                            type_scheme: request_preview_result.result.type_scheme,
+                            type_schema: request_preview_result.result.type_schema,
                             info:request_preview_result.result.info,
                             stats:request_preview_result.result.stats,
                             episodes:request_preview_result.result.episodes,
@@ -208,7 +209,7 @@ const Preview = () => {
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
-                            type_scheme: request_preview_result.result.type_scheme,
+                            type_schema: request_preview_result.result.type_schema,
                             info:request_preview_result.result.info,
                             stats:request_preview_result.result.stats,
                             episodes:request_preview_result.result.episodes,
@@ -251,7 +252,7 @@ const Preview = () => {
                 const data = local_preview_result.result
                 SET_CURRENT_WATCH_ID(data.watch_id??"");
                 SET_CURRENT_WATCH_INDEX(data.watch_index??-1);
-                SET_TYPE_SCHEME(data.type_scheme)
+                SET_TYPE_SCHEMA(data.type_schema)
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
@@ -874,7 +875,16 @@ const Preview = () => {
                     }}
                 >
                     <div style={{pointerEvents:"all"}}>
-                        <Fab color="secondary" variant="extended">
+                        <Fab color="secondary" variant="extended"
+                            sx={{
+                                zIndex:1
+                            }}
+                            onClick={()=>{
+                                
+                                set_widget("manage_download");
+                                
+                            }}
+                        >
                             
                             Add to Download Task
                             <DownloadForOfflineRoundedIcon />
@@ -883,6 +893,32 @@ const Preview = () => {
                 </div>
             }</>
             
+            <AnimatePresence>
+                {widget === "manage_download" && <ManageDownloadWidget
+                    {...{
+
+                        onClose:()=>{set_widget("")},
+                        onSubmit:async (options:any)=>{
+                            const selected_data = selected_download_data.current
+                            for (const data of selected_data){
+                                await request_add_download_task({
+                                    source_id: source_id??"",
+                                    preview_id: preview_id??"",
+                                    watch_id: data.id,
+                                    quality: options.quality,
+                                    type_schema:TYPE_SCHEMA,
+                                })
+                            }
+                            set_widget("");
+                            set_download_mode({...download_mode,state:false,select_type:"manual"});
+                            selected_download_data.current = []
+                            
+                        }
+                        
+                    }}
+                />}
+            </AnimatePresence>
+
         </div>
         
     );

@@ -44,7 +44,8 @@ const initiate_extension = async () => {
     const command = [
         `"${node_path}"`, `"${route_path}"`,
         "--log_path", `"${log_path}"`,
-        "--port", `"${config.exstension_port}"`
+        "--port", `"${config.exstension_port}"`,
+        "--browser_path", `"${config.bin.browser_path}"`
     ].join(" ")
 
     executor = await execute_command({command:command, title:"initiate_extension",wait:false},{cwd:extension_directory});

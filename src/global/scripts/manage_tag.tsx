@@ -344,7 +344,6 @@ export const request_content_from_tag = async ({ tag_name, page, search }: { tag
                 const watch_state_result = await get_watch_state({source_id:item.source_id,preview_id:item.preview_id,watch_id:manifest.watch_id})
                 if (watch_state_result.code === 200) item.current_time = watch_state_result.data.current_time;
                 
-                item.title = manifest.info.title;
                 const cover_path = await path.join(preview_dir, "cover.jpg");
                 if (await exists(cover_path)) item.cover = convertFileSrc(cover_path);
                 else item.cover = manifest.info.cover;
