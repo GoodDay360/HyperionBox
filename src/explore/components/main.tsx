@@ -22,9 +22,9 @@ import get_list from "../scripts/get_list";
 import { get_installed_sources } from "../../global/scripts/manage_extension_sources";
 import write_crash_log from "../../global/scripts/write_crash_log";
 
-var SEARCH_REF:string = "";
-var DATA_REF:any = {};
-var SEARCH_COUNT_REF:number = 0;
+let SEARCH_REF:string = "";
+let DATA_REF:any = {};
+let SEARCH_COUNT_REF:number = 0;
 
 const Explore = () => {
     const navigate = useNavigate();

@@ -16,6 +16,8 @@ async function setup_table() {
             source_id TEXT NOT NULL,
             season_id INT DEFAULT 0,
             preview_id TEXT NOT NULL, 
+            title TEXT NOT NULL,
+            watch_index INT NOT NULL,
             watch_id TEXT NOT NULL,
             quality INT NOT NULL,
             type_schema INT NOT NULL,
@@ -27,10 +29,53 @@ async function setup_table() {
     }
 }
 
+export async function request_download_task(): Promise<{ code: number, data: any }> {
+    await setup_table();
+    const db = await Database.load(DATABASE_PATH);
+    const query = `
+      SELECT *
+      FROM download_task
+      ORDER BY source_id, season_id, preview_id, watch_index ASC
+    `;
+    const results: any[] = await db.select(query);
+  
+    const request_result: { source_id: string, season_id: string, preview_id: string, type_schema: string, data: { watch_index: number, watch_id: string, title: string }[] }[] = [];
+  
+    results.forEach((result) => {
+      const existingItemIndex = request_result.findIndex((item) => item.source_id === result.source_id && item.season_id === result.season_id && item.preview_id === result.preview_id && item.type_schema === result.type_schema);
+      if (existingItemIndex !== -1) {
+        request_result[existingItemIndex].data.push({
+          watch_index: result.watch_index,
+          watch_id: result.watch_id,
+          title: result.title,
+        });
+        request_result[existingItemIndex].data.sort((a, b) => (a.watch_index as number) - (b.watch_index as number));
+      } else {
+        request_result.push({
+          source_id: result.source_id,
+          season_id: result.season_id,
+          preview_id: result.preview_id,
+          type_schema: result.type_schema,
+          data: [
+            {
+              watch_index: result.watch_index,
+              watch_id: result.watch_id,
+              title: result.title,
+            },
+          ],
+        });
+      }
+    });
+  
+    return { code: 200, data: request_result };
+  }
+
 export async function request_add_download_task({
     source_id,
     season_id=0,
     preview_id,
+    title,
+    watch_index,
     watch_id,
     quality,
     type_schema
@@ -38,6 +83,8 @@ export async function request_add_download_task({
     source_id: string,
     season_id?: number,
     preview_id: string,
+    title:string,
+    watch_index:number,
     watch_id: string,
     quality: number,
     type_schema: number
@@ -57,10 +104,10 @@ export async function request_add_download_task({
         return { code: 403, message: "Already Exist" };
     }
     const insertQuery = `
-        INSERT INTO download_task (source_id, season_id, preview_id, watch_id, quality, type_schema)
-        VALUES ($1, $2, $3, $4, $5, $6)
+        INSERT INTO download_task (source_id, season_id, preview_id, title, watch_index, watch_id, quality, type_schema)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
-    await db.execute(insertQuery, [source_id, season_id, preview_id, watch_id, quality, type_schema]);
+    await db.execute(insertQuery, [source_id, season_id, preview_id, title, watch_index, watch_id, quality, type_schema]);
     return { code: 200, message: "Added successfully" };
 }
 

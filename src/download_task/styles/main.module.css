@@ -1,0 +1,9 @@
+.container{
+    flex: 1;
+    height: auto;
+    display: flex;    
+    background: var(--background-color);
+    box-sizing: border-box;
+    flex-direction: column;
+    overflow: auto;
+}

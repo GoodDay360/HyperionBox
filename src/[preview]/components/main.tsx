@@ -904,6 +904,8 @@ const Preview = () => {
                                 await request_add_download_task({
                                     source_id: source_id??"",
                                     preview_id: preview_id??"",
+                                    title:data.title,
+                                    watch_index: data.index,
                                     watch_id: data.id,
                                     quality: options.quality,
                                     type_schema:TYPE_SCHEMA,

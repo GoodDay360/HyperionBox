@@ -34,6 +34,8 @@ import { check_fullscreen, check_resize } from '../scripts/keys_event_listener';
 // Context Imports
 import global_context from '../../global/scripts/contexts';
 
+// Worker Imports
+import download_task_worker from "../scripts/worker/download_task_worker";
 
 // Components Import
 const Watchlist = lazy(() => import('../../watchlist/components/main'));
@@ -77,27 +79,11 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
+			download_task_worker();
 			set_menu({state:true,path:"watchlist"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 		})();
 	},[app_ready])
-
-	useEffect(()=>{
-	(async () => {
-		try{
-		}catch{(e:unknown)=>{
-			if (e instanceof Error) {
-				// Log the error message if it's an instance of Error
-				error(e.message);
-			} else {
-				// Handle other types of errors (if necessary)
-				error('An unknown error occurred');
-			}
-		}}
-		
-		});
-		
-	},[])
 
 	return (<ThemeProvider theme={theme}>
 		<CssBaseline />
