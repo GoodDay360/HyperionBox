@@ -33,42 +33,45 @@ export async function request_download_task(): Promise<{ code: number, data: any
     await setup_table();
     const db = await Database.load(DATABASE_PATH);
     const query = `
-      SELECT *
-      FROM download_task
-      ORDER BY source_id, season_id, preview_id, watch_index ASC
+        SELECT *
+        FROM download_task
+        ORDER BY source_id, season_id, preview_id, watch_index, datetime DESC
     `;
     const results: any[] = await db.select(query);
-  
+
     const request_result: { source_id: string, season_id: string, preview_id: string, type_schema: string, data: { watch_index: number, watch_id: string, title: string }[] }[] = [];
-  
+
     results.forEach((result) => {
-      const existingItemIndex = request_result.findIndex((item) => item.source_id === result.source_id && item.season_id === result.season_id && item.preview_id === result.preview_id && item.type_schema === result.type_schema);
-      if (existingItemIndex !== -1) {
-        request_result[existingItemIndex].data.push({
-          watch_index: result.watch_index,
-          watch_id: result.watch_id,
-          title: result.title,
-        });
-        request_result[existingItemIndex].data.sort((a, b) => (a.watch_index as number) - (b.watch_index as number));
-      } else {
-        request_result.push({
-          source_id: result.source_id,
-          season_id: result.season_id,
-          preview_id: result.preview_id,
-          type_schema: result.type_schema,
-          data: [
-            {
-              watch_index: result.watch_index,
-              watch_id: result.watch_id,
-              title: result.title,
-            },
-          ],
-        });
-      }
+        const existingItemIndex = request_result.findIndex((item) => item.source_id === result.source_id && item.season_id === result.season_id && item.preview_id === result.preview_id && item.type_schema === result.type_schema);
+        if (existingItemIndex !== -1) {
+            request_result[existingItemIndex].data.push({
+                watch_index: result.watch_index,
+                watch_id: result.watch_id,
+                title: result.title,
+            });
+        } else {
+            request_result.push({
+                source_id: result.source_id,
+                season_id: result.season_id,
+                preview_id: result.preview_id,
+                type_schema: result.type_schema,
+                data: [
+                    {
+                    watch_index: result.watch_index,
+                    watch_id: result.watch_id,
+                    title: result.title,
+                    },
+                ],
+            });
+        }
     });
-  
+    
+    request_result.forEach((item) => {
+        item.data.sort((a, b) => (a.watch_index as number) - (b.watch_index as number));
+    });
+
     return { code: 200, data: request_result };
-  }
+}
 
 export async function request_add_download_task({
     source_id,

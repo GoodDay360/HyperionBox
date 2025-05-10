@@ -2,8 +2,6 @@
 
 import { lazy, useEffect, useState, useRef, useCallback } from "react";
 import { Routes, Route, useNavigate } from "react-router";
-import {  error } from '@tauri-apps/plugin-log';
-
 
 
 // Material UI
@@ -19,7 +17,7 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import ExploreIcon from '@mui/icons-material/Explore';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import SettingsIcon from '@mui/icons-material/Settings';
-
+import DownloadForOfflineRoundedIcon from '@mui/icons-material/DownloadForOfflineRounded';
 
 // Style import
 import 'bootstrap/dist/css/bootstrap-reboot.min.css';
@@ -32,7 +30,7 @@ import load_config_options from '../scripts/load_config_options';
 import { check_fullscreen, check_resize } from '../scripts/keys_event_listener';
 
 // Context Imports
-import global_context from '../../global/scripts/contexts';
+import { global_context, download_task_context } from '../../global/scripts/contexts';
 
 // Worker Imports
 import download_task_worker from "../scripts/worker/download_task_worker";
@@ -43,6 +41,7 @@ const Splash_Screen = lazy(() => import('../../splash_screen/components/main'));
 const Explore = lazy(() => import('../../explore/components/main'));
 const Preview = lazy(() => import('../../[preview]/components/main'));
 const Watch = lazy(() => import('../../[watch]/components/main'));
+const DownloadTask = lazy(()=> import('../../download_task/components/main'))
 
 const theme = createTheme({
     typography: {
@@ -51,6 +50,7 @@ const theme = createTheme({
 });
 
 
+let FIRST_RUN_TIMEOUT:any;
 
 function App() {
 	const navigate = useNavigate();
@@ -59,11 +59,11 @@ function App() {
 	const [menu, set_menu] = useState<any>({state:false,path:""});
 
 	const [app_ready, set_app_ready ] = useState<boolean>(false);
+	const [download_task_info, set_download_task_info] = useState<any>({});
+	const [download_task_progress, set_download_task_progress] = useState<any>({})
 
 	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
-	const menu_button_bottom:any = [{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
-
-	
+	const menu_button_bottom:any = [{title:"Download Task", path:"download_task", icon:DownloadForOfflineRoundedIcon },{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
 
 	useEffect(()=>{
 		navigate(`/${menu.path}`);
@@ -75,14 +75,17 @@ function App() {
 		if (!app_ready) return;
 		if (is_run.current) return
 		is_run.current = true;
-		(async ()=>{
+		clearTimeout(FIRST_RUN_TIMEOUT);
+        FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			download_task_worker();
-			set_menu({state:true,path:"watchlist"});
+			download_task_worker({set_download_task_info,set_download_task_progress});
+			set_menu({state:true,path:"download_task"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
-		})();
+
+		}, import.meta.env.DEV ? 1500 : 0);
+		return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
 	},[app_ready])
 
 	return (<ThemeProvider theme={theme}>
@@ -94,73 +97,83 @@ function App() {
 				...{menu, set_menu},
 			}}
 		>
-			<div className={styles.container}>
-				<>{menu.state &&
-					<div className={styles.menu_container}>
-						<div className={styles.menu}>
-							{menu_button_top.map((item:any, index:number) => (
-								<Tooltip title={item.title} placement="right" key={index}>
-									<IconButton disabled={menu.path === item.path}
-										sx={{
-											background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
-											borderRadius: 12.5,
-											"&:disabled": {
-												backgroundColor: "var(--selected-menu-background-color)",
-											},
-										}}
-										onClick={() => {set_menu({...menu,path:item.path})}}
-									>
-										<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
-									</IconButton>
-								</Tooltip>
-							))}
-						</div>
-						<div className={styles.menu} style={{alignSelf: "flex-end"}}>
-							{menu_button_bottom.map((item:any, index:number) => (
-								<Tooltip title={item.title} placement="right" key={index}>
-									<IconButton  disabled={menu.path === item.path}
-										sx={{
-											background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
-											borderRadius: 12.5,
-											"&:disabled": {
-												backgroundColor: "var(--selected-menu-background-color)",
-											},
-										}}
-										onClick={() => {set_menu({...menu,path:item.path})}}
-									>
-										<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
-									</IconButton>
-								</Tooltip>
-							))}
-						</div>
-					</div>
-				}</>
-				
-				<Routes>
-					<Route path="/" element={<Splash_Screen key={Date.now()}/>}/>
-					<Route path="/watchlist/*" element={<Watchlist key={Date.now()}/>} />
-					<Route path="/explore/*" element={<Explore/>} />
-					<Route path="/preview/:source_id/:preview_id" element={<Preview key={Date.now()} />} />
-					<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch />} />
-				</Routes>
-				{/* Fullscreen event listener snackbar */}
-				<Snackbar 
-					open={fullscreen_snackbar.state} 
-					autoHideDuration={6000} 
-					onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
-					anchorOrigin={{ vertical:"bottom", horizontal:"right" }}
-				>
-					<Alert
-						onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
-						severity={fullscreen_snackbar.severity || "info"}
-						variant={fullscreen_snackbar.variant || "filled"}
-						sx={{ width: '100%', color: "white" }}
+			<download_task_context.Provider
+						value={{
+							...{download_task_info, set_download_task_info},
+							...{download_task_progress, set_download_task_progress},
+						}}
 					>
-						{fullscreen_snackbar.text}
-					</Alert>
-				</Snackbar>
-				{/* ================ */}
-			</div>
+				<div className={styles.container}>
+					<>{menu.state &&
+						<div className={styles.menu_container}>
+							<div className={styles.menu}>
+								{menu_button_top.map((item:any, index:number) => (
+									<Tooltip title={item.title} placement="right" key={index}>
+										<IconButton disabled={menu.path === item.path}
+											sx={{
+												background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
+												borderRadius: 12.5,
+												"&:disabled": {
+													backgroundColor: "var(--selected-menu-background-color)",
+												},
+											}}
+											onClick={() => {set_menu({...menu,path:item.path})}}
+										>
+											<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
+										</IconButton>
+									</Tooltip>
+								))}
+							</div>
+							<div className={styles.menu} style={{alignSelf: "flex-end"}}>
+								{menu_button_bottom.map((item:any, index:number) => (
+									<Tooltip title={item.title} placement="right" key={index}>
+										<IconButton  disabled={menu.path === item.path}
+											sx={{
+												background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
+												borderRadius: 12.5,
+												"&:disabled": {
+													backgroundColor: "var(--selected-menu-background-color)",
+												},
+											}}
+											onClick={() => {set_menu({...menu,path:item.path})}}
+										>
+											<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
+										</IconButton>
+									</Tooltip>
+								))}
+							</div>
+						</div>
+					}</>
+					
+					<Routes>
+						<Route path="/" element={<Splash_Screen key={Date.now()}/>}/>
+						<Route path="/watchlist/*" element={<Watchlist key={Date.now()}/>} />
+						<Route path="/explore/*" element={<Explore/>} />
+						
+						<Route path="/download_task/*" element={<DownloadTask/>} />
+						
+						<Route path="/preview/:source_id/:preview_id" element={<Preview key={Date.now()} />} />
+						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch />} />
+					</Routes>
+					{/* Fullscreen event listener snackbar */}
+					<Snackbar 
+						open={fullscreen_snackbar.state} 
+						autoHideDuration={6000} 
+						onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
+						anchorOrigin={{ vertical:"bottom", horizontal:"right" }}
+					>
+						<Alert
+							onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
+							severity={fullscreen_snackbar.severity || "info"}
+							variant={fullscreen_snackbar.variant || "filled"}
+							sx={{ width: '100%', color: "white" }}
+						>
+							{fullscreen_snackbar.text}
+						</Alert>
+					</Snackbar>
+					{/* ================ */}
+				</div>
+			</download_task_context.Provider>
 		</global_context.Provider>
 		
 	</ThemeProvider>);

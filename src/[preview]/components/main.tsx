@@ -42,7 +42,7 @@ import Blocks_Loading from "../../assets/images/blocks_loading.svg";
 import { DiscussionEmbed } from 'disqus-react';
 
 // Context Imports
-import global_context from "../../global/scripts/contexts";
+import { global_context } from "../../global/scripts/contexts";
 
 // Styles Imports
 import styles from '../styles/main.module.css';

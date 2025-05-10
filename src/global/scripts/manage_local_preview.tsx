@@ -14,7 +14,7 @@ export const get_local_preview = async ({source_id,preview_id}:{source_id:string
             manifest_data = JSON.parse(await readTextFile(manifest_path, {baseDir:BaseDirectory.AppData}))
             
             const cover_path = await path.join(preview_dir,"cover.jpg")
-            if (await exists(cover_path)) manifest_data.info.local_cover = convertFileSrc(await path.join(preview_dir,"cover.jpg"))
+            if (await exists(cover_path)) manifest_data.info.local_cover = convertFileSrc(cover_path)
             return {code:200,result:manifest_data}
         }catch{
             console.error({code:404,message:"Eror parsing json. This treat as not exist."})

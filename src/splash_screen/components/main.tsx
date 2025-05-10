@@ -26,13 +26,10 @@ import initiate_extension from '../scripts/initiate_extension';
 import { read_config, write_config } from '../../global/scripts/manage_config';
 
 // Context Imports
-import global_context from '../../global/scripts/contexts';
+import { global_context } from '../../global/scripts/contexts';
 
 
-let DEV_MODE_CHECK_UPDATE = false;
 let FIRST_RUN_TIMEOUT:any;
-
-
 function Splash_Screen() {
     const navigate = useNavigate();
 
@@ -47,14 +44,19 @@ function Splash_Screen() {
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
             clearTimeout(FIRST_RUN_TIMEOUT);
-            await getCurrentWindow().setMaximizable(false);
-            await getCurrentWindow().setResizable(false);
-            await getCurrentWindow().setAlwaysOnTop(true);
+            
+            const window = await getCurrentWindow();
+
+            window.setMaximizable(false);
+            window.setResizable(false);
+            window.setAlwaysOnTop(true);
             const monitor_size:any = (await currentMonitor())?.size;
             const new_height = monitor_size.height*0.5;
             const new_width = monitor_size.width*0.25;
-            await getCurrentWindow().setSize(new LogicalSize(new_width, new_height));
+            window.setSize(new LogicalSize(new_width, new_height));
 
+            console.log(import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION , import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION)
+            
             try{
                 const config_path = await path.join(await path.appDataDir(),"config.json")
                 const file_exist = await exists(config_path);
@@ -62,7 +64,7 @@ function Splash_Screen() {
                 
                 let config = await read_config();
 
-                if (!import.meta.env.DEV || DEV_MODE_CHECK_UPDATE){
+                if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION === "0")){
 
                     setFeedback({text:"Checking manifest..."});
 
@@ -128,29 +130,34 @@ function Splash_Screen() {
                     }
                     setFeedback({text:`Download extension_packages successfully.`})
                 }
-                setFeedback({text:`Initiating extension...`})
-                const intiate_result = await initiate_extension();
-                if (intiate_result?.code !== 200) {
-                    setFeedback({text:intiate_result.message,color:"red"})
-                    return;
+                console.log("HAHA",import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0")
+                if (import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0"){
+                    setFeedback({text:`Initiating extension...`})
+                    const intiate_result = await initiate_extension();
+                    if (intiate_result?.code !== 200) {
+                        setFeedback({text:intiate_result.message,color:"red"});
+                        return;
+                    }
+                    
                 }
-                setFeedback({text:"Launching..."})
 
-                await getCurrentWindow().setMaximizable(true);
-                await getCurrentWindow().setResizable(true);
-                await getCurrentWindow().setAlwaysOnTop(false);
+                setFeedback({text:"Launching..."});
+                window.setMaximizable(true);
+                window.setResizable(true);
+                window.setAlwaysOnTop(false);
 
                 set_app_ready(true);
-            
             }catch(e){
                 console.error(e)
                 setFeedback({text:`Error: ${e}`,color:"red"})
                 return;
             }
+
             
             
 
-        }, import.meta.env.DEV ? 1500 : 0);
+
+        }, import.meta.env.DEV ? 3000 : 0);
 
         return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
     },[])

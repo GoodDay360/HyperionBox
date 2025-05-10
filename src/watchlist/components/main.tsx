@@ -37,7 +37,7 @@ import ManageTagWidget from '../../global/components/manage_tag_widget';
 
 // Custom Imports
 import styles from "../styles/main.module.css";
-import global_context from '../../global/scripts/contexts';
+import { global_context } from '../../global/scripts/contexts';
 import { request_tag_data, request_content_from_tag } from '../../global/scripts/manage_tag';
 
 

@@ -42,7 +42,7 @@ import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 
 // Custom Imports
-import global_context from '../../global/scripts/contexts';
+import { global_context } from '../../global/scripts/contexts';
 import get_watch from "../scripts/get_watch";
 import generate_hls_from_playlist from "../../global/scripts/generate_hls_from_playlist";
 import { convertFileSrc } from "@tauri-apps/api/core";

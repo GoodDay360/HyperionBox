@@ -4,7 +4,6 @@
 import axios from 'axios';
 
 // Tauri Imports
-import { read_config } from "../../global/scripts/manage_config";
 import { path } from '@tauri-apps/api';
 import { exists, writeTextFile, mkdir, BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 
@@ -13,14 +12,12 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 
-// Custom Imports
 
+const FETCH_UPDATE_INTERVAL = 6; 
 
-const FETCH_UPDATE_INTERVAL = 6; // In hours
-
-const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,force_update=false}:{
-    source_id:string,preview_id:string,
-    watch_id:string,server_type:string|null,server_id:string|null,
+const get_download_info = async ({source_id,preview_id,watch_id,server_type,server_id,force_update=false}:{
+    source_id:string,preview_id:string,watch_id:string,
+    server_type?:string|null,server_id?:string|null,
     force_update?:boolean
 }) => {
     return await new Promise<any>(async (resolve, _) => {
@@ -41,7 +38,6 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,fo
             const port = sessionStorage.getItem("extension_port");
             const body = {
                 "cache_dir": await path.join(await path.appDataDir(), ".cache"),
-                "method": "get_watch",
                 "source_id": source_id,
                 "preview_id": preview_id,
                 "watch_id": watch_id,
@@ -50,7 +46,7 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,fo
             }
             axios({
                 method: 'POST',
-                url: `http://localhost:${port}/request_extension`,
+                url: `http://localhost:${port}/request_download_info`,
                 data: body,
                 headers: {
                     'Content-Type': 'application/json',
@@ -66,9 +62,10 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,fo
             });        
         }catch(e: any) {
             console.error(e);
+            console.log("Stack trace:", e.stack);
             resolve({ code: 500, message: e });
         }
     })
 }
 
-export default get_watch;
+export default get_download_info;
