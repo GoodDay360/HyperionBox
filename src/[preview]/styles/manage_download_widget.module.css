@@ -60,6 +60,9 @@
 
 .body_box_1{
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .body_box_2{

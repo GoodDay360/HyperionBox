@@ -908,6 +908,7 @@ const Preview = () => {
                                     watch_index: data.index,
                                     watch_id: data.id,
                                     quality: options.quality,
+                                    server_type: options.server_type,
                                     type_schema:TYPE_SCHEMA,
                                 })
                             }

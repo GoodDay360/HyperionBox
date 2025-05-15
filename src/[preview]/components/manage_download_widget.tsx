@@ -31,7 +31,7 @@ import styles from "../styles/manage_download_widget.module.css";
 const ManageDownloadWidget  = ({onClose=()=>{}, onSubmit=({})=>{}}:any) => {
 
     const [quality, set_quality] = useState<number>(4);
-
+    const [server_type, set_server_type] = useState<string>("sub")
 
     useEffect(()=>{
         
@@ -106,15 +106,47 @@ const ManageDownloadWidget  = ({onClose=()=>{}, onSubmit=({})=>{}}:any) => {
                                 </Select>
                             </FormControl>
                         </Tooltip>
+
+                        <Tooltip placement='top' title={"Select server type. This apply for all content."} >
+                            <FormControl sx={{ minWidth: "200px", width:"calc((100vw + 100vh) * 0.5 / 2)"}}>
+                                <InputLabel sx={{color:"var(--color)"}}>Server Type</InputLabel>
+                                <Select
+                                    sx={{color:"var(--color)", background:"var(--background-color-layer-1)"}}
+                                    labelId="demo-multiple-checkbox-label"
+                                    id="demo-multiple-checkbox"
+                                    value={server_type}
+                                    onChange={(event:any)=>{
+                                        const value = event.target.value;
+                                        set_server_type(value);
+                                    }}
+                                    input={<OutlinedInput label="Server Type"/>}
+                                    MenuProps={{
+                                        PaperProps: {
+                                            style: {
+                                                maxHeight: "calc((100vw + 100vh) * 0.4 / 2)",
+                                                width: "calc((100vw + 100vh) * 0.3 / 2)",
+                                                background:"var(--background-color-layer-1)",
+                                                color:"var(--color)",
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <MenuItem value={'sub'}>SUB</MenuItem>
+                                    <MenuItem value={'dub'}>DUB</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Tooltip>
                     </div>
                     <div className={styles.body_box_2}>
                         
                         <Button
+                            type='submit'
                             variant='contained'
                             color='primary'
                             onClick={async ()=>{
                                 await onSubmit({
                                     quality,
+                                    server_type
                                 })
                             }}
                         >

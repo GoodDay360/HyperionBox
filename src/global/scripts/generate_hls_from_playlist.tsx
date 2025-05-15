@@ -5,15 +5,15 @@ import { writeTextFile } from "@tauri-apps/plugin-fs";
 async function generate_hls_from_playlist ({source, output}:{source:any, output:string}) {
     try{
         const bandwidthMap: { [key: string]: number } = {
-            "1080p": 5000000,
-            "720p": 3000000,
-            "360p": 1000000,
+            1080: 5000000,
+            720: 3000000,
+            360: 1000000,
         };
 
         const resolutionMap: { [key: string]: string } = {
-            "1080p": "1920x1080",
-            "720p": "1280x720",
-            "360p": "640x360",
+            1080: "1920x1080",
+            720: "1280x720",
+            360: "640x360",
         };
 
         const playlistHeader = "#EXTM3U\n";

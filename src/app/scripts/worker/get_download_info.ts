@@ -22,7 +22,7 @@ const get_download_info = async ({source_id,preview_id,watch_id,server_type,serv
 }) => {
     return await new Promise<any>(async (resolve, _) => {
         try{
-            const cache_dir = await path.join(await path.appDataDir(), ".cache", "watch", source_id, preview_id, watch_id);
+            const cache_dir = await path.join(await path.appDataDir(), ".download_cache", "watch", source_id, preview_id, watch_id);
             const manifest_path = await path.join(cache_dir, "manifest.json")
             if (!force_update && await exists(manifest_path)) {
                 try {
@@ -35,15 +35,17 @@ const get_download_info = async ({source_id,preview_id,watch_id,server_type,serv
                     console.error(e);
                 }
             }
+            console.log(":(",server_type)
             const port = sessionStorage.getItem("extension_port");
             const body = {
-                "cache_dir": await path.join(await path.appDataDir(), ".cache"),
+                "cache_dir": await path.join(await path.appDataDir(), ".download_cache"),
                 "source_id": source_id,
                 "preview_id": preview_id,
                 "watch_id": watch_id,
                 "server_type": server_type,
                 "server_id": server_id
             }
+            console.log(body)
             axios({
                 method: 'POST',
                 url: `http://localhost:${port}/request_download_info`,

@@ -20,6 +20,7 @@ async function setup_table() {
             watch_index INT NOT NULL,
             watch_id TEXT NOT NULL,
             quality INT NOT NULL,
+            server_type TEXT NOT NULL,
             type_schema INT NOT NULL,
             datetime DATETIME DEFAULT CURRENT_TIMESTAMP 
         )
@@ -81,6 +82,7 @@ export async function request_add_download_task({
     watch_index,
     watch_id,
     quality,
+    server_type,
     type_schema
 }: {
     source_id: string,
@@ -90,6 +92,7 @@ export async function request_add_download_task({
     watch_index:number,
     watch_id: string,
     quality: number,
+    server_type: string,
     type_schema: number
 }) {
     if (type_schema === 2 && !season_id){
@@ -107,10 +110,10 @@ export async function request_add_download_task({
         return { code: 403, message: "Already Exist" };
     }
     const insertQuery = `
-        INSERT INTO download_task (source_id, season_id, preview_id, title, watch_index, watch_id, quality, type_schema)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO download_task (source_id, season_id, preview_id, title, watch_index, watch_id, quality, server_type, type_schema)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
-    await db.execute(insertQuery, [source_id, season_id, preview_id, title, watch_index, watch_id, quality, type_schema]);
+    await db.execute(insertQuery, [source_id, season_id, preview_id, title, watch_index, watch_id, quality, server_type, type_schema]);
     return { code: 200, message: "Added successfully" };
 }
 
