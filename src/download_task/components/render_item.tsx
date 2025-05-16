@@ -86,7 +86,11 @@ const RenderItem = ({item}:any) => {
     return (<>
         <div className={styles.container}>
             <div className={styles.box_1}>
-                <ButtonBase className={styles.cover_box}>
+                <ButtonBase className={styles.cover_box}
+                    onClick={()=>{
+                        navigate(`/preview/${source_id}/${preview_id}`)
+                    }}
+                >
                     <LazyLoadImage className={styles.cover}
                         alt={`${source_id}-${preview_id}`}
                         src={cover} 

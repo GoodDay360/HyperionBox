@@ -2,7 +2,7 @@
 // Tauri Plugin
 import { path } from '@tauri-apps/api';
 import { convertFileSrc } from '@tauri-apps/api/core';
-import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
 
 // Node Improt
 
@@ -24,7 +24,14 @@ const QUALITY_LIST = [240,480,720,1080];
 const download_task_worker = async ({set_download_task_info,download_task_progress}:any)=>{
     
     while (true){
-        // break;
+        const download_cache_dir = await path.join(await path.appDataDir(), ".download_cache");
+        try{
+            if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
+        }catch(e){
+            await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
+            console.error(e)
+        }
+        
         const request_current_task_result:any = await request_current_task();
         if (request_current_task_result.code === 200){
             const data = request_current_task_result?.data;
@@ -38,7 +45,21 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
             const watch_index = data.watch_index;
             const watch_title = data.title;
             
-            
+            const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", watch_id)
+            const manifest_path = await path.join(main_dir, "manifest.json");
+
+            if (await exists(manifest_path)) {
+                try{
+                    JSON.parse(await readTextFile(manifest_path, {baseDir:BaseDirectory.AppData}));
+                    await write_crash_log(`[Download Task] ${source_id}->${season_id}->${preview_id}->${watch_id} already exist. Skipping...`);
+                    await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    continue;
+                }catch(e){
+                    await write_crash_log(`[Download Task] Error parsing existing manifest. Attempting to download again...`);
+                }
+            }
+
             set_download_task_info({source_id,season_id,preview_id,watch_id,watch_index,watch_title})
             let retry = 0;
             let info_result:any;
@@ -76,7 +97,7 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
             }
             if (info_result.code === 200){
                 const watch_data = info_result.result;
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", watch_id)
+                
                 await mkdir(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
                 const manifest:any = {}
                 
@@ -181,7 +202,7 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
                 
                 /// ======================================
 
-                const manifest_path = await path.join(main_dir, "manifest.json");
+                
                 await writeTextFile(manifest_path, JSON.stringify(manifest), {baseDir:BaseDirectory.AppData}).catch(e=>{console.error("[Error] Write manifest: ",e)});
                 
                 await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
