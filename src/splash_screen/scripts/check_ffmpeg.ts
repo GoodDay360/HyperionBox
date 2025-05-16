@@ -10,9 +10,9 @@ import copy_recursive from '../../global/scripts/copy_recursive';
 
 const chunkSize = 6 * 1024 * 1024; 
 
-const check_node = async ({manifest, setFeedback, setProgress}:any) => {
+const check_ffmpeg = async ({manifest, setFeedback, setProgress}:any) => {
     try{
-        const url = manifest?.["node"]?.[await platform()]?.[await arch()]?.url;
+        const url = manifest?.["ffmpeg"]?.[await platform()]?.[await arch()]?.url;
         if (!url) {
             setFeedback("Your system doesn't support this app.")
             return {code:500, message:"System not support."};
@@ -20,14 +20,14 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         
         const temp_dir = await path.join(await path.tempDir(),"com.hyperionbox.app")
         await mkdir(temp_dir, {recursive:true,baseDir:BaseDirectory.Temp}).catch(e=>{console.error(e)})
-        const output_file = await path.join(temp_dir, `node.zip`)
+        const output_file = await path.join(temp_dir, `ffmpeg.zip`)
 
         let start_size = 0;
         if (await exists(output_file)) {
             const file = await readFile(output_file, {baseDir:BaseDirectory.Temp});
             start_size = file.byteLength;
         }
-        setFeedback({text:"Downloading node..."})
+        setFeedback({text:"Downloading ffmpeg..."})
 
         await download_file_in_chunks({
             url, 
@@ -42,33 +42,33 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
 
         setProgress({state:false,value:0})
 
-        setFeedback({text:"Extracting node..."})
+        setFeedback({text:"Extracting ffmpeg..."})
         
         const path_7z = await get_7z_path;
         const bin_dir = await path.join(await path.appDataDir(),"bin")
-        const extract_dir = await path.join(bin_dir,"node")
+        const extract_dir = await path.join(bin_dir,"ffmpeg")
         if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
-        const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa -md=32m -mmt=3`
-        const result = await execute_command({title:"extract",command:command})
+        const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!ffmpeg-master*/ -aoa -md=32m -mmt=3`;
+        const result = await execute_command({title:"extract",command:command});
         if (result.stderr) {
             await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
-            return {code:500, message:result.stderr, at:"check_node.tsx -> excute_command -> extract"}
+            return {code:500, message:result.stderr, at:"check_ffmpeg.tsx -> excute_command -> extract"}
         };
         
         const extract_response = await new Promise<any>(async (resolve,reject)=>{
-            const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
-            const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-v'));
+            const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData});
+            const ffmpeg_folder_name:any = entries.find(entr => entr.name.startsWith('ffmpeg-master'));
 
-            const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
+            const extracted_ffmpeg_dir = await path.join(extract_dir, ffmpeg_folder_name.name);
             
-            await copy_recursive({src:extracted_node_dir, dest:extract_dir})
+            await copy_recursive({src:extracted_ffmpeg_dir, dest:extract_dir})
             .catch((e)=>{
                 reject({code:500, message:e})
                 console.error("[Error] copy_recursive:", e);
             })
 
-            await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
+            await remove(extracted_ffmpeg_dir,{baseDir:BaseDirectory.AppData, recursive:true})
             .catch((e)=>{
                 reject({code:500, message:e})
                 console.error("[Error] remove:", e);
@@ -80,9 +80,9 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
 
         return {code: 200, message: 'OK'}
     }catch{(e:unknown)=>{
-        console.error("[Error] check_node: ", e);
+        console.error("[Error] check_ffmpeg: ", e);
         return {code:500, message:e};
     }}
 }
 
-export default check_node;
+export default check_ffmpeg;

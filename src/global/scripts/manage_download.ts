@@ -40,7 +40,7 @@ export async function request_download_task(): Promise<{ code: number, data: any
     `;
     const results: any[] = await db.select(query);
 
-    const request_result: { source_id: string, season_id: string, preview_id: string, type_schema: string, data: { watch_index: number, watch_id: string, title: string }[] }[] = [];
+    const request_result: { source_id: string, season_id: string, preview_id: string, quality: number, server_type:string, type_schema: string, data: { watch_index: number, watch_id: string, title: string }[] }[] = [];
 
     results.forEach((result) => {
         const existingItemIndex = request_result.findIndex((item) => item.source_id === result.source_id && item.season_id === result.season_id && item.preview_id === result.preview_id && item.type_schema === result.type_schema);
@@ -48,19 +48,21 @@ export async function request_download_task(): Promise<{ code: number, data: any
             request_result[existingItemIndex].data.push({
                 watch_index: result.watch_index,
                 watch_id: result.watch_id,
-                title: result.title,
+                title: result.title
             });
         } else {
             request_result.push({
                 source_id: result.source_id,
                 season_id: result.season_id,
                 preview_id: result.preview_id,
+                quality: result.quality,
+                server_type: result.server_type,
                 type_schema: result.type_schema,
                 data: [
                     {
-                    watch_index: result.watch_index,
-                    watch_id: result.watch_id,
-                    title: result.title,
+                        watch_index: result.watch_index,
+                        watch_id: result.watch_id,
+                        title: result.title,
                     },
                 ],
             });
@@ -138,7 +140,7 @@ export async function request_remove_download_task({
     return { code: 200, message: "Removed successfully" };
 }
 
-export async function request_current_task(): Promise<{ code: number, data: any }> {
+export async function request_current_task(): Promise<any> {
     await setup_table();
     const db = await Database.load(DATABASE_PATH);
     const query = `
@@ -148,5 +150,7 @@ export async function request_current_task(): Promise<{ code: number, data: any 
         LIMIT 1
     `;
     const result:any = await db.select(query);
-    return { code: 200, data: result[0] };
+    if (result.length === 0) return { code: 204, message: "Empty Task" };
+    else return { code: 200, data: result[0] };
+    
 }

@@ -4,7 +4,7 @@ import { path } from '@tauri-apps/api';
 import { BaseDirectory, mkdir, writeTextFile, remove} from '@tauri-apps/plugin-fs';
 import { Command } from '@tauri-apps/plugin-shell';
 
-const execute_command:any = async ({title="run",command,cwd="", wait=true}:any) => {
+const execute_command:any = async ({title="run",command,cwd="", wait=true, spawn=true}:any) => {
     const plat = await platform()
     const workspace = cwd || await path.appDataDir() ;
     let result_command:string = "";
@@ -29,7 +29,9 @@ const execute_command:any = async ({title="run",command,cwd="", wait=true}:any) 
         let result = await Command.create('windows-shell', [
             '/c',
             result_command
-        ],{cwd:workspace}).spawn();
+        ],{cwd:workspace});
+        if (spawn) result.spawn();
+        
         return result;
     }
 

@@ -1,7 +1,7 @@
 import { platform, arch } from '@tauri-apps/plugin-os';
 
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, exists, remove, mkdir, open, writeFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, exists, remove, mkdir, open, writeFile, readFile} from '@tauri-apps/plugin-fs';
 
 import JSZip from 'jszip';
 
@@ -14,7 +14,7 @@ const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
 
     try{
 
-        const url = manifest?.["7z"]?.[await platform()]?.[await arch()];
+        const url = manifest?.["7z"]?.[await platform()]?.[await arch()]?.url;
         if (!url) {
             setFeedback("Your system doesn't support this app.")
             return {code:500, message:"System not support."};
@@ -24,11 +24,19 @@ const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
         await mkdir(temp_dir, {recursive:true,baseDir:BaseDirectory.Temp}).catch(e=>{console.error(e)})
         const output_file = await path.join(temp_dir, `7z.zip`)
 
-        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp})
+        let start_size = 0;
+        if (await exists(output_file)) {
+            const file = await readFile(output_file, {baseDir:BaseDirectory.Temp});
+            start_size = file.byteLength;
+        }
+
         setFeedback({text:"Downloading 7z..."})
 
         await download_file_in_chunks({
-            url: url, chunkSize:chunkSize, output_file:output_file,
+            url, 
+            start_size,
+            chunk_size:chunkSize, 
+            output_file:output_file,
             callback: ({current_size,total_size}:any) => {
                 setProgress({state:true,value:current_size*100/total_size})
 
@@ -109,8 +117,9 @@ const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
                 
             };
         })
-        .catch((error) => {
+        .catch(async (error) => {
             console.error("Error loading ZIP:", error);
+            await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
             return {code:500, message:error};
         });
 

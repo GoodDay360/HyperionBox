@@ -70,6 +70,9 @@
       "identifier": "fs:scope",
       "allow": [
         {
+          "path": "**"
+        },
+        {
           "path": "$APPDATA"
         },
         {
@@ -84,7 +87,6 @@
       ]
     },
     "os:default",
-    "http:default",
     {
       "identifier": "http:default",
       "allow": [

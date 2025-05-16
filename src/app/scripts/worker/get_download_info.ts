@@ -13,7 +13,7 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 
 
-const FETCH_UPDATE_INTERVAL = 6; 
+const FETCH_UPDATE_INTERVAL = 1; // In hours
 
 const get_download_info = async ({source_id,preview_id,watch_id,server_type,server_id,force_update=false}:{
     source_id:string,preview_id:string,watch_id:string,

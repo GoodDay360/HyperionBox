@@ -40,13 +40,15 @@
     "react-lazy-load-image-component": "1.6.3",
     "react-router": "7.4.0",
     "react-use-draggable-scroll": "0.4.7",
-    "react-virtualized": "9.22.6"
+    "react-virtualized": "9.22.6",
+    "semver": "^7.7.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
     "@types/node": "22.13.13",
     "@types/react": "19.0.12",
     "@types/react-dom": "19.0.4",
+    "@types/semver": "^7.7.0",
     "@vitejs/plugin-react": "4.3.4",
     "cross-env": "7.0.3",
     "typescript": "5.8.2",

@@ -71,6 +71,24 @@
     display: inline-block;
 }
 
+.progress_box{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    gap: 12px;
+    box-sizing: border-box;
+    justify-content: space-between;
+    align-items: center;
+}
+.progress_text{
+    font-size: calc((100vw + 100vh)*0.025/2);
+    color: var(--color-2);
+    font-family: var(--font-family-medium);
+    white-space: nowrap;
+    display: inline-block;
+}
+
 .box_2{
     width: 100%;
     background: var(--background-color-layer-1);

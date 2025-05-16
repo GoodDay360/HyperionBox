@@ -1,17 +1,34 @@
 {
     "node":{
         "windows": {
-            "x86_64": "https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip"
+            "x86_64": {
+                "url": "https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip",
+                "version":"1.0.0"
+            }
         }
     },
     "7z":{
         "windows": {
-            "x86_64": "https://github.com/GoodDay360/HyperionBox/releases/download/7zip-v1/7z2409-windows.zip"
+            "x86_64": {
+                "url": "https://github.com/GoodDay360/HyperionBox/releases/download/7zip-v1/7z2409-windows.zip",
+                "version": "1.0.0"
+            }
+        }
+    },
+    "ffmpeg":{
+        "windows": {
+            "x86_64": {
+                "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip",
+                "version": "1.0.0"
+            }
         }
     },
     "yt-dlp":{
         "windows": {
-            "x86_64": "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+            "x86_64": {
+                "url": "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe",
+                "version": "1.0.0"
+            }
         }
     }
 }

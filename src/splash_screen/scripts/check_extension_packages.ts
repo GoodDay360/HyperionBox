@@ -36,7 +36,7 @@ const check_extension_packages = async ({setFeedback, setProgress}:any) => {
             for (const item of to_downlaod) {
                 setFeedback({text:`Downloading ${item.path}...`})
                 const download = await download_file_in_chunks({
-                    chunkSize:chunkSize,url:item.url, output_file:await path.join(extension_dir, item.path), 
+                    chunk_size:chunkSize,url:item.url, output_file:await path.join(extension_dir, item.path), 
                     callback: ({current_size,total_size}:any) => {
                         setProgress({state:true,value:current_size*100/total_size})
                     }

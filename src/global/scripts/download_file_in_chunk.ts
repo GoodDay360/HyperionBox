@@ -7,7 +7,13 @@ async function download_file_in_chunks({
     chunk_size = 6 * 1024 * 1024, // 6MB chunks
     start_size = 0, // Resume from this byte offset
     callback = ({}) => {}
-}: any): Promise<any> {
+}: {
+    url: string;
+    output_file: string;
+    chunk_size?: number;
+    start_size?: number;
+    callback?: any;
+}): Promise<any> {
     try {
         const response = await fetch(url, {
             headers: start_size > 0 ? { Range: `bytes=${start_size}-` } : undefined

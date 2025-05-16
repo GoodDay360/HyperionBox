@@ -5,12 +5,17 @@ import { useNavigate } from 'react-router';
 
 // Tauri Plugins
 import { path } from '@tauri-apps/api';
-import { exists, writeTextFile } from '@tauri-apps/plugin-fs';
+import { exists, writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/window"
+import { platform, arch } from '@tauri-apps/plugin-os';
 
 // Material UI 
 import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
+
+// Semver Import
+import semver from 'semver';
+
 
 // Import assets
 import Icon from "../../assets/images/icon.png"
@@ -21,12 +26,16 @@ import styles from "../styles/main.module.css";
 // Custom imports
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
+import check_yt_dlp from '../scripts/check_yt_dlp';
+import check_ffmpeg from '../scripts/check_ffmpeg';
 import check_extension_packages from '../scripts/check_extension_packages';
 import initiate_extension from '../scripts/initiate_extension';
+import write_crash_log from '../../global/scripts/write_crash_log';
 import { read_config, write_config } from '../../global/scripts/manage_config';
 
 // Context Imports
 import { global_context } from '../../global/scripts/contexts';
+import { stat } from 'fs';
 
 
 let FIRST_RUN_TIMEOUT:any;
@@ -44,7 +53,7 @@ function Splash_Screen() {
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
             clearTimeout(FIRST_RUN_TIMEOUT);
-            
+            setFeedback({text:"Loading..."});
             const window = await getCurrentWindow();
 
             window.setMaximizable(false);
@@ -67,31 +76,50 @@ function Splash_Screen() {
                 if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION === "0")){
 
                     setFeedback({text:"Checking manifest..."});
-
-                    const manifest_response:any = await new Promise((resolve,reject) =>{
-                        fetch(
-                            "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
-                            {method: "get"}
-                        )
-                        .then(async (response) => {
-                            const node_manifest = (await response.json());
-                            resolve({data:node_manifest, code:200})
-                        })
-                        .catch(error => {
-                            console.error('Error fetching the data:', error);
-            
-                            reject({message:error, code:500})
-                        });
-                    })
                     
-                    if (manifest_response.code === 500) {
-                        setFeedback({text:`Failed to check manifest.`, color:"red"})
-                        return;
+                    let manifest_data:any;
+
+                    if (import.meta.env.DEV || import.meta.env.VITE_DEV_USE_LOCAL_BIN_MANIFEST === "1") {
+                        try{
+                            manifest_data = JSON.parse(await readTextFile(import.meta.env.VITE_DEV_LOCAL_BIN_MANIFEST_PATH));
+                        }catch(e){
+                            console.log("[MANIFEST] Error reading local manifest:",e);
+                            await write_crash_log(`[MANIFEST] Error reading local manifest:${JSON.stringify(e)}`);
+                            setFeedback({text:"Error reading local manifest.", color:"red"});
+                            return;
+                        }
+                        
+                    }else{
+                        const manifest_response:any = await new Promise((resolve,reject) =>{
+                            fetch(
+                                "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
+                                {method: "get"}
+                            )
+                            .then(async (response) => {
+                                const node_manifest = (await response.json());
+                                resolve({data:node_manifest, code:200})
+                            })
+                            .catch(error => {
+                                console.error('Error fetching the data:', error);
+                
+                                reject({message:error, code:500})
+                            });
+                        })
+                        
+                        
+                        if (manifest_response.code === 200) {
+                            manifest_data = manifest_response.data;
+                        }else{
+                            setFeedback({text:`Failed to check manifest.`, color:"red"})
+                            return;
+                        }
                     }
 
                     const check_bin:any = [
                         {"7z": check_7z},
-                        {"node": check_node}
+                        {"node": check_node},
+                        {"ffmpeg": check_ffmpeg},
+                        {"yt-dlp": check_yt_dlp},
 
                     ]
 
@@ -99,10 +127,11 @@ function Splash_Screen() {
                     for (const item of check_bin){
                         const key = Object.keys(item)[0]
                         const callable:any = item[key]
-                        if (!config.bin[key]){
-                            const result = await callable({manifest:manifest_response.data,setFeedback,setProgress});
+                        const availbe_version = manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
+                        if (!config.bin[key]?.state || !semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
+                            const result = await callable({manifest:manifest_data,setFeedback,setProgress});
                             if (result?.code === 200) {
-                                config.bin[key] = true;
+                                config.bin[key] = {state:true,version:availbe_version};
                                 await write_config(config)
                             }else{
                                 console.error(result)
@@ -130,8 +159,8 @@ function Splash_Screen() {
                     }
                     setFeedback({text:`Download extension_packages successfully.`})
                 }
-                console.log("HAHA",import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0")
-                if (import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0"){
+                
+                if (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0"){
                     setFeedback({text:`Initiating extension...`})
                     const intiate_result = await initiate_extension();
                     if (intiate_result?.code !== 200) {

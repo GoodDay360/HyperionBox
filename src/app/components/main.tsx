@@ -60,7 +60,7 @@ function App() {
 
 	const [app_ready, set_app_ready ] = useState<boolean>(false);
 	const [download_task_info, set_download_task_info] = useState<any>({});
-	const [download_task_progress, set_download_task_progress] = useState<any>({})
+	const download_task_progress = useRef<any>({})
 
 	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
 	const menu_button_bottom:any = [{title:"Download Task", path:"download_task", icon:DownloadForOfflineRoundedIcon },{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
@@ -80,7 +80,7 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			download_task_worker({set_download_task_info,set_download_task_progress});
+			download_task_worker({set_download_task_info,download_task_progress});
 			set_menu({state:true,path:"download_task"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 
@@ -100,7 +100,7 @@ function App() {
 			<download_task_context.Provider
 						value={{
 							...{download_task_info, set_download_task_info},
-							...{download_task_progress, set_download_task_progress},
+							...{download_task_progress},
 						}}
 					>
 				<div className={styles.container}>
@@ -146,14 +146,14 @@ function App() {
 					}</>
 					
 					<Routes>
-						<Route path="/" element={<Splash_Screen key={Date.now()}/>}/>
-						<Route path="/watchlist/*" element={<Watchlist key={Date.now()}/>} />
-						<Route path="/explore/*" element={<Explore/>} />
+						<Route path="/" element={<Splash_Screen key={1}/>}/>
+						<Route path="/watchlist/*" element={<Watchlist key={2}/>} />
+						<Route path="/explore/*" element={<Explore key={3}/>} />
 						
-						<Route path="/download_task/*" element={<DownloadTask/>} />
+						<Route path="/download_task/*" element={<DownloadTask key={4}/>} />
 						
-						<Route path="/preview/:source_id/:preview_id" element={<Preview key={Date.now()} />} />
-						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch />} />
+						<Route path="/preview/:source_id/:preview_id" element={<Preview key={5} />} />
+						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch key={6}/>} />
 					</Routes>
 					{/* Fullscreen event listener snackbar */}
 					<Snackbar 

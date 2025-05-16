@@ -44,13 +44,23 @@ const RenderItem = ({item}:any) => {
 
     const [cover, set_cover] = useState<string>("")
     const [title, set_title] = useState<string>("")
+    const [progress_info, set_progress_info] = useState<any>({_percent:0})
 
     const [show_content, set_show_content] = useState<boolean>(false)
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (Object.keys(download_task_progress.current).length === 0) return;
+            // console.log("cute", download_task_progress.current)
+            set_progress_info(download_task_progress.current);
+
+        }, 800);
+
+    return () => clearInterval(interval);
+    }, []);
+
     useEffect(()=>{
         ;(async ()=>{
-            console.log("ii",item)
-            console.log("cc",download_task_info)
             const DATA_DIR = await path.join(await path.appDataDir(), "data")
             const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
             const cover_path = await path.join(preview_dir,"cover.jpg")
@@ -92,35 +102,56 @@ const RenderItem = ({item}:any) => {
                             download_task_info.preview_id === preview_id) 
                             && <>
                                 <span className={styles.title}>Episode {download_task_info?.watch_index}: {download_task_info.watch_title}</span>
-                                <LinearProgress variant="determinate" 
-                                    value={20}
-                                />
+                                <div className={styles.progress_box}>
+                                    <>{(!download_task_progress.current.status || download_task_progress.current.status === "finished")
+                                        ? <div style={{flex:1, color:"grey"}}>
+                                                <LinearProgress variant="query" sx={{width:"100%"}} color="inherit"/>
+                                            </div>
+                                        : <>
+                                            <div style={{flex:1}}>
+                                                <LinearProgress variant="determinate" sx={{width:"100%"}} color="primary"
+                                                    value={progress_info._percent}
+                                                />
+                                            </div>
+                                            
+                                            <span className={styles.progress_text}>{progress_info._speed_str}</span>
+                                        </>
+                                    
+                                    }</>
+                                    
+                                </div>
                             </>
                         }</>
                         
                     </div>
-                    
-                    <ButtonBase 
-                        sx={{
-                            background:"var(--background-color)",
-                            color:"var(--color)",
-                            boxShadow: "rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px",
-                            borderBottomRightRadius: "5px"
-                        }}
-                        onClick={()=>{
-                            set_show_content(!show_content);
-                        }}
-                    >
-                        <>{show_content
-                            ? <ExpandLessRoundedIcon sx={{
-                                fontSize:"calc((100vw + 100vh)*0.035/2)"
-                            }}/>
-                            : <ExpandMoreRoundedIcon sx={{
-                                fontSize:"calc((100vw + 100vh)*0.035/2)"
-                            }}/>
-                        }</>
-                        
-                    </ButtonBase>
+                    <>{item.data.filter((item_data:any)=>!(
+                        download_task_info?.source_id === source_id && 
+                        download_task_info?.season_id === season_id && 
+                        download_task_info?.preview_id === preview_id && 
+                        download_task_info?.watch_id == item_data.watch_id
+                    )).length > 0 &&
+                        <ButtonBase 
+                            sx={{
+                                background:"var(--background-color)",
+                                color:"var(--color)",
+                                boxShadow: "rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px",
+                                borderBottomRightRadius: "5px"
+                            }}
+                            onClick={()=>{
+                                set_show_content(!show_content);
+                            }}
+                        >
+                            <>{show_content
+                                ? <ExpandLessRoundedIcon sx={{
+                                    fontSize:"calc((100vw + 100vh)*0.035/2)"
+                                }}/>
+                                : <ExpandMoreRoundedIcon sx={{
+                                    fontSize:"calc((100vw + 100vh)*0.035/2)"
+                                }}/>
+                            }</>
+                            
+                        </ButtonBase>
+                    }</>
                 </div>
             </div>
             <>{show_content &&

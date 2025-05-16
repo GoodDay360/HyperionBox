@@ -28,31 +28,40 @@ import { download_task_context, global_context } from "../../global/scripts/cont
 import { request_download_task } from "../../global/scripts/manage_download";
 
 
-
-
 let FIRST_RUN_TIMEOUT:any;
 
 const DownloadTask = () => {
     const navigate = useNavigate();
-    // const {download_task_info, download_task_progress} = useContext<any>(download_task_context)
+    const {download_task_info} = useContext<any>(download_task_context)
     const {app_ready} = useContext<any>(global_context)
     const [feedback, set_feedback] = useState<any>({state:false,text:""})
     const [DOWNLOAD_TASK_DATA, SET_DOWNLOAD_TASK_DATA] = useState<any>([])
+
+    const get_data = async ()=>{
+        const request_download_task_result = await request_download_task()
+        if (request_download_task_result.code === 200 && request_download_task_result.data.length > 0){
+            SET_DOWNLOAD_TASK_DATA(request_download_task_result.data)
+            set_feedback({state:false})
+        }else{
+            set_feedback({state:true,text:"No task found."})
+        }
+        
+    }
 
     useEffect(()=>{
         if (!app_ready) return;
         set_feedback({state:true,text:"Gathering info..."})
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
-            const request_download_task_result = await request_download_task()
-            if (request_download_task_result.code === 200){
-                SET_DOWNLOAD_TASK_DATA(request_download_task_result.data)
-            }
-            set_feedback({state:false})
-
+            await get_data();
         }, import.meta.env.DEV ? 1500 : 0);
 		return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
     },[app_ready])
+
+    useEffect(()=>{
+        get_data();
+        console.log("Current downlaod info: ", download_task_info);
+    },[download_task_info])
 
     const RenderItemComponent = useCallback(({item}:any)=>{
         return <RenderItem item={item}/>;
