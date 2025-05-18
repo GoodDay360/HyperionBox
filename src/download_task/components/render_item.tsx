@@ -44,7 +44,7 @@ const RenderItem = ({item}:any) => {
 
     const [cover, set_cover] = useState<string>("")
     const [title, set_title] = useState<string>("")
-    const [progress_info, set_progress_info] = useState<any>({_percent:0})
+    const [progress_info, set_progress_info] = useState<any>({percent:0})
 
     const [show_content, set_show_content] = useState<boolean>(false)
 
@@ -58,6 +58,19 @@ const RenderItem = ({item}:any) => {
 
     return () => clearInterval(interval);
     }, []);
+
+    useEffect(()=>{
+        if (item.data.filter((item_data:any)=>!(
+            download_task_info?.source_id === source_id && 
+            download_task_info?.season_id === season_id && 
+            download_task_info?.preview_id === preview_id && 
+            download_task_info?.watch_id == item_data.watch_id
+        )).length > 0){
+            set_show_content(true);
+        }else{
+            set_show_content(false);
+        }
+    },[download_task_info])
 
     useEffect(()=>{
         ;(async ()=>{
@@ -107,18 +120,18 @@ const RenderItem = ({item}:any) => {
                             && <>
                                 <span className={styles.title}>Episode {download_task_info?.watch_index}: {download_task_info.watch_title}</span>
                                 <div className={styles.progress_box}>
-                                    <>{(!download_task_progress.current.status || download_task_progress.current.status === "finished")
+                                    <>{(!progress_info.status || progress_info.status === "finished")
                                         ? <div style={{flex:1, color:"grey"}}>
                                                 <LinearProgress variant="query" sx={{width:"100%"}} color="inherit"/>
                                             </div>
                                         : <>
                                             <div style={{flex:1}}>
                                                 <LinearProgress variant="determinate" sx={{width:"100%"}} color="primary"
-                                                    value={progress_info._percent}
+                                                    value={progress_info.percent}
                                                 />
                                             </div>
                                             
-                                            <span className={styles.progress_text}>{progress_info._speed_str}</span>
+                                            <span className={styles.progress_text}>{progress_info.label}</span>
                                         </>
                                     
                                     }</>

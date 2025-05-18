@@ -3,7 +3,7 @@
 import { path } from '@tauri-apps/api';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
-
+import start_download from './start_download';
 // Node Improt
 
 
@@ -24,13 +24,13 @@ const QUALITY_LIST = [240,480,720,1080];
 const download_task_worker = async ({set_download_task_info,download_task_progress}:any)=>{
     
     while (true){
-        const download_cache_dir = await path.join(await path.appDataDir(), ".download_cache");
-        try{
-            if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
-        }catch(e){
-            await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
-            console.error(e)
-        }
+        // const download_cache_dir = await path.join(await path.appDataDir(), ".download_cache");
+        // try{
+        //     if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
+        // }catch(e){
+        //     await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
+        //     console.error(e)
+        // }
         
         const request_current_task_result:any = await request_current_task();
         if (request_current_task_result.code === 200){
@@ -119,60 +119,22 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
                 }
                 
                 const prefer_source = watch_data.media_info.source[prefer_source_index > 0 ? prefer_source_index-1 : 0];
-                
-                const command = [
-                    `SET "FILEURL=${path_to_file_url(prefer_source.uri)}"`, "\n",
-                    "SETLOCAL ENABLEDELAYEDEXPANSION", "\n",
-                    `"${await get_yt_dlp_path}"`, "--enable-file-urls",
-                    "--ffmpeg-location", `"${await get_ffmpeg_bin}"`,
-                    "--retries", "5", "--abort-on-unavailable-fragments",
-                    "--progress-template", `"%%(progress)j"`,
-                    `"!FILEURL!"`, "-o", `"${watch_id}.mp4"`, "\n",
-                    "ENDLOCAL"
-                ].join(" ");
-                console.log(command)
-                const executor = await execute_command({title:"download_task",command,wait:false,spawn:false,cwd:main_dir});
+                const hls_data = await readTextFile(prefer_source.uri, {baseDir:BaseDirectory.AppData});
 
-                const executor_result:any = await new Promise((resolve, _) => {
-                    executor.stdout.on('data', (line:string) => {
-                        try{
-                            const info = JSON.parse(line);
-                            download_task_progress.current = info;
-                            if (info.status === "finished"){
-                                resolve({code:200, message:"OK"});
-                            }
-                        }catch{}
-                    });
-                    
-                    const child = executor.spawn();
+                download_task_progress.current = {status:"downloading", percent:0, label:"Preparing..."};
 
-                    executor.stderr.on('data', async (line:string) => {
-                        console.error(`stderr: ${line}`);
-                        console.log('Error detected, terminating process...');
-                        child.kill();
-                        await write_crash_log(`[yt-dlp] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`);
-                        resolve({code:500, message:line});
-                    });
-                    
-                    executor.on('error', async (error:any) => {
-                        console.error(`Error: ${error}`);
-                        await write_crash_log(`[yt-dlp] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`);
-                        resolve({code:500, message:error});
-                    });
-
-                    executor.on('close', (data:any) => {
-                        console.log(`[yt-dlp] Process exited with: `, data);
-                    });
-                });
-
-                if (executor_result.code === 200){
+                const start_download_result = await start_download({hls_data,main_dir:main_dir, download_task_progress});
+                if (start_download_result.code === 200){
                     new_local_source.push({
-                        uri: convertFileSrc(await path.join(main_dir, `${watch_id}.mp4`)),
+                        uri: start_download_result.result,
                         type: prefer_source.type,
                         quality: prefer_source.quality
                     })
                     manifest.media_info.source = new_local_source;
                 }else{
+                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                    await write_crash_log(`[Download Task] Removing from download task->skipping...`)
+                    await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
                     continue;
                 }
 
@@ -195,7 +157,7 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
                     
                     }
                     await download_file_in_chunks({url:cc_url,output_file:cc_path,start_size});
-                    new_local_cc_list.push({[cc_key]:convertFileSrc(cc_path)});
+                    new_local_cc_list.push({[cc_key]:cc_path});
                 }
                 
                 manifest.media_info.cc = new_local_cc_list
@@ -207,7 +169,7 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
                 
                 await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
             }else{
-                await request_remove_download_task({source_id, season_id, preview_id, watch_id});
+                // await request_remove_download_task({source_id, season_id, preview_id, watch_id});
             }
             await new Promise(resolve => setTimeout(resolve, 1000));
         }else{

@@ -18,13 +18,31 @@ dayjs.extend(utc);
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 
-const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,force_update=false}:{
+const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,force_update=false,check_local=true}:{
     source_id:string,preview_id:string,
     watch_id:string,server_type:string|null,server_id:string|null,
-    force_update?:boolean
+    force_update?:boolean,check_local?:boolean
 }) => {
     return await new Promise<any>(async (resolve, _) => {
         try{
+            // Load from local first
+            if (check_local) {
+                const local_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", watch_id, "manifest.json")
+                if (await exists(local_manifest_path)) {
+                    try {
+                        const manifest_data = JSON.parse(await readTextFile(local_manifest_path, {baseDir:BaseDirectory.AppData}));
+                        resolve({code:200,result:manifest_data});
+                        console.log("uhhh", manifest_data);
+                        return;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+            // =====
+
+
+            // Load from server
             const cache_dir = await path.join(await path.appDataDir(), ".cache", "watch", source_id, preview_id, watch_id);
             const manifest_path = await path.join(cache_dir, "manifest.json")
             if (!force_update && await exists(manifest_path)) {
@@ -63,7 +81,8 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,fo
                 resolve(res.data);
             }).catch((e: any) => {
                 resolve({ code: 500, message: e });
-            });        
+            });    
+            // =======================    
         }catch(e: any) {
             console.error(e);
             resolve({ code: 500, message: e });

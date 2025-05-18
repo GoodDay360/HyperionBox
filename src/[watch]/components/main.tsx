@@ -50,6 +50,7 @@ import { request_item_tags } from "../../global/scripts/manage_tag";
 import { get_watch_state, update_watch_state } from "../../global/scripts/manage_watch_state";
 import { get_local_preview,save_local_preview } from "../../global/scripts/manage_local_preview";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
+import rephrase_local_hls from "../scripts/rephrase_local_hls";
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 let FIRST_RUN_TIMEOUT:any;
@@ -73,6 +74,7 @@ function Watch() {
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");
     const [MEDIA_CC, SET_MEDIA_CC] = useState<any>([]);
+    const [MEDIA_TYPE, SET_MEDIA_TYPE] = useState<string>("");
 
     const media_player_ref:any = useRef<MediaPlayerInstance>(null);
     const isFullscreen = useMediaState("fullscreen", media_player_ref);
@@ -163,16 +165,25 @@ function Watch() {
             if (get_watch_result.code === 200) {
                 const data = get_watch_result.result;
 
-                SET_SERVER_INFO(data.server_info);
                 SET_EPISODE_DATA(data.episodes);
-                const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "current_playlist.m3u8")
-                const generate_hls_result = await generate_hls_from_playlist({
-                    source:data.media_info.source,
-                    output: playlist_path,
-                })
-                if (generate_hls_result.code === 200){
-                    SET_MEDIA_SRC(convertFileSrc(playlist_path));
-                    SET_MEDIA_CC(data.media_info.cc);
+                SET_MEDIA_CC(data.media_info.cc);
+                SET_MEDIA_TYPE(data.media_info.type);
+                if (data.media_info.type === "local"){
+                    const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source[0].uri})
+                    if (rephrased_hls_result.code === 200){
+                        SET_MEDIA_SRC(rephrased_hls_result.result);
+                    }
+                    
+                }else{
+                    SET_SERVER_INFO(data.server_info);
+                    const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "current_playlist.m3u8")
+                    const generate_hls_result = await generate_hls_from_playlist({
+                        source:data.media_info.source,
+                        output: playlist_path,
+                    })
+                    if (generate_hls_result.code === 200){
+                        SET_MEDIA_SRC(convertFileSrc(playlist_path));
+                    }
                 }
             }
         }catch(e){
@@ -306,7 +317,7 @@ function Watch() {
                                                 <track
                                                     key={index}
                                                     kind="subtitles"
-                                                    src={src}
+                                                    src={MEDIA_TYPE === "local" ? convertFileSrc(src) : src}
                                                     srcLang={key} 
                                                     label={key}
                                                     
@@ -335,68 +346,71 @@ function Watch() {
                                     boxSizing:"border-box",
                                 }}
                             >
-                                <>{Object.keys(SERVER_INFO.server_list).map((server_type:any,index:number)=>(
-                                    <div key={index}
-                                        style={{
-                                            width:"auto",
-                                            display:"flex",
-                                            flexDirection:"column",
-                                            gap:0,
-                                            flexGrow:0,
-                                            flexShrink:0,
-                                            boxShadow:"rgba(17, 12, 46, 0.15) 0px 48px 100px 0px"
-                                        }}
-                                    >
-                                        <span
+                                <>{MEDIA_TYPE !== "local"
+                                    ? <>{Object.keys(SERVER_INFO.server_list).map((server_type:any,index:number)=>(
+                                        <div key={index}
                                             style={{
-                                                color:"var(--color)",
-                                                fontFamily:"var(--font-family-bold)",
-                                                fontSize:"calc((100vw + 100vh)*0.0255/2)",
-                                                padding:"8px",
-                                                borderBottom:"2px solid var(--background-color)",
-                                            }}
-                                        >{server_type.toUpperCase()}</span>
-                                        <div
-                                            style={{
+                                                width:"auto",
                                                 display:"flex",
                                                 flexDirection:"column",
-                                                gap:"8px",
-                                                width:"auto",
+                                                gap:0,
                                                 flexGrow:0,
                                                 flexShrink:0,
-                                                padding:"12px",
+                                                boxShadow:"rgba(17, 12, 46, 0.15) 0px 48px 100px 0px"
                                             }}
                                         >
-                                            <>{SERVER_INFO.server_list[server_type].map((item_2:any,index_2:number)=>(
-                                                <Button 
-                                                    variant={
-                                                        (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) 
-                                                        ? "contained"
-                                                        : "outlined" 
-                                                    } 
-                                                    size="medium" color="primary" key={index_2} 
-                                                    style={{
-                                                        paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
-                                                        paddingRight:"calc((100vw + 100vh)*0.0575/2)",
-                                                    }}
-                                                    onClick={async ()=>{
-                                                        if (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) return;
-                                                        navigate(`/watch/${source_id}/${preview_id}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
-                                                        await get_data({
-                                                            watch_id,
-                                                            server_type,
-                                                            server_id:item_2.server_id,
-                                                            force_update:true
-                                                        });
-                                                    }}
-                                                >
-                                                    {item_2.title}
-                                                </Button>
-                                            ))}</>
+                                            <span
+                                                style={{
+                                                    color:"var(--color)",
+                                                    fontFamily:"var(--font-family-bold)",
+                                                    fontSize:"calc((100vw + 100vh)*0.0255/2)",
+                                                    padding:"8px",
+                                                    borderBottom:"2px solid var(--background-color)",
+                                                }}
+                                            >{server_type.toUpperCase()}</span>
+                                            <div
+                                                style={{
+                                                    display:"flex",
+                                                    flexDirection:"column",
+                                                    gap:"8px",
+                                                    width:"auto",
+                                                    flexGrow:0,
+                                                    flexShrink:0,
+                                                    padding:"12px",
+                                                }}
+                                            >
+                                                <>{SERVER_INFO.server_list[server_type].map((item_2:any,index_2:number)=>(
+                                                    <Button 
+                                                        variant={
+                                                            (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) 
+                                                            ? "contained"
+                                                            : "outlined" 
+                                                        } 
+                                                        size="medium" color="primary" key={index_2} 
+                                                        style={{
+                                                            paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
+                                                            paddingRight:"calc((100vw + 100vh)*0.0575/2)",
+                                                        }}
+                                                        onClick={async ()=>{
+                                                            if (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) return;
+                                                            navigate(`/watch/${source_id}/${preview_id}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
+                                                            await get_data({
+                                                                watch_id,
+                                                                server_type,
+                                                                server_id:item_2.server_id,
+                                                                force_update:true
+                                                            });
+                                                        }}
+                                                    >
+                                                        {item_2.title}
+                                                    </Button>
+                                                ))}</>
+                                            </div>
+                                            
                                         </div>
-                                        
-                                    </div>
-                                ))}</>
+                                    ))}</>
+                                    : <></>
+                                }</>
                             </div>
                         </div>
                         <div className={styles.body_box_2}>
