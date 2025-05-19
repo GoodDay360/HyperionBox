@@ -37,11 +37,18 @@ const start_download = async ({hls_data,main_dir, download_task_progress}:{hls_d
             if (index > download_manifest_data.segment_index ) {
                 let retry = 0
                 while (true){
-                    const download_result = await download_file_in_chunks({url: segment.uri, output_file: segment_path});
+                    const download_result = await download_file_in_chunks({url: segment.uri, output_file: segment_path,
+                        callback: ({current_size,total_size}:any) => {
+                            console.log(`${current_size}/${total_size}`);
+                            download_task_progress.current = {status: "downloading", percent:((index+(current_size/total_size))/max_segment_count)*100, label:`${index}/${max_segment_count}`};
+                        }
+
+                    });
                     if (download_result.code === 200) {
                         segment.uri = segment_path;
                         break;
                     }else if (retry >= 3) {
+                        console.error(`[Download Task] Failed to download segment after ${retry} retries`);
                         await remove(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e) => { console.error(e) });
                         await write_crash_log(`[Download Task] Failed to download segment after ${retry} retries`);
                         await write_crash_log(`Directory: ${main_dir} -> will be removed`);
@@ -52,6 +59,8 @@ const start_download = async ({hls_data,main_dir, download_task_progress}:{hls_d
                 
                 download_manifest_data.segment_index = index;
                 await writeTextFile(download_manifest_path, JSON.stringify(download_manifest_data), {baseDir:BaseDirectory.AppData, create: true}).catch((e) => { console.error(e) });
+            }else{
+                segment.uri = segment_path;
             }
 
             download_task_progress.current = {status: "downloading", percent:((index+1)/max_segment_count)*100, label:`${index+1}/${max_segment_count}`};

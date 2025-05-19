@@ -1,6 +1,11 @@
+// Tauri Imports
+import { path } from '@tauri-apps/api';
+import { writeFile, BaseDirectory, exists, remove, readTextFile } from "@tauri-apps/plugin-fs";
+
 // React Imports
 import { useEffect, useRef, useState, Fragment, useMemo, useCallback, useContext } from "react";
 import { useNavigate, useParams } from "react-router";
+
 
 // MUI Component Imports
 import { ButtonBase, IconButton, Button, Tooltip } from "@mui/material";
@@ -16,12 +21,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SelectAllRoundedIcon from '@mui/icons-material/SelectAllRounded';
 import Fab from '@mui/material/Fab';
 
-// Dayjs Imports
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
-import duration from "dayjs/plugin/duration";
-dayjs.extend(duration);
+
 
 // MUI Icons
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
@@ -31,6 +31,16 @@ import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DeselectRoundedIcon from '@mui/icons-material/DeselectRounded';
 import DownloadForOfflineRoundedIcon from '@mui/icons-material/DownloadForOfflineRounded';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
+import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
+
+// Dayjs Imports
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
+import duration from "dayjs/plugin/duration";
+dayjs.extend(duration);
+
 
 // Framer Motion
 import { AnimatePresence } from 'framer-motion';
@@ -50,6 +60,7 @@ import randomColor from "randomcolor";
 
 // Custom Components
 import ManageDownloadWidget from "./manage_download_widget";
+import RemoveDownloadWidget from './remove_download_widget';
 
 // Custom Imports
 import check_internet_connection from "../../global/scripts/check_internet_connection";
@@ -71,7 +82,7 @@ const Preview = () => {
     
     const { app_ready } = useContext<any>(global_context);
 
-    const [widget, set_widget] = useState<string>("");
+    const [widget, set_widget] = useState<any>({type:"", onSubmit:()=>{}, onClose:()=>{}});
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [is_update, set_is_update] = useState<any>({state:false,error:false,message:""})
     const [is_online, set_is_online] = useState<boolean>(false);
@@ -307,7 +318,9 @@ const Preview = () => {
     },[STATS])
 
     const EPISODE_COMPONENT = useCallback(({item}:any)=>{
-        const [is_checked_for_download, set_is_checked_for_download] = useState<boolean>(false)
+        const [is_checked_for_download, set_is_checked_for_download] = useState<boolean>(false);
+        const [available_local, set_available_local] = useState<boolean>(false);
+
         useEffect(()=>{
             if (!download_mode.state) return;
             if (download_mode.select_type === "all"){
@@ -320,6 +333,24 @@ const Preview = () => {
                 }
             }
         },[download_mode])
+
+        useEffect(()=>{
+            ;(async ()=>{
+                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", item.id);
+                const manifest_path = await path.join(main_dir, "manifest.json");
+                try{
+                    if (await exists(manifest_path)){
+                        JSON.parse(await readTextFile(manifest_path, {baseDir:BaseDirectory.AppData}))
+                        set_available_local(true);
+                    }else{
+                        set_available_local(false);
+                    }
+                    
+                }catch{
+                    set_available_local(false);
+                }
+            })()
+        },[])
 
         return <div
             style={{
@@ -366,7 +397,12 @@ const Preview = () => {
             >
                 <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
             </ButtonBase>
-            <>{download_mode.state &&
+            <>{available_local && !download_mode.state &&
+                <Tooltip title="Available in storage">
+                    <SaveRoundedIcon sx={{color:"var(--color-2)", fontSize: "calc((100vw + 100vh) * 0.045 / 2)",}} />
+                </Tooltip>
+            }</>
+            <>{download_mode.state && !available_local &&
                 <Checkbox sx={{color:"var(--color)"}} 
                     checked={is_checked_for_download}
                     onChange={(e)=>{
@@ -383,7 +419,22 @@ const Preview = () => {
                     }}
                     
                 />
-
+            }</>
+            <>{download_mode.state && available_local &&
+                <Tooltip title="Remove from storage">
+                    <IconButton 
+                        onClick={()=>{
+                            set_widget({type:"remove_download", onSubmit: async ()=>{
+                                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", item.id);
+                                await remove(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
+                                set_available_local(false);
+                            }});
+                        }}
+                    >
+                        <DeleteForeverRoundedIcon sx={{color:"red", fontSize: "calc((100vw + 100vh) * 0.045 / 2)",}} />
+                    </IconButton>
+                    
+                </Tooltip>
             }</>
         </div>
     },[download_mode,CURRENT_WATCH_INDEX])
@@ -881,7 +932,7 @@ const Preview = () => {
                             }}
                             onClick={()=>{
                                 
-                                set_widget("manage_download");
+                                set_widget({type:"manage_download"});
                                 
                             }}
                         >
@@ -894,10 +945,10 @@ const Preview = () => {
             }</>
             
             <AnimatePresence>
-                {widget === "manage_download" && <ManageDownloadWidget
+                <>{widget.type === "manage_download" && <ManageDownloadWidget
                     {...{
 
-                        onClose:()=>{set_widget("")},
+                        onClose:()=>{set_widget({type:""})},
                         onSubmit:async (options:any)=>{
                             const selected_data = selected_download_data.current
                             for (const data of selected_data){
@@ -912,14 +963,23 @@ const Preview = () => {
                                     type_schema:TYPE_SCHEMA,
                                 })
                             }
-                            set_widget("");
+                            set_widget({type:""});
                             set_download_mode({...download_mode,state:false,select_type:"manual"});
                             selected_download_data.current = []
                             
                         }
                         
                     }}
-                />}
+                />}</>
+
+                <>{widget.type === "remove_download" && <RemoveDownloadWidget
+                    {...{
+
+                        onClose:()=>{set_widget({type:""})},
+                        onSubmit: widget.onSubmit,
+                        
+                    }}
+                />}</>
             </AnimatePresence>
 
         </div>
