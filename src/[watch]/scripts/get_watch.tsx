@@ -18,7 +18,7 @@ dayjs.extend(utc);
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 
-const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,force_update=false,check_local=true}:{
+const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,check_local=true,force_update=false}:{
     source_id:string,preview_id:string,
     watch_id:string,server_type:string|null,server_id:string|null,
     force_update?:boolean,check_local?:boolean

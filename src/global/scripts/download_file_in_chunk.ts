@@ -1,22 +1,33 @@
 import { writeFile, BaseDirectory, exists, remove } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
+import { time } from "console";
+
+
 
 async function download_file_in_chunks({
     url = "",
     output_file = "",
     chunk_size = 6 * 1024 * 1024, // 6MB chunks
     start_size = 0, // Resume from this byte offset
+    timeout = 0, // in ms
     callback = ({}) => {}
 }: {
     url: string;
     output_file: string;
     chunk_size?: number;
     start_size?: number;
+    timeout?: number;
     callback?: any;
 }): Promise<any> {
     try {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        
+        if (timeout > 0) setTimeout(() => controller.abort(), timeout);
+        
         const response = await fetch(url, {
-            headers: start_size > 0 ? { Range: `bytes=${start_size}-` } : undefined
+            headers: start_size > 0 ? { Range: `bytes=${start_size}-` } : undefined,
+            signal
         });
 
         if (!response.ok) {

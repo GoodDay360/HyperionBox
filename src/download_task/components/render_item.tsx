@@ -44,33 +44,35 @@ const RenderItem = ({item}:any) => {
 
     const [cover, set_cover] = useState<string>("")
     const [title, set_title] = useState<string>("")
+    const [task_info, set_task_info] = useState<any>({})
     const [progress_info, set_progress_info] = useState<any>({percent:0})
 
     const [show_content, set_show_content] = useState<boolean>(false)
 
     useEffect(() => {
         const interval = setInterval(() => {
+            set_task_info(download_task_info.current);
             if (Object.keys(download_task_progress.current).length === 0) return;
             // console.log("cute", download_task_progress.current)
             set_progress_info(download_task_progress.current);
 
         }, 800);
 
-    return () => clearInterval(interval);
+        return () => clearInterval(interval);
     }, []);
 
     useEffect(()=>{
         if (item.data.filter((item_data:any)=>!(
-            download_task_info?.source_id === source_id && 
-            download_task_info?.season_id === season_id && 
-            download_task_info?.preview_id === preview_id && 
-            download_task_info?.watch_id == item_data.watch_id
+            task_info?.source_id === source_id && 
+            task_info?.season_id === season_id && 
+            task_info?.preview_id === preview_id && 
+            task_info?.watch_id == item_data.watch_id
         )).length > 0){
             set_show_content(true);
         }else{
             set_show_content(false);
         }
-    },[download_task_info])
+    },[task_info])
 
     useEffect(()=>{
         ;(async ()=>{
@@ -114,11 +116,11 @@ const RenderItem = ({item}:any) => {
                     <div className={styles.info_box_1}>
                         <span className={styles.title}>{title??"?"}</span>
                         <>{(
-                            download_task_info.source_id === source_id && 
-                            download_task_info.season_id === season_id &&
-                            download_task_info.preview_id === preview_id) 
+                            task_info.source_id === source_id && 
+                            task_info.season_id === season_id &&
+                            task_info.preview_id === preview_id) 
                             && <>
-                                <span className={styles.title}>Episode {download_task_info?.watch_index}: {download_task_info.watch_title}</span>
+                                <span className={styles.title}>Episode {task_info?.watch_index}: {task_info.watch_title}</span>
                                 <div className={styles.progress_box}>
                                     <>{(!progress_info.status || progress_info.status === "finished")
                                         ? <div style={{flex:1, color:"grey"}}>
@@ -142,10 +144,10 @@ const RenderItem = ({item}:any) => {
                         
                     </div>
                     <>{item.data.filter((item_data:any)=>!(
-                        download_task_info?.source_id === source_id && 
-                        download_task_info?.season_id === season_id && 
-                        download_task_info?.preview_id === preview_id && 
-                        download_task_info?.watch_id == item_data.watch_id
+                        task_info?.source_id === source_id && 
+                        task_info?.season_id === season_id && 
+                        task_info?.preview_id === preview_id && 
+                        task_info?.watch_id == item_data.watch_id
                     )).length > 0 &&
                         <ButtonBase 
                             sx={{
@@ -176,10 +178,10 @@ const RenderItem = ({item}:any) => {
                     <>{item.data.map((item_data:any,index:number)=>(
                         <Fragment key={index}>
                             {!(
-                                download_task_info?.source_id === source_id && 
-                                download_task_info?.season_id === season_id && 
-                                download_task_info?.preview_id === preview_id && 
-                                download_task_info?.watch_id == item_data.watch_id
+                                task_info?.source_id === source_id && 
+                                task_info?.season_id === season_id && 
+                                task_info?.preview_id === preview_id && 
+                                task_info?.watch_id == item_data.watch_id
                             ) &&
                                 <span  className={styles.item_data_title}>Episode {item_data.watch_index}: {item_data.title}</span>
                             }

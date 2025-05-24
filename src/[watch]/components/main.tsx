@@ -73,7 +73,7 @@ function Watch() {
     const [SERVER_INFO, SET_SERVER_INFO] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");
-    const [MEDIA_CC, SET_MEDIA_CC] = useState<any>([]);
+    const [MEDIA_TRACK, SET_MEDIA_TRACK] = useState<any>([]);
     const [MEDIA_TYPE, SET_MEDIA_TYPE] = useState<string>("");
 
     const media_player_ref:any = useRef<MediaPlayerInstance>(null);
@@ -127,7 +127,7 @@ function Watch() {
         }
     }, [is_media_ready,is_in_watchlist]);
 
-    const get_data = async ({watch_id,server_type=null,server_id=null,force_update=false}:{watch_id:string,server_type?:string|null,server_id?:string|null,force_update?:boolean}) =>{
+    const get_data = async ({watch_id,server_type=null,server_id=null,check_local=true,force_update=false}:{watch_id:string,server_type?:string|null,server_id?:string|null,check_local?:boolean,force_update?:boolean}) =>{
         set_is_ready(false);
         set_is_media_ready(false);
         set_is_update({state:true,error:false,message:""});
@@ -151,7 +151,7 @@ function Watch() {
                 get_watch_result = await get_watch({
                     source_id,preview_id,watch_id,
                     server_type: server_type || media_player_state_ref.current.server_type, server_id: server_id || media_player_state_ref.current.server_id,
-                    force_update,
+                    check_local,force_update,
                 });
 
             }else{
@@ -166,7 +166,7 @@ function Watch() {
                 const data = get_watch_result.result;
 
                 SET_EPISODE_DATA(data.episodes);
-                SET_MEDIA_CC(data.media_info.cc);
+                SET_MEDIA_TRACK(data.media_info.track);
                 SET_MEDIA_TYPE(data.media_info.type);
                 if (data.media_info.type === "local"){
                     const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source[0].uri})
@@ -311,15 +311,14 @@ function Watch() {
                                     playsInline crossOrigin
                                 >
                                     <MediaProvider>
-                                        {MEDIA_CC.map((entry:string, index:any) => {
-                                            const [key, src] = Object.entries(entry)[0]; // Extract key and URL
+                                        {MEDIA_TRACK.map((track:any, index:any) => {
                                             return (
                                                 <track
                                                     key={index}
-                                                    kind="subtitles"
-                                                    src={MEDIA_TYPE === "local" ? convertFileSrc(src) : src}
-                                                    srcLang={key} 
-                                                    label={key}
+                                                    kind={track.kind}
+                                                    src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
+                                                    srcLang={track.label} 
+                                                    label={track.label}
                                                     
                                                 />
                                             );
@@ -409,7 +408,69 @@ function Watch() {
                                             
                                         </div>
                                     ))}</>
-                                    : <></>
+                                    : <>
+                                        <div
+                                            style={{
+                                                width:"auto",
+                                                display:"flex",
+                                                flexDirection:"column",
+                                                gap:0,
+                                                flexGrow:0,
+                                                flexShrink:0,
+                                                boxShadow:"rgba(17, 12, 46, 0.15) 0px 48px 100px 0px"
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    color:"var(--color)",
+                                                    fontFamily:"var(--font-family-bold)",
+                                                    fontSize:"calc((100vw + 100vh)*0.0255/2)",
+                                                    padding:"8px",
+                                                    borderBottom:"2px solid var(--background-color)",
+                                                }}
+                                            >SERVER</span>
+                                            <div
+                                                style={{
+                                                    display:"flex",
+                                                    flexDirection:"column",
+                                                    gap:"8px",
+                                                    width:"auto",
+                                                    flexGrow:0,
+                                                    flexShrink:0,
+                                                    padding:"12px",
+                                                }}
+                                            >
+                                                
+                                                <Button 
+                                                    variant="contained"
+                                                    size="medium" color="primary"
+                                                    style={{
+                                                        paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
+                                                        paddingRight:"calc((100vw + 100vh)*0.0575/2)",
+                                                    }}
+                                                    
+                                                >Local</Button>
+
+                                                <Button 
+                                                    variant="outlined"
+                                                    size="medium" color="primary"
+                                                    style={{
+                                                        paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
+                                                        paddingRight:"calc((100vw + 100vh)*0.0575/2)",
+                                                    }}
+                                                    onClick={async ()=>{
+                                                        navigate(`/watch/${source_id}/${preview_id}/${watch_id}/`, { replace: true });
+                                                        await get_data({
+                                                            watch_id,
+                                                            check_local:false,
+                                                        });
+                                                    }}
+                                                >Switch to online</Button>
+                                                
+                                            </div>
+                                            
+                                        </div>
+                                    </>
                                 }</>
                             </div>
                         </div>

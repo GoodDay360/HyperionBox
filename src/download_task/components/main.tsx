@@ -23,6 +23,7 @@ let FIRST_RUN_TIMEOUT:any;
 const DownloadTask = () => {
     const navigate = useNavigate();
     const {download_task_info} = useContext<any>(download_task_context)
+    const [task_info, set_task_info] = useState<any>({})
     const {app_ready} = useContext<any>(global_context)
     const [feedback, set_feedback] = useState<any>({state:false,text:""})
     const [DOWNLOAD_TASK_DATA, SET_DOWNLOAD_TASK_DATA] = useState<any>([])
@@ -50,8 +51,15 @@ const DownloadTask = () => {
 
     useEffect(()=>{
         get_data();
-        console.log("Current downlaod info: ", download_task_info);
-    },[download_task_info])
+        console.log("Current downlaod info: ", task_info);
+    },[task_info])
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            set_task_info(download_task_info.current);
+        }, 800);
+        return () => clearInterval(interval);
+    }, []);
 
     const RenderItemComponent = useCallback(({item}:any)=>{
         return <RenderItem item={item}/>;

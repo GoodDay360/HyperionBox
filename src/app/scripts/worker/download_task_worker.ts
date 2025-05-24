@@ -21,7 +21,7 @@ import path_to_file_url from '../../../global/scripts/path_to_url';
 
 const QUALITY_LIST = [240,480,720,1080];
 
-const download_task_worker = async ({set_download_task_info,download_task_progress}:any)=>{
+const download_task_worker = async ({download_task_info,download_task_progress}:any)=>{
     
     while (true){
         // const download_cache_dir = await path.join(await path.appDataDir(), ".cache", "download");
@@ -60,7 +60,7 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
                 }
             }
 
-            set_download_task_info({source_id,season_id,preview_id,watch_id,watch_index,watch_title})
+            download_task_info.current = {source_id,season_id,preview_id,watch_id,watch_index,watch_title};
             let retry = 0;
             let info_result:any;
 
@@ -89,8 +89,6 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
                         break;
                     };
                 }else {
-                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
-                    await write_crash_log(`[Download Task] Removing from download task->skipping...`)
                     info_result = get_download_info_result;
                     break;
                 };
@@ -174,27 +172,29 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
 
                 // ==============================
 
-                // Download CC
-                const cc_list = watch_data.media_info.cc;
-                const local_cc_dir = await path.join(main_dir, "cc");
-                await mkdir(local_cc_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
-                const new_local_cc_list = [];
-                for (const cc of cc_list){
-                    const cc_key = Object.keys(cc)[0];
-                    const cc_url = cc[cc_key];
-                    const cc_path = await path.join(local_cc_dir, `${cc_key}.vtt`); 
+                // Download track
+                const track_list = watch_data.media_info.track;
+                const local_track_dir = await path.join(main_dir, "track");
+                await mkdir(local_track_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
+                const new_local_track_list = [];
+                for (const track of track_list){
+                    const track_path = await path.join(local_track_dir, `${track.label}.vtt`); 
 
                     let start_size = 0;
-                    if (await exists(cc_path)) {
-                        const file = await readFile(cc_path, {baseDir:BaseDirectory.Temp});
+                    if (await exists(track_path)) {
+                        const file = await readFile(track_path, {baseDir:BaseDirectory.Temp});
                         start_size = file.byteLength;
                     
                     }
-                    await download_file_in_chunks({url:cc_url,output_file:cc_path,start_size});
-                    new_local_cc_list.push({[cc_key]:cc_path});
+                    await download_file_in_chunks({url:track.url,output_file:track_path,start_size});
+                    new_local_track_list.push({
+                        url:track_path,
+                        label:track.label,
+                        type:"captions",
+                    });
                 }
                 
-                manifest.media_info.cc = new_local_cc_list
+                manifest.media_info.track = new_local_track_list
                 
                 /// ======================================
 
@@ -203,11 +203,13 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
                 
                 await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
             }else{
-                // await request_remove_download_task({source_id, season_id, preview_id, watch_id});
+                await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                await write_crash_log(`[Download Task] Removing from download task->skipping...`);
+                await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
             }
             await new Promise(resolve => setTimeout(resolve, 1000));
         }else{
-            set_download_task_info({})
+            download_task_info.current = {};
             await new Promise(resolve => setTimeout(resolve, 8000));
         }
         
