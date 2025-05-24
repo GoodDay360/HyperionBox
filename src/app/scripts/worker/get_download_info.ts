@@ -22,7 +22,7 @@ const get_download_info = async ({source_id,preview_id,watch_id,server_type,serv
 }) => {
     return await new Promise<any>(async (resolve, _) => {
         try{
-            const cache_dir = await path.join(await path.appDataDir(), ".download_cache", "watch", source_id, preview_id, watch_id);
+            const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, watch_id);
             const manifest_path = await path.join(cache_dir, "manifest.json")
             if (!force_update && await exists(manifest_path)) {
                 try {
@@ -38,7 +38,7 @@ const get_download_info = async ({source_id,preview_id,watch_id,server_type,serv
             console.log(":(",server_type)
             const port = sessionStorage.getItem("extension_port");
             const body = {
-                "cache_dir": await path.join(await path.appDataDir(), ".download_cache"),
+                "cache_dir": await path.join(await path.appDataDir(), ".cache"),
                 "source_id": source_id,
                 "preview_id": preview_id,
                 "watch_id": watch_id,

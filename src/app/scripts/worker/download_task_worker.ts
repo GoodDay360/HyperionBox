@@ -24,7 +24,7 @@ const QUALITY_LIST = [240,480,720,1080];
 const download_task_worker = async ({set_download_task_info,download_task_progress}:any)=>{
     
     while (true){
-        // const download_cache_dir = await path.join(await path.appDataDir(), ".download_cache");
+        // const download_cache_dir = await path.join(await path.appDataDir(), ".cache", "download");
         // try{
         //     if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
         // }catch(e){
@@ -107,18 +107,52 @@ const download_task_worker = async ({set_download_task_info,download_task_progre
 
                 manifest.media_info.type = "local";
 
-                // Download HLS->Convert HLS to MP4
+                
                 const new_local_source:any = []
-                const prefer_quality = QUALITY_LIST[quality-1];
 
-                let prefer_source_index = 0;
-                for (const source of watch_data.media_info.source){
-                    if (prefer_quality >= source.quality){
-                        prefer_source_index++;
+                // const prefer_quality = QUALITY_LIST[quality-1];
+
+                // let prefer_source_index = 0;
+                // for (const source of watch_data.media_info.source){
+                //     if (prefer_quality >= source.quality){
+                //         prefer_source_index++;
+                //     }
+                // }
+                
+                let prefer_source:any = null;
+
+                // Extract and sort quality values
+                const qualities = watch_data.media_info.source.map((item:any) => item.quality).sort((a:number, b:number) => a - b);
+
+                const low = qualities[0];  // Lowest available quality
+                const high = qualities[qualities.length - 1];  // Highest available quality
+                const step = Math.floor((high - low) / 3); // Divide range into three sections
+
+                // Determine target quality based on user selection
+                let targetQuality = 0;
+                if (quality === 1) targetQuality = low;
+                else if (quality === 2) targetQuality = low + step;
+                else if (quality === 3) targetQuality = low + step * 2;
+                else if (quality === 4) targetQuality = high;
+
+                // Find the closest matching quality
+                for (let i = 0; i < qualities.length; i++) {
+                    if (qualities[i] >= targetQuality) {
+                        prefer_source = watch_data.media_info.source.find((item:any) => item.quality === qualities[i]);
                     }
                 }
-                
-                const prefer_source = watch_data.media_info.source[prefer_source_index > 0 ? prefer_source_index-1 : 0];
+
+                if (!prefer_source) {
+                    await write_crash_log(`[Download Task] There an issue finding prefer source: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                    await write_crash_log(`[Download Task] Removing from download task->skipping...`)
+                    await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
+                    console.error(`[Download Task] There an issue finding prefer source: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                    continue;
+                }
+
+                console.log("MOEW",prefer_source)
+
+
                 const hls_data = await readTextFile(prefer_source.uri, {baseDir:BaseDirectory.AppData});
 
                 download_task_progress.current = {status:"downloading", percent:0, label:"Preparing..."};

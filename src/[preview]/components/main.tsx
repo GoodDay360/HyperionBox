@@ -71,7 +71,7 @@ import { get_local_preview, save_local_preview, remove_local_preview} from "../.
 import { get_watch_state } from "../../global/scripts/manage_watch_state";
 import { request_add_download_task } from "../../global/scripts/manage_download";
 
-const FETCH_UPDATE_INTERVAL = 30; // In Minutes
+const FETCH_UPDATE_INTERVAL = 3; // In Hours
 
 const Preview = () => {
     const navigate = useNavigate();
@@ -197,7 +197,7 @@ const Preview = () => {
 
         const request_preview_result = await get_preview({source_id,preview_id});
         if (request_preview_result.code === 200) {
-            SET_TYPE_SCHEMA(request_preview_result.result.type_schema)
+            SET_TYPE_SCHEMA(request_preview_result.result.type_schema||1)
             SET_INFO(request_preview_result.result.info);
             SET_STATS(request_preview_result.result.stats);
             SET_EPISODE_DATA(request_preview_result.result.episodes);
@@ -263,7 +263,7 @@ const Preview = () => {
                 const data = local_preview_result.result
                 SET_CURRENT_WATCH_ID(data.watch_id??"");
                 SET_CURRENT_WATCH_INDEX(data.watch_index??-1);
-                SET_TYPE_SCHEMA(data.type_schema)
+                SET_TYPE_SCHEMA(data.type_schema||1)
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
@@ -274,7 +274,7 @@ const Preview = () => {
                             SET_CURRENT_WATCH_TIME(watch_state_result.data.current_time??0);
                         }
                     }
-                    if (dayjs.utc().unix() - (data.last_update??0) <= FETCH_UPDATE_INTERVAL * 60) {
+                    if (dayjs.utc().unix() - (data.last_update??0) <= FETCH_UPDATE_INTERVAL * 60 * 60) {
                         set_is_update({ state:false,error:false, message:"" });
                         set_is_ready(true);
                     }else{
@@ -366,7 +366,7 @@ const Preview = () => {
                 style={{
                     flex:1,
                     borderRadius:"12px",
-                    background:item.index=== CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : "var(--background-color)",
+                    background: parseInt(item.index,10) === CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : "var(--background-color)",
                     color:"var(--color)",
                     display:"flex",
                     alignItems:"center",
@@ -515,7 +515,7 @@ const Preview = () => {
                                         ? <Tooltip title="Fetching update...">
                                             <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.05/2)"/>
                                         </Tooltip>
-                                        : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} minutes`}>
+                                        : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} hours`}>
                                             <IconButton color="primary" size="large"
                                                 onClick={async ()=>{
                                                     await get_data({mode:"update"});
@@ -952,6 +952,16 @@ const Preview = () => {
                         onSubmit:async (options:any)=>{
                             const selected_data = selected_download_data.current
                             for (const data of selected_data){
+                                console.log({
+                                    source_id: source_id??"",
+                                    preview_id: preview_id??"",
+                                    title:data.title,
+                                    watch_index: data.index,
+                                    watch_id: data.id,
+                                    quality: options.quality,
+                                    server_type: options.server_type,
+                                    type_schema:TYPE_SCHEMA,
+                                })
                                 await request_add_download_task({
                                     source_id: source_id??"",
                                     preview_id: preview_id??"",
