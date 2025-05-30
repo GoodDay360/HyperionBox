@@ -1,4 +1,5 @@
 import Database from '@tauri-apps/plugin-sql';
+import { error } from 'console';
 
 const DATABASE_PATH:string = 'sqlite:download_task.db'
 
@@ -22,7 +23,8 @@ async function setup_table() {
             quality INT NOT NULL,
             server_type TEXT NOT NULL,
             type_schema INT NOT NULL,
-            datetime DATETIME DEFAULT CURRENT_TIMESTAMP 
+            datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+            error INTEGER DEFAULT 0
         )
         `;
         await db.execute(createQuery);
@@ -40,7 +42,7 @@ export async function request_download_task(): Promise<{ code: number, data: any
     `;
     const results: any[] = await db.select(query);
 
-    const request_result: { source_id: string, season_id: string, preview_id: string, quality: number, server_type:string, type_schema: string, data: { watch_index: number, watch_id: string, title: string }[] }[] = [];
+    const request_result: { source_id: string, season_id: string, preview_id: string, quality: number, server_type:string, type_schema: string, data: { watch_index: number, watch_id: string, title: string, error: boolean }[] }[] = [];
 
     results.forEach((result) => {
         const existingItemIndex = request_result.findIndex((item) => item.source_id === result.source_id && item.season_id === result.season_id && item.preview_id === result.preview_id && item.type_schema === result.type_schema);
@@ -48,7 +50,8 @@ export async function request_download_task(): Promise<{ code: number, data: any
             request_result[existingItemIndex].data.push({
                 watch_index: result.watch_index,
                 watch_id: result.watch_id,
-                title: result.title
+                title: result.title,
+                error: result.error ? true : false,
             });
         } else {
             request_result.push({
@@ -63,6 +66,7 @@ export async function request_download_task(): Promise<{ code: number, data: any
                         watch_index: result.watch_index,
                         watch_id: result.watch_id,
                         title: result.title,
+                        error: result.error ? true : false,
                     },
                 ],
             });
@@ -119,6 +123,22 @@ export async function request_add_download_task({
     return { code: 200, message: "Added successfully" };
 }
 
+export async function request_current_task(): Promise<any> {
+    await setup_table();
+    const db = await Database.load(DATABASE_PATH);
+    const query = `
+        SELECT *
+        FROM download_task
+        WHERE error = 0
+        ORDER BY datetime ASC
+        LIMIT 1
+    `;
+    const result:any = await db.select(query);
+    if (result.length === 0) return { code: 204, message: "Empty Task" };
+    else return { code: 200, data: result[0] };
+    
+}
+
 export async function request_remove_download_task({
     source_id,
     season_id=0,
@@ -140,17 +160,28 @@ export async function request_remove_download_task({
     return { code: 200, message: "Removed successfully" };
 }
 
-export async function request_current_task(): Promise<any> {
+
+
+export async function request_set_error_task({
+    source_id,
+    season_id=0,
+    preview_id,
+    watch_id,
+    error=true
+}: {
+    source_id: string,
+    season_id?: number,
+    preview_id: string,
+    watch_id: string,
+    error?: boolean
+}) {
     await setup_table();
     const db = await Database.load(DATABASE_PATH);
-    const query = `
-        SELECT *
-        FROM download_task
-        ORDER BY datetime ASC
-        LIMIT 1
+    const updateQuery = `
+        UPDATE download_task
+        SET error = $5
+        WHERE source_id = $1 AND season_id = $2 AND preview_id = $3 AND watch_id = $4
     `;
-    const result:any = await db.select(query);
-    if (result.length === 0) return { code: 204, message: "Empty Task" };
-    else return { code: 200, data: result[0] };
-    
+    await db.execute(updateQuery, [source_id, season_id, preview_id, watch_id, error ? 1 : 0]);
+    return { code: 200, message: "Error set successfully" };
 }

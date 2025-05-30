@@ -100,8 +100,18 @@
     overflow-x: hidden;
 }
 
-.item_data_title{
+.item_data_box{
     width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    box-sizing: border-box;
+    gap: 8px;
+}
+
+.item_data_title{
+    flex: 1;
     font-size: calc((100vw + 100vh)*0.0225/2);
     color: var(--color);
     font-family: var(--font-family-medium);
@@ -111,3 +121,4 @@
     display: inline-block;
     user-select: none;
 }
+

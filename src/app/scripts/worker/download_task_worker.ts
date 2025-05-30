@@ -9,7 +9,7 @@ import start_download from './start_download';
 
 // Custom Imports
 import { read_config } from "../../../global/scripts/manage_config";
-import { request_current_task, request_download_task, request_remove_download_task } from "../../../global/scripts/manage_download";
+import { request_current_task, request_download_task, request_remove_download_task, request_set_error_task } from "../../../global/scripts/manage_download";
 import get_download_info from './get_download_info';
 import { download_task_context } from '../../../global/scripts/contexts';
 import write_crash_log from '../../../global/scripts/write_crash_log';
@@ -143,7 +143,7 @@ const download_task_worker = async ({download_task_info,download_task_progress}:
                 if (!prefer_source) {
                     await write_crash_log(`[Download Task] There an issue finding prefer source: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
                     await write_crash_log(`[Download Task] Removing from download task->skipping...`)
-                    await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
+                    await request_set_error_task({source_id, season_id, preview_id, watch_id: watch_id, error: true});
                     console.error(`[Download Task] There an issue finding prefer source: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
                     continue;
                 }
@@ -166,7 +166,7 @@ const download_task_worker = async ({download_task_info,download_task_progress}:
                 }else{
                     await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
                     await write_crash_log(`[Download Task] Removing from download task->skipping...`)
-                    await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
+                    await request_set_error_task({source_id, season_id, preview_id, watch_id: watch_id, error:true});
                     continue;
                 }
 
@@ -205,7 +205,7 @@ const download_task_worker = async ({download_task_info,download_task_progress}:
             }else{
                 await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
                 await write_crash_log(`[Download Task] Removing from download task->skipping...`);
-                await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
+                await request_set_error_task({source_id, season_id, preview_id, watch_id: watch_id, error:true});
             }
             await new Promise(resolve => setTimeout(resolve, 1000));
         }else{

@@ -61,8 +61,8 @@ const DownloadTask = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const RenderItemComponent = useCallback(({item}:any)=>{
-        return <RenderItem item={item}/>;
+    const RenderItemComponent = useCallback(({item, get_data}:any)=>{
+        return <RenderItem item={item} get_data={get_data}/>;
     },[])
 
     return (<>
@@ -71,7 +71,7 @@ const DownloadTask = () => {
                 ? <div className={styles.body}>
                     <>{DOWNLOAD_TASK_DATA.length > 0
                         ? DOWNLOAD_TASK_DATA.map((item:any,index:number)=>(
-                            <RenderItemComponent key={index} item={item}/>
+                            <RenderItemComponent key={index} item={item} get_data={get_data}/>
                         ))
                         :<></>
 
