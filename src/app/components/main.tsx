@@ -28,7 +28,7 @@ import styles from "../styles/main.module.css";
 // Custom Import
 import load_config_options from '../scripts/load_config_options';
 import { check_fullscreen, check_resize } from '../scripts/keys_event_listener';
-
+import { read_config } from "../../global/scripts/manage_config";
 // Context Imports
 import { global_context, download_task_context } from '../../global/scripts/contexts';
 
@@ -59,6 +59,8 @@ function App() {
 	const [menu, set_menu] = useState<any>({state:false,path:""});
 
 	const [app_ready, set_app_ready ] = useState<boolean>(false);
+
+	const pause_download_task = useRef<boolean>(false);
 	const download_task_info = useRef<any>({});
 	const download_task_progress = useRef<any>({});
 
@@ -82,7 +84,9 @@ function App() {
 			await load_config_options();
 			await check_fullscreen({fullscreen_snackbar, set_fullscreen_snackbar});
 			await check_resize();
-			download_task_worker({download_task_info,download_task_progress});
+			const config = await read_config();
+			pause_download_task.current = config.pause_download_task ? true : false;
+			download_task_worker({pause_download_task,download_task_info,download_task_progress});
 			set_menu({state:true,path:"download_task"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 
@@ -101,7 +105,7 @@ function App() {
 		>
 			<download_task_context.Provider
 						value={{
-							...{download_task_info,download_task_progress},
+							...{pause_download_task, download_task_info,download_task_progress},
 						}}
 					>
 				<div className={styles.container}>

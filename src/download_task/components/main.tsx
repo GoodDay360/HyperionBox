@@ -3,7 +3,11 @@ import { useEffect, useState, useCallback, useContext } from "react";
 import { useNavigate } from "react-router";
 
 // MUI Imports
+import { ButtonBase, Button } from '@mui/material';
 
+// MUI Icon Imports
+import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
+import PauseCircleOutlineRoundedIcon from '@mui/icons-material/PauseCircleOutlineRounded';
 
 // styles Import
 import styles from "../styles/main.module.css";
@@ -14,7 +18,7 @@ import RenderItem from "./render_item";
 // Custom Import
 import write_crash_log from "../../global/scripts/write_crash_log";
 import { download_task_context, global_context } from "../../global/scripts/contexts";
-
+import { read_config, write_config } from "../../global/scripts/manage_config";
 import { request_download_task } from "../../global/scripts/manage_download";
 
 
@@ -22,11 +26,12 @@ let FIRST_RUN_TIMEOUT:any;
 
 const DownloadTask = () => {
     const navigate = useNavigate();
-    const {download_task_info} = useContext<any>(download_task_context)
+    const {pause_download_task, download_task_info} = useContext<any>(download_task_context)
     const [task_info, set_task_info] = useState<any>({})
     const {app_ready} = useContext<any>(global_context)
     const [feedback, set_feedback] = useState<any>({state:false,text:""})
     const [DOWNLOAD_TASK_DATA, SET_DOWNLOAD_TASK_DATA] = useState<any>([])
+    const [pause_task, set_pause_task] = useState<boolean>(pause_download_task.current)
 
     const get_data = async ()=>{
         const request_download_task_result = await request_download_task()
@@ -56,6 +61,7 @@ const DownloadTask = () => {
 
     useEffect(() => {
         const interval = setInterval(() => {
+            set_pause_task(pause_download_task.current);
             set_task_info(download_task_info.current);
         }, 800);
         return () => clearInterval(interval);
@@ -69,10 +75,39 @@ const DownloadTask = () => {
         <div className={styles.container}>
             <>{!feedback.state
                 ? <div className={styles.body}>
+                    
                     <>{DOWNLOAD_TASK_DATA.length > 0
-                        ? DOWNLOAD_TASK_DATA.map((item:any,index:number)=>(
-                            <RenderItemComponent key={index} item={item} get_data={get_data}/>
-                        ))
+                        ? <>
+                            <div className={styles.option_container}>
+                                <ButtonBase 
+                                    sx={{
+                                        color:"var(--color)",
+                                        fontSize:"calc((100vw + 100vh)*0.0225/2)",
+                                        borderRadius:"5px",
+                                        padding:"5px",
+                                        border:`1px solid ${pause_task ? "green" : "red"}`,
+                                    }}
+                                    onClick={async ()=>{
+                                        const config = await read_config();
+                                        config.pause_download_task = !pause_task;
+                                        await write_config(config);
+                                        pause_download_task.current = !pause_download_task.current;
+                                        set_pause_task(!pause_task);
+                                        
+                                    }}
+                                >
+                                    <>{pause_task
+                                        ? <span style={{color:"green"}}><PlayCircleOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.0325/2)"}}/> Resume</span>
+                                        : <span style={{color:"red"}}><PauseCircleOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.0325/2)"}}/> Pause</span>
+                                    }</>
+                                    
+                                
+                                </ButtonBase>
+                            </div>
+                            <>{DOWNLOAD_TASK_DATA.map((item:any,index:number)=>(
+                                <RenderItemComponent key={index} item={item} get_data={get_data}/>
+                            ))}</>
+                        </>
                         :<></>
 
                     }</>

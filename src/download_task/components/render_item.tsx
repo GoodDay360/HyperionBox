@@ -43,18 +43,20 @@ const RenderItem = ({item, get_data}:any) => {
 
     const navigate = useNavigate();
     
-    const {download_task_info, download_task_progress} = useContext<any>(download_task_context)
+    const {pause_download_task, download_task_info, download_task_progress} = useContext<any>(download_task_context)
 
     const [allow_manage, set_allow_manage] = useState<boolean>(true);
     const [cover, set_cover] = useState<string>("");
     const [title, set_title] = useState<string>("");
-    const [task_info, set_task_info] = useState<any>({});
+    const [task_info, set_task_info] = useState<any>(download_task_info.current);
     const [progress_info, set_progress_info] = useState<any>({percent:0});
+    const [pause_task, set_pause_task] = useState<boolean>(pause_download_task.current);
 
     const [show_content, set_show_content] = useState<boolean>(false);
 
     useEffect(() => {
         const interval = setInterval(() => {
+            set_pause_task(pause_download_task.current);
             set_task_info(download_task_info.current);
             if (Object.keys(download_task_progress.current).length === 0) return;
             // console.log("cute", download_task_progress.current)
@@ -122,7 +124,8 @@ const RenderItem = ({item, get_data}:any) => {
                         <>{(
                             task_info.source_id === source_id && 
                             task_info.season_id === season_id &&
-                            task_info.preview_id === preview_id) 
+                            task_info.preview_id === preview_id) &&
+                            !pause_task
                             && <>
                                 <span className={styles.title}>Episode {task_info?.watch_index}: {task_info.watch_title}</span>
                                 <div className={styles.progress_box}>
@@ -147,12 +150,12 @@ const RenderItem = ({item, get_data}:any) => {
                         }</>
                         
                     </div>
-                    <>{item.data.filter((item_data:any)=>!(
+                    <>{((item.data.length > 0 && pause_task) || (item.data.filter((item_data:any)=>!(
                         task_info?.source_id === source_id && 
                         task_info?.season_id === season_id && 
                         task_info?.preview_id === preview_id && 
                         task_info?.watch_id == item_data.watch_id
-                    )).length > 0 &&
+                    )).length > 0)) &&
                         <ButtonBase 
                             sx={{
                                 background:"var(--background-color)",
@@ -181,12 +184,12 @@ const RenderItem = ({item, get_data}:any) => {
                 <div className={styles.box_2}>
                     <>{item.data.map((item_data:any,index:number)=>(
                         <Fragment key={index}>
-                            {!(
+                            {(pause_task || !(
                                 task_info?.source_id === source_id && 
                                 task_info?.season_id === season_id && 
                                 task_info?.preview_id === preview_id && 
                                 task_info?.watch_id == item_data.watch_id
-                            ) &&
+                            )) &&
                                 <div className={styles.item_data_box}>
                                     <>{item_data.error && 
                                         <Tooltip title={"There is an error in downloading this item."}>
@@ -213,22 +216,23 @@ const RenderItem = ({item, get_data}:any) => {
                                         >
                                             <ReplayRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"aqua",cursor:"pointer"}}/>
                                         </Tooltip>
-                                        <Tooltip title={"Remove"}
-                                            onClick={async ()=>{
-                                                set_allow_manage(false);
-                                                await request_remove_download_task({
-                                                    source_id:source_id,
-                                                    season_id:season_id,
-                                                    preview_id:preview_id,
-                                                    watch_id:item_data.watch_id
-                                                })
-                                                await get_data();
-                                                set_allow_manage(true);
-                                            }}
-                                        >
-                                            <RemoveCircleOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"red",cursor:"pointer"}}/>
-                                        </Tooltip>
                                     </>}</>
+                                    <Tooltip title={"Remove"}
+                                        onClick={async ()=>{
+                                            set_allow_manage(false);
+                                            await request_remove_download_task({
+                                                source_id:source_id,
+                                                season_id:season_id,
+                                                preview_id:preview_id,
+                                                watch_id:item_data.watch_id,
+                                                clean:true
+                                            })
+                                            await get_data();
+                                            set_allow_manage(true);
+                                        }}
+                                    >
+                                        <RemoveCircleOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"red",cursor:"pointer"}}/>
+                                    </Tooltip>
                                 </div>
                             }
                             

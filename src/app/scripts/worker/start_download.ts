@@ -5,7 +5,7 @@ import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile,
 import download_file_in_chunks from '../../../global/scripts/download_file_in_chunk';
 import write_crash_log from '../../../global/scripts/write_crash_log';
 
-const start_download = async ({hls_data,main_dir, download_task_progress}:{hls_data:string,main_dir:string, download_task_progress:any})=>{
+const start_download = async ({hls_data,main_dir, pause_download_task, download_task_progress}:{hls_data:string,main_dir:string, pause_download_task:any, download_task_progress:any})=>{
     // Parse the M3U8 content
     try{
         const download_manifest_path = await path.join(main_dir, "download_manifest.json");
@@ -19,7 +19,9 @@ const start_download = async ({hls_data,main_dir, download_task_progress}:{hls_d
 
         // Replace segment URIs with full URLs
         for (const [index, segment] of parsedManifest.segments.entries()) {
-
+            if (pause_download_task.current) {
+                return {code:410, message:"PAUSED"}
+            }
             
             await mkdir(segment_dir, { recursive: true, baseDir: BaseDirectory.AppData }).catch((e) => { console.error(e) });
 

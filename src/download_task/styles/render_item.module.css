@@ -98,6 +98,12 @@
     padding: 12px;
     overflow-y: auto;
     overflow-x: hidden;
+
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    gap:8px;
+    
 }
 
 .item_data_box{

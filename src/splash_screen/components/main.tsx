@@ -28,7 +28,7 @@ import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
 import check_yt_dlp from '../scripts/check_yt_dlp';
 import check_ffmpeg from '../scripts/check_ffmpeg';
-import check_extension_packages from '../scripts/check_extension_packages';
+import check_extension_package from '../scripts/check_extension_package';
 import initiate_extension from '../scripts/initiate_extension';
 import write_crash_log from '../../global/scripts/write_crash_log';
 import { read_config, write_config } from '../../global/scripts/manage_config';
@@ -120,6 +120,7 @@ function Splash_Screen() {
                         {"node": check_node},
                         {"ffmpeg": check_ffmpeg},
                         {"yt-dlp": check_yt_dlp},
+                        // {"extension_package": check_extension_package},
 
                     ]
 
@@ -143,20 +144,6 @@ function Splash_Screen() {
                         setFeedback({text:`Download ${key} successfully.`})
                     }
 
-
-                    if (!config.bin.extension_packages){
-                        const result = await check_extension_packages({setFeedback,setProgress});
-                        if (result?.code === 200) {
-                            config.bin.extension_packages = true;
-                            config.bin.browser_path = result.data.browser_path;
-                            await write_config(config)
-                        }else{
-                            console.error(result)
-                            setFeedback({text:`Error downloading extension_packages`,color:"red"})
-                            return;
-
-                        }
-                    }
                     setFeedback({text:`Download extension_packages successfully.`})
                 }
                 

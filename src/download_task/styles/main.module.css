@@ -36,3 +36,13 @@
     user-select: none;
 
 }
+
+.option_container{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    gap:12px;
+    box-sizing: border-box;
+    justify-content: flex-end;
+}

@@ -21,7 +21,7 @@ import path_to_file_url from '../../../global/scripts/path_to_url';
 
 const QUALITY_LIST = [240,480,720,1080];
 
-const download_task_worker = async ({download_task_info,download_task_progress}:any)=>{
+const download_task_worker = async ({pause_download_task,download_task_info,download_task_progress}:any)=>{
     
     while (true){
         // const download_cache_dir = await path.join(await path.appDataDir(), ".cache", "download");
@@ -31,7 +31,11 @@ const download_task_worker = async ({download_task_info,download_task_progress}:
         //     await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
         //     console.error(e)
         // }
-        
+        if (pause_download_task.current) {
+            await new Promise(resolve => setTimeout(resolve, 8000));
+            continue;
+        }
+
         const request_current_task_result:any = await request_current_task();
         if (request_current_task_result.code === 200){
             const data = request_current_task_result?.data;
@@ -155,7 +159,7 @@ const download_task_worker = async ({download_task_info,download_task_progress}:
 
                 download_task_progress.current = {status:"downloading", percent:0, label:"Preparing..."};
 
-                const start_download_result = await start_download({hls_data,main_dir:main_dir, download_task_progress});
+                const start_download_result = await start_download({hls_data,main_dir:main_dir, pause_download_task,download_task_progress});
                 if (start_download_result.code === 200){
                     new_local_source.push({
                         uri: start_download_result.result,
@@ -163,6 +167,8 @@ const download_task_worker = async ({download_task_info,download_task_progress}:
                         quality: prefer_source.quality
                     })
                     manifest.media_info.source = new_local_source;
+                }else if (start_download_result.code === 410){
+                    continue;
                 }else{
                     await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
                     await write_crash_log(`[Download Task] Removing from download task->skipping...`)
