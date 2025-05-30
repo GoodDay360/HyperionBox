@@ -33,7 +33,7 @@ import { read_config } from "../../global/scripts/manage_config";
 import { global_context, download_task_context } from '../../global/scripts/contexts';
 
 // Worker Imports
-import download_task_worker from "../scripts/worker/download_task_worker";
+import download_task_worker from "../worker/download_task_worker";
 
 // Components Import
 const Watchlist = lazy(() => import('../../watchlist/components/main'));

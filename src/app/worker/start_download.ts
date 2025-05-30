@@ -2,8 +2,8 @@ import { Parser } from 'm3u8-parser';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { path } from '@tauri-apps/api';
 import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
-import download_file_in_chunks from '../../../global/scripts/download_file_in_chunk';
-import write_crash_log from '../../../global/scripts/write_crash_log';
+import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
+import write_crash_log from '../../global/scripts/write_crash_log';
 
 const start_download = async ({hls_data,main_dir, pause_download_task, download_task_progress}:{hls_data:string,main_dir:string, pause_download_task:any, download_task_progress:any})=>{
     // Parse the M3U8 content
