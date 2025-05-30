@@ -3,9 +3,10 @@
 // Tauri Plugins
 import { path } from "@tauri-apps/api";
 import { getCurrentWindow } from "@tauri-apps/api/window"
+import { writeFile, BaseDirectory, exists, remove, readTextFile } from "@tauri-apps/plugin-fs";
 
 // React Imports
-import { useEffect, useState, useRef, useContext, Fragment, } from 'react';
+import { useEffect, useState, useRef, useContext, Fragment, useCallback, } from 'react';
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 // Lazy Images Imports
@@ -28,6 +29,7 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import PublishedWithChangesRoundedIcon from '@mui/icons-material/PublishedWithChangesRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
+import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
 
 // Disqus Imports
 import { DiscussionEmbed } from 'disqus-react';
@@ -216,6 +218,95 @@ function Watch() {
         }
     }
 
+    const RenderItem = useCallback(({item}:any)=>{
+        const [available_local, set_available_local] = useState<boolean>(false);
+        const [watch_state, set_watch_state] = useState<boolean>(false);
+
+
+        useEffect(()=>{
+            ;(async ()=>{
+                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id);
+
+                const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
+
+                try{
+                    if (await exists(download_manifest_path)){
+                        JSON.parse(await readTextFile(download_manifest_path, {baseDir:BaseDirectory.AppData}))
+                        set_available_local(true);
+                    }else{
+                        set_available_local(false);
+                    }
+                    
+                }catch{
+                    set_available_local(false);
+                }
+
+                const watch_state_path = await path.join(main_dir, "watch_state", `${item.id}.json`);
+                try{
+                    if (await exists(watch_state_path)){
+                        JSON.parse(await readTextFile(watch_state_path, {baseDir:BaseDirectory.AppData}))
+                        set_watch_state(true);
+                    }else{
+                        set_watch_state(false);
+                    }
+                }catch{
+                    set_watch_state(false);
+                }
+            })()
+        },[])
+
+        return (<div
+            style={{
+                display:"flex",
+                flexDirection:"row",
+                width:"100%",
+                height: "auto",
+                alignItems:"center",
+                gap:"8px",
+            }}
+        >
+            <ButtonBase
+                style={{
+                    flex:1,
+                    borderRadius:"12px",
+                    background:item.id === watch_id ? "var(--selected-menu-background-color)" : watch_state ? "var(--background-color-layer-1)" : "var(--background-color)",
+                    color:"var(--color)",
+                    display:"flex",
+                    alignItems:"center",
+                    justifyContent:"flex-start",
+                    padding:"12px",
+                    border:"2px solid var(--background-color-layer-1)",
+                    fontFamily: "var(--font-family-medium)",
+                    fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
+                }}
+                
+                onClick={async ()=>{
+                    set_is_ready(false);
+                    navigate(`/watch/${source_id}/${preview_id}/${item.id}`, {replace: true});
+                    const local_preview_result = await get_local_preview({source_id,preview_id});
+                    if (local_preview_result.code === 200){
+                        const data = local_preview_result.result
+                        await save_local_preview({
+                            source_id,preview_id,
+                            data:{
+                                ...data,
+                                watch_index:parseInt(item.index,10),
+                                watch_id:item.id
+                            },
+                        });
+                    }
+                    await get_data({watch_id:item.id,force_update:false});
+                }}
+            >
+                <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
+            </ButtonBase>
+            <>{available_local &&
+                <Tooltip title="Available in storage">
+                    <SaveRoundedIcon sx={{color:"var(--color-2)", fontSize: "calc((100vw + 100vh) * 0.045 / 2)",}} />
+                </Tooltip>
+            }</>
+        </div>)
+    },[watch_id]);
     
     return (<>
         <div className={styles.container}>
@@ -397,7 +488,8 @@ function Watch() {
                                                                 watch_id,
                                                                 server_type,
                                                                 server_id:item_2.server_id,
-                                                                force_update:true
+                                                                force_update:true,
+                                                                check_local:false,
                                                             });
                                                         }}
                                                     >
@@ -476,42 +568,9 @@ function Watch() {
                         </div>
                         <div className={styles.body_box_2}>
                             <>{EPISODE_DATA?.length 
-                                ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(<Fragment key={index}>
-                                    <ButtonBase
-                                        style={{
-                                            borderRadius:"12px",
-                                            background:item.id === watch_id ? "var(--selected-menu-background-color)" : "var(--background-color)",
-                                            color:"var(--color)",
-                                            display:"flex",
-                                            alignItems:"center",
-                                            justifyContent:"flex-start",
-                                            padding:"12px",
-                                            border:"2px solid var(--background-color-layer-1)",
-                                            fontFamily: "var(--font-family-medium)",
-                                            fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
-                                        }}
-                                        
-                                        onClick={async ()=>{
-                                            set_is_ready(false);
-                                            navigate(`/watch/${source_id}/${preview_id}/${item.id}`, {replace: true});
-                                            const local_preview_result = await get_local_preview({source_id,preview_id});
-                                            if (local_preview_result.code === 200){
-                                                const data = local_preview_result.result
-                                                await save_local_preview({
-                                                    source_id,preview_id,
-                                                    data:{
-                                                        ...data,
-                                                        watch_index:parseInt(item.index,10),
-                                                        watch_id:item.id
-                                                    },
-                                                });
-                                            }
-                                            await get_data({watch_id:item.id,force_update:false});
-                                        }}
-                                    >
-                                        <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
-                                    </ButtonBase>
-                                </Fragment>))}</>
+                                ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(
+                                    <RenderItem key={index} item={item}/>
+                                ))}</>
                                 : <></>
                             }</>
                         </div>

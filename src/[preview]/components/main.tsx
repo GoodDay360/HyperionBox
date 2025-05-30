@@ -320,6 +320,7 @@ const Preview = () => {
     const EPISODE_COMPONENT = useCallback(({item}:any)=>{
         const [is_checked_for_download, set_is_checked_for_download] = useState<boolean>(false);
         const [available_local, set_available_local] = useState<boolean>(false);
+        const [watch_state, set_watch_state] = useState<boolean>(false);
 
         useEffect(()=>{
             if (!download_mode.state) return;
@@ -336,11 +337,13 @@ const Preview = () => {
 
         useEffect(()=>{
             ;(async ()=>{
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", item.id);
-                const manifest_path = await path.join(main_dir, "manifest.json");
+                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id);
+
+                const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
+
                 try{
-                    if (await exists(manifest_path)){
-                        JSON.parse(await readTextFile(manifest_path, {baseDir:BaseDirectory.AppData}))
+                    if (await exists(download_manifest_path)){
+                        JSON.parse(await readTextFile(download_manifest_path, {baseDir:BaseDirectory.AppData}))
                         set_available_local(true);
                     }else{
                         set_available_local(false);
@@ -348,6 +351,18 @@ const Preview = () => {
                     
                 }catch{
                     set_available_local(false);
+                }
+
+                const watch_state_path = await path.join(main_dir, "watch_state", `${item.id}.json`);
+                try{
+                    if (await exists(watch_state_path)){
+                        JSON.parse(await readTextFile(watch_state_path, {baseDir:BaseDirectory.AppData}))
+                        set_watch_state(true);
+                    }else{
+                        set_watch_state(false);
+                    }
+                }catch{
+                    set_watch_state(false);
                 }
             })()
         },[])
@@ -359,6 +374,7 @@ const Preview = () => {
                 width:"100%",
                 height: "auto",
                 alignItems:"center",
+                gap:"8px",
             }}
         >
             
@@ -366,7 +382,7 @@ const Preview = () => {
                 style={{
                     flex:1,
                     borderRadius:"12px",
-                    background: parseInt(item.index,10) === CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : "var(--background-color)",
+                    background: parseInt(item.index,10) === CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : watch_state ? "var(--background-color-layer-1)" : "var(--background-color)",
                     color:"var(--color)",
                     display:"flex",
                     alignItems:"center",
