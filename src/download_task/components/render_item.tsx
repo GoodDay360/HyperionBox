@@ -20,6 +20,7 @@ import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded';
 import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
+import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
 
 // Lazy Load Imports
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -28,13 +29,10 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { download_task_context, global_context } from "../../global/scripts/contexts";
 
 // Custom Import
-import { get_installed_sources } from "../../global/scripts/manage_extension_sources";
-import write_crash_log from "../../global/scripts/write_crash_log";
-import { request_download_task, request_remove_download_task, request_set_error_task } from "../../global/scripts/manage_download";
+import {  request_remove_download_task, request_set_error_task } from "../../global/scripts/manage_download";
 
 // styles Import
 import styles from "../styles/render_item.module.css";
-import { error } from "console";
 
 const RenderItem = ({item, get_data}:any) => {
     const source_id = item.source_id;
@@ -120,6 +118,7 @@ const RenderItem = ({item, get_data}:any) => {
                 </ButtonBase>
                 <div className={styles.info_container}>
                     <div className={styles.info_box_1}>
+                        
                         <span className={styles.title}>{title??"?"}</span>
                         <>{(
                             task_info.source_id === source_id && 
@@ -149,7 +148,41 @@ const RenderItem = ({item, get_data}:any) => {
                             </>
                         }</>
                         
+                        
                     </div>
+                    <>{pause_task &&                        
+                        <div className={styles.manage_box}>
+                            <Tooltip title={"Remove all content from download task"}>
+                                <ButtonBase
+                                    
+                                    sx={{
+                                        gap:"2.5px",
+                                        color:"red",
+                                        borderRadius:"5px",
+                                        padding:"5px",
+                                        background:"var(--background-color)"
+                                    }}
+                                    onClick={async ()=>{
+                                        set_allow_manage(false);
+                                        for (const item_data of item.data){
+                                            await request_remove_download_task({
+                                                source_id:source_id,
+                                                season_id:season_id,
+                                                preview_id:preview_id,
+                                                watch_id:item_data.watch_id,
+                                                clean:true
+                                            })
+                                        }
+                                        await get_data();
+                                        set_allow_manage(true);
+                                    }}
+                                >
+                                    <DeleteForeverRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"red",cursor:"pointer"}}/>
+                                    
+                                </ButtonBase>
+                            </Tooltip>
+                        </div>
+                    }</>
                     <>{((item.data.length > 0 && pause_task) || (item.data.filter((item_data:any)=>!(
                         task_info?.source_id === source_id && 
                         task_info?.season_id === season_id && 
@@ -178,6 +211,7 @@ const RenderItem = ({item, get_data}:any) => {
                             
                         </ButtonBase>
                     }</>
+                    
                 </div>
             </div>
             <>{show_content &&

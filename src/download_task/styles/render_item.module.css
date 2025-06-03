@@ -41,6 +41,7 @@
 }
 
 .info_container{
+    position: relative;
     flex:1;
     display: flex;
     box-sizing: border-box;
@@ -50,6 +51,7 @@
 }
 
 .info_box_1{
+    position: relative;
     width: 100%;
     height: auto;
     display: flex;
@@ -58,6 +60,19 @@
     overflow: hidden;
     flex-direction: column;
     gap:12px;
+}
+
+.manage_box{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    box-sizing: border-box;
+    bottom: 0;
+    left: 0;
+    padding-right:12px;
 }
 
 .title{

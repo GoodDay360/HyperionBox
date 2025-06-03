@@ -77,6 +77,7 @@ const initiate_extension = async () => {
     port = await get_port();
     if (port) {
         sessionStorage.setItem("extension_port", port);
+        console.log({code:200, message:"OK", port:port})
         return {code:200, message:"OK", port:port}
     }else {
         await write_crash_log("Failed to initiate extension");

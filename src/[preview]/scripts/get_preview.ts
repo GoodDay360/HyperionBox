@@ -32,6 +32,7 @@ const get_preview = async ({source_id,preview_id}:{source_id:string,preview_id:s
             resolve(res.data);
             console.log(res.data);
         }).catch((e: any) => {
+            console.log(e)
             resolve({ code: 500, message: e });
         });
 

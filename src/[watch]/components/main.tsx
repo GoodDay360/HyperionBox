@@ -53,6 +53,8 @@ import { get_watch_state, update_watch_state } from "../../global/scripts/manage
 import { get_local_preview,save_local_preview } from "../../global/scripts/manage_local_preview";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
 import rephrase_local_hls from "../scripts/rephrase_local_hls";
+import open_external from "../../global/scripts/open_external";
+import { get_source_info } from "../../global/scripts/manage_extension";
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 let FIRST_RUN_TIMEOUT:any;
@@ -66,12 +68,14 @@ function Watch() {
 
     const [is_online, set_is_online] = useState<boolean>(false);
     const [is_ready, set_is_ready] = useState<boolean>(false);
+    const [is_error, set_is_error] = useState<any>({state:false,message:""});
     const [is_media_ready, set_is_media_ready] = useState<boolean>(false);
     
     const [is_update, set_is_update] = useState<any>({state:false,error:false,message:""})
     const [is_in_watchlist, set_is_in_watchlist] = useState<boolean>(false);
     const [current_page, set_current_page] = useState<number>(1);
 
+    const [SOURCE_INFO, SET_SOURCE_INFO] = useState<any>({});
     const [SERVER_INFO, SET_SERVER_INFO] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");
@@ -98,6 +102,7 @@ function Watch() {
     let update_state_interval:any = null;
     let is_updating_state = false
     useEffect(() => {
+        if (!is_ready || is_error.state) return;
         if (media_player_ref.current) {
             if (!is_media_ready || !is_in_watchlist){
                 media_player_ref.current.currentTime = 0;
@@ -105,7 +110,7 @@ function Watch() {
                 return;
             }else{
                 media_player_ref.current.currentTime = media_player_state_ref.current.current_time??0;
-
+                clearInterval(update_state_interval);
                 update_state_interval = setInterval(async () => {
                     if (is_updating_state) return;
                     is_updating_state = true
@@ -127,7 +132,7 @@ function Watch() {
         return () => {
             clearInterval(update_state_interval);
         }
-    }, [is_media_ready,is_in_watchlist]);
+    }, [is_media_ready,is_in_watchlist, is_ready, is_error]);
 
     const get_data = async ({watch_id,server_type=null,server_id=null,check_local=true,force_update=false}:{watch_id:string,server_type?:string|null,server_id?:string|null,check_local?:boolean,force_update?:boolean}) =>{
         set_is_ready(false);
@@ -187,6 +192,9 @@ function Watch() {
                         SET_MEDIA_SRC(convertFileSrc(playlist_path));
                     }
                 }
+            }else{
+                console.log("WAH", get_watch_result);
+                set_is_error({state:true,message:get_watch_result.message});
             }
         }catch(e){
             set_is_update({state:false,error:true,message:"Failed to request data. Check your crash log and report to developer."});
@@ -201,6 +209,10 @@ function Watch() {
         set_is_ready(false);
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
+            const get_source_info_result = await get_source_info({id:source_id});
+            if (get_source_info_result.code === 200) {
+                SET_SOURCE_INFO(get_source_info_result.data);
+            }
             await get_data({
                 watch_id,
                 server_type:searchParams.get("server_type"),
@@ -310,10 +322,359 @@ function Watch() {
     
     return (<>
         <div className={styles.container}>
-            <>{is_ready
-                ? <>
-                    <div className={styles.header}>
-                        <IconButton color="primary" size="large"
+            <>{!is_error.state
+                ? <>{is_ready
+                    ? <>
+                        <div className={styles.header}>
+                            <IconButton color="primary" size="large"
+                                onClick={()=>{
+                                    if (window.history.state && window.history.state.idx > 0) {
+                                        navigate(-1);
+                                    } else {
+                                        console.error("No history to go back to");
+                                    }
+                                }}
+                            >
+                                <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                            </IconButton>
+                            <div
+                                style={{
+                                    display:"flex",
+                                    flexDirection:"row",
+                                    gap: "8px",
+                                    alignItems:"center",
+                                    
+                                }}
+                            >
+                                <>{is_update.error
+                                    ? <>
+                                        <Tooltip title={is_update.message}>
+                                            <IconButton color="error" size="large"
+                                                onClick={async ()=>{
+                                                    await get_data({
+                                                        watch_id,
+                                                        server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
+                                                        force_update:true
+                                                    });
+                                                }}
+                                            >
+                                                <ErrorOutlineRoundedIcon color="error" fontSize="medium"/>
+                                            </IconButton>
+                                        </Tooltip>
+                                    </>
+                                    : <>{is_update.state
+                                        ? <Tooltip title="Fetching update...">
+                                            <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.05/2)"/>
+                                        </Tooltip>
+                                        : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} hours`}>
+                                            <IconButton color="primary" size="large"
+                                                onClick={async ()=>{
+                                                    await get_data({
+                                                        watch_id,
+                                                        server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
+                                                        force_update:true
+                                                    });
+                                                }}
+                                            >
+                                                <PublishedWithChangesRoundedIcon color="success" fontSize="large"/>
+                                            </IconButton>
+                                            
+                                        </Tooltip>
+
+                                    }</>                         
+                                }</>
+                                
+                                
+                                
+                                
+                            </div>
+                        </div>
+                        <div className={styles.body}>
+                            <div className={styles.body_box_1}>
+                                <div
+                                    style={{
+                                        flex:1,
+                                        minWidth:"200px",
+                                        display:"flex",
+                                        boxSizing:"border-box",
+                                    }}
+                                >
+                                    <MediaPlayer ref={media_player_ref} 
+                                        style={{
+                                            boxSizing:"border-box",
+                                        }}
+                                        title={`Watching: ${preview_id}-${watch_id}`}
+                                        onProviderChange={onProviderChange}
+                                        src={MEDIA_SRC}
+                                        onLoadedData={()=>{
+                                            set_is_media_ready(true);
+                                        }}
+                                        storage="vidstack"
+                                        streamType='on-demand'
+                                        viewType='video'
+                                        playsInline crossOrigin
+                                    >
+                                        <MediaProvider>
+                                            {MEDIA_TRACK.map((track:any, index:any) => {
+                                                return (
+                                                    <track
+                                                        key={index}
+                                                        kind={track.kind}
+                                                        src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
+                                                        srcLang={track.label} 
+                                                        label={track.label}
+                                                        
+                                                    />
+                                                );
+                                            })}
+                                        </MediaProvider>
+                                        <DefaultVideoLayout
+                                            colorScheme="dark"
+                                            icons={defaultLayoutIcons}
+                                        />
+                                    </MediaPlayer>
+                                </div>
+                                <div
+                                    style={{
+                                        width:"auto",
+                                        minWidth:"150px",
+                                        height:"100%",
+                                        background:"var(--background-color-layer-1)",
+                                        display:"flex",
+                                        flexDirection:"column",
+                                        
+                                        borderRadius:"8px",
+                                        gap:0,
+                                        overflow:"auto",
+                                        boxSizing:"border-box",
+                                    }}
+                                >
+                                    <>{MEDIA_TYPE !== "local"
+                                        ? <>{Object.keys(SERVER_INFO.server_list).map((server_type:any,index:number)=>(
+                                            <div key={index}
+                                                style={{
+                                                    width:"auto",
+                                                    display:"flex",
+                                                    flexDirection:"column",
+                                                    gap:0,
+                                                    flexGrow:0,
+                                                    flexShrink:0,
+                                                    boxShadow:"rgba(17, 12, 46, 0.15) 0px 48px 100px 0px"
+                                                }}
+                                            >
+                                                <span
+                                                    style={{
+                                                        color:"var(--color)",
+                                                        fontFamily:"var(--font-family-bold)",
+                                                        fontSize:"calc((100vw + 100vh)*0.0255/2)",
+                                                        padding:"8px",
+                                                        borderBottom:"2px solid var(--background-color)",
+                                                    }}
+                                                >{server_type.toUpperCase()}</span>
+                                                <div
+                                                    style={{
+                                                        display:"flex",
+                                                        flexDirection:"column",
+                                                        gap:"8px",
+                                                        width:"auto",
+                                                        flexGrow:0,
+                                                        flexShrink:0,
+                                                        padding:"12px",
+                                                    }}
+                                                >
+                                                    <>{SERVER_INFO.server_list[server_type].map((item_2:any,index_2:number)=>(
+                                                        <Button 
+                                                            variant={
+                                                                (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) 
+                                                                ? "contained"
+                                                                : "outlined" 
+                                                            } 
+                                                            size="medium" color="primary" key={index_2} 
+                                                            style={{
+                                                                paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
+                                                                paddingRight:"calc((100vw + 100vh)*0.0575/2)",
+                                                            }}
+                                                            onClick={async ()=>{
+                                                                if (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) return;
+                                                                navigate(`/watch/${source_id}/${preview_id}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
+                                                                await get_data({
+                                                                    watch_id,
+                                                                    server_type,
+                                                                    server_id:item_2.server_id,
+                                                                    force_update:true,
+                                                                    check_local:false,
+                                                                });
+                                                            }}
+                                                        >
+                                                            {item_2.title}
+                                                        </Button>
+                                                    ))}</>
+                                                </div>
+                                                
+                                            </div>
+                                        ))}</>
+                                        : <>
+                                            <div
+                                                style={{
+                                                    width:"auto",
+                                                    display:"flex",
+                                                    flexDirection:"column",
+                                                    gap:0,
+                                                    flexGrow:0,
+                                                    flexShrink:0,
+                                                    boxShadow:"rgba(17, 12, 46, 0.15) 0px 48px 100px 0px"
+                                                }}
+                                            >
+                                                <span
+                                                    style={{
+                                                        color:"var(--color)",
+                                                        fontFamily:"var(--font-family-bold)",
+                                                        fontSize:"calc((100vw + 100vh)*0.0255/2)",
+                                                        padding:"8px",
+                                                        borderBottom:"2px solid var(--background-color)",
+                                                    }}
+                                                >SERVER</span>
+                                                <div
+                                                    style={{
+                                                        display:"flex",
+                                                        flexDirection:"column",
+                                                        gap:"8px",
+                                                        width:"auto",
+                                                        flexGrow:0,
+                                                        flexShrink:0,
+                                                        padding:"12px",
+                                                    }}
+                                                >
+                                                    
+                                                    <Button 
+                                                        variant="contained"
+                                                        size="medium" color="primary"
+                                                        style={{
+                                                            paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
+                                                            paddingRight:"calc((100vw + 100vh)*0.0575/2)",
+                                                        }}
+                                                        
+                                                    >Local</Button>
+
+                                                    <Button 
+                                                        variant="outlined"
+                                                        size="medium" color="primary"
+                                                        style={{
+                                                            paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
+                                                            paddingRight:"calc((100vw + 100vh)*0.0575/2)",
+                                                        }}
+                                                        onClick={async ()=>{
+                                                            navigate(`/watch/${source_id}/${preview_id}/${watch_id}/`, { replace: true });
+                                                            await get_data({
+                                                                watch_id,
+                                                                check_local:false,
+                                                            });
+                                                        }}
+                                                    >Switch to online</Button>
+                                                    
+                                                </div>
+                                                
+                                            </div>
+                                        </>
+                                    }</>
+                                </div>
+                            </div>
+                            <div className={styles.body_box_2}>
+                                <>{EPISODE_DATA?.length 
+                                    ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(
+                                        <RenderItem key={index} item={item}/>
+                                    ))}</>
+                                    : <></>
+                                }</>
+                            </div>
+                            <div className={styles.body_box_3}>
+                                <Pagination count={EPISODE_DATA.length} page={current_page} color="primary" showFirstButton showLastButton
+                                    sx={{
+                                        ul: {
+                                            "& .MuiPaginationItem-root": {
+                                                color:"var(--color)",
+                                            }
+                                        }
+                                    }}
+                                    onChange={(_, page:number)=>{set_current_page(page)}}
+                                />
+                                
+                            </div>
+                            <div className={styles.body_box_4}>
+                                <>{is_online &&
+                                    <DiscussionEmbed
+                                        shortname='hyperionbox'
+                                        config={
+                                            {
+                                                identifier: `${source_id}-${preview_id}-${watch_id}`,
+                                                title: `${preview_id}: ${watch_id}`,
+                                                language: 'en' //e.g. for Traditional Chinese (Taiwan)
+                                            }
+                                        }
+                                    />
+                                }</>
+                            </div>
+                        </div>
+                    </>
+                    : <div
+                        style={{
+                            width:"100%",
+                            height:"100%",
+                            display:"flex",
+                            alignItems:"center",
+                            justifyContent:"center",
+                        }}
+                    >
+                        <object type="image/svg+xml" data={Blocks_Loading}
+                            style={{
+                                width:"calc((100vw + 100vh) * 0.25 / 2)",
+                                height:"auto",
+                            }}
+                        />
+                    </div>
+                }</>
+                : <div
+                    style={{
+                        width:"100%",
+                        height:"100%",
+                        display:"flex",
+                        alignItems:"center",
+                        justifyContent:"center",
+                        flexDirection:"column",
+                        gap:"12px",
+                    }}
+                >
+                    <span
+                        style={{
+                            color:"var(--color)",
+                            fontFamily:"var(--font-family-bold)",
+                            fontSize:"calc((100vw + 100vh)*0.0355/2)",
+                            textAlign:"center",
+                        }}
+                    >
+                        <span style={{color:"red"}}>[Error]:</span> {is_error?.message?.response?.data?.error || "Unknown error occured."}
+                        
+                    </span>
+                    <Tooltip title="Some source require robot verification for it to work. Try opening it in an external browser.">
+                        <Button
+                            variant="contained" color="secondary"
+                            
+                            onClick={async()=>{
+                                await open_external({url:`${SOURCE_INFO.domain}/${source_id}/${preview_id}/${watch_id}/`});
+                            }}
+                        >
+                            Try open in external browser
+                        </Button>
+                    </Tooltip>
+                    <div
+                        style={{
+                            display:"flex",
+                            flexDirection:"row",
+                            gap:"12px",
+                        }}
+                    >
+                        <Button
+                            variant="outlined" color="primary"
                             onClick={()=>{
                                 if (window.history.state && window.history.state.idx > 0) {
                                     navigate(-1);
@@ -322,302 +683,26 @@ function Watch() {
                                 }
                             }}
                         >
-                            <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
-                        </IconButton>
-                        <div
-                            style={{
-                                display:"flex",
-                                flexDirection:"row",
-                                gap: "8px",
-                                alignItems:"center",
-                                
+                            Go Back
+                        </Button>
+                        <Button
+                            variant="contained" color="primary"
+                            onClick={async ()=>{
+                                set_is_ready(false);
+                                set_is_media_ready(false);
+                                set_is_error({state:false,message:""});
+                                await get_data({
+                                    watch_id,
+                                    server_type:searchParams.get("server_type"),
+                                    server_id:searchParams.get("server_id"),
+                                    force_update:false
+                                });
                             }}
                         >
-                            <>{is_update.error
-                                ? <>
-                                    <Tooltip title={is_update.message}>
-                                        <IconButton color="error" size="large"
-                                            onClick={async ()=>{
-                                                await get_data({
-                                                    watch_id,
-                                                    server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
-                                                    force_update:true
-                                                });
-                                            }}
-                                        >
-                                            <ErrorOutlineRoundedIcon color="error" fontSize="medium"/>
-                                        </IconButton>
-                                    </Tooltip>
-                                </>
-                                : <>{is_update.state
-                                    ? <Tooltip title="Fetching update...">
-                                        <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.05/2)"/>
-                                    </Tooltip>
-                                    : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} hours`}>
-                                        <IconButton color="primary" size="large"
-                                            onClick={async ()=>{
-                                                await get_data({
-                                                    watch_id,
-                                                    server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
-                                                    force_update:true
-                                                });
-                                            }}
-                                        >
-                                            <PublishedWithChangesRoundedIcon color="success" fontSize="large"/>
-                                        </IconButton>
-                                        
-                                    </Tooltip>
-
-                                }</>                         
-                            }</>
-                            
-                            
-                            
-                            
-                        </div>
+                            Retry
+                        </Button>
+                        
                     </div>
-                    <div className={styles.body}>
-                        <div className={styles.body_box_1}>
-                            <div
-                                style={{
-                                    flex:1,
-                                    minWidth:"200px",
-                                    display:"flex",
-                                    boxSizing:"border-box",
-                                }}
-                            >
-                                <MediaPlayer ref={media_player_ref} 
-                                    style={{
-                                        boxSizing:"border-box",
-                                    }}
-                                    title={`Watching: ${preview_id}-${watch_id}`}
-                                    onProviderChange={onProviderChange}
-                                    src={MEDIA_SRC}
-                                    onLoadedData={()=>{
-                                        set_is_media_ready(true);
-                                    }}
-                                    storage="vidstack"
-                                    streamType='on-demand'
-                                    viewType='video'
-                                    playsInline crossOrigin
-                                >
-                                    <MediaProvider>
-                                        {MEDIA_TRACK.map((track:any, index:any) => {
-                                            return (
-                                                <track
-                                                    key={index}
-                                                    kind={track.kind}
-                                                    src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
-                                                    srcLang={track.label} 
-                                                    label={track.label}
-                                                    
-                                                />
-                                            );
-                                        })}
-                                    </MediaProvider>
-                                    <DefaultVideoLayout
-                                        colorScheme="dark"
-                                        icons={defaultLayoutIcons}
-                                    />
-                                </MediaPlayer>
-                            </div>
-                            <div
-                                style={{
-                                    width:"auto",
-                                    minWidth:"150px",
-                                    height:"100%",
-                                    background:"var(--background-color-layer-1)",
-                                    display:"flex",
-                                    flexDirection:"column",
-                                    
-                                    borderRadius:"8px",
-                                    gap:0,
-                                    overflow:"auto",
-                                    boxSizing:"border-box",
-                                }}
-                            >
-                                <>{MEDIA_TYPE !== "local"
-                                    ? <>{Object.keys(SERVER_INFO.server_list).map((server_type:any,index:number)=>(
-                                        <div key={index}
-                                            style={{
-                                                width:"auto",
-                                                display:"flex",
-                                                flexDirection:"column",
-                                                gap:0,
-                                                flexGrow:0,
-                                                flexShrink:0,
-                                                boxShadow:"rgba(17, 12, 46, 0.15) 0px 48px 100px 0px"
-                                            }}
-                                        >
-                                            <span
-                                                style={{
-                                                    color:"var(--color)",
-                                                    fontFamily:"var(--font-family-bold)",
-                                                    fontSize:"calc((100vw + 100vh)*0.0255/2)",
-                                                    padding:"8px",
-                                                    borderBottom:"2px solid var(--background-color)",
-                                                }}
-                                            >{server_type.toUpperCase()}</span>
-                                            <div
-                                                style={{
-                                                    display:"flex",
-                                                    flexDirection:"column",
-                                                    gap:"8px",
-                                                    width:"auto",
-                                                    flexGrow:0,
-                                                    flexShrink:0,
-                                                    padding:"12px",
-                                                }}
-                                            >
-                                                <>{SERVER_INFO.server_list[server_type].map((item_2:any,index_2:number)=>(
-                                                    <Button 
-                                                        variant={
-                                                            (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) 
-                                                            ? "contained"
-                                                            : "outlined" 
-                                                        } 
-                                                        size="medium" color="primary" key={index_2} 
-                                                        style={{
-                                                            paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
-                                                            paddingRight:"calc((100vw + 100vh)*0.0575/2)",
-                                                        }}
-                                                        onClick={async ()=>{
-                                                            if (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) return;
-                                                            navigate(`/watch/${source_id}/${preview_id}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
-                                                            await get_data({
-                                                                watch_id,
-                                                                server_type,
-                                                                server_id:item_2.server_id,
-                                                                force_update:true,
-                                                                check_local:false,
-                                                            });
-                                                        }}
-                                                    >
-                                                        {item_2.title}
-                                                    </Button>
-                                                ))}</>
-                                            </div>
-                                            
-                                        </div>
-                                    ))}</>
-                                    : <>
-                                        <div
-                                            style={{
-                                                width:"auto",
-                                                display:"flex",
-                                                flexDirection:"column",
-                                                gap:0,
-                                                flexGrow:0,
-                                                flexShrink:0,
-                                                boxShadow:"rgba(17, 12, 46, 0.15) 0px 48px 100px 0px"
-                                            }}
-                                        >
-                                            <span
-                                                style={{
-                                                    color:"var(--color)",
-                                                    fontFamily:"var(--font-family-bold)",
-                                                    fontSize:"calc((100vw + 100vh)*0.0255/2)",
-                                                    padding:"8px",
-                                                    borderBottom:"2px solid var(--background-color)",
-                                                }}
-                                            >SERVER</span>
-                                            <div
-                                                style={{
-                                                    display:"flex",
-                                                    flexDirection:"column",
-                                                    gap:"8px",
-                                                    width:"auto",
-                                                    flexGrow:0,
-                                                    flexShrink:0,
-                                                    padding:"12px",
-                                                }}
-                                            >
-                                                
-                                                <Button 
-                                                    variant="contained"
-                                                    size="medium" color="primary"
-                                                    style={{
-                                                        paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
-                                                        paddingRight:"calc((100vw + 100vh)*0.0575/2)",
-                                                    }}
-                                                    
-                                                >Local</Button>
-
-                                                <Button 
-                                                    variant="outlined"
-                                                    size="medium" color="primary"
-                                                    style={{
-                                                        paddingLeft:"calc((100vw + 100vh)*0.0575/2)",
-                                                        paddingRight:"calc((100vw + 100vh)*0.0575/2)",
-                                                    }}
-                                                    onClick={async ()=>{
-                                                        navigate(`/watch/${source_id}/${preview_id}/${watch_id}/`, { replace: true });
-                                                        await get_data({
-                                                            watch_id,
-                                                            check_local:false,
-                                                        });
-                                                    }}
-                                                >Switch to online</Button>
-                                                
-                                            </div>
-                                            
-                                        </div>
-                                    </>
-                                }</>
-                            </div>
-                        </div>
-                        <div className={styles.body_box_2}>
-                            <>{EPISODE_DATA?.length 
-                                ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(
-                                    <RenderItem key={index} item={item}/>
-                                ))}</>
-                                : <></>
-                            }</>
-                        </div>
-                        <div className={styles.body_box_3}>
-                            <Pagination count={EPISODE_DATA.length} page={current_page} color="primary" showFirstButton showLastButton
-                                sx={{
-                                    ul: {
-                                        "& .MuiPaginationItem-root": {
-                                            color:"var(--color)",
-                                        }
-                                    }
-                                }}
-                                onChange={(_, page:number)=>{set_current_page(page)}}
-                            />
-                            
-                        </div>
-                        <div className={styles.body_box_4}>
-                            <>{is_online &&
-                                <DiscussionEmbed
-                                    shortname='hyperionbox'
-                                    config={
-                                        {
-                                            identifier: `${source_id}-${preview_id}-${watch_id}`,
-                                            title: `${preview_id}: ${watch_id}`,
-                                            language: 'en' //e.g. for Traditional Chinese (Taiwan)
-                                        }
-                                    }
-                                />
-                            }</>
-                        </div>
-                    </div>
-                </>
-                : <div
-                    style={{
-                        width:"100%",
-                        height:"100%",
-                        display:"flex",
-                        alignItems:"center",
-                        justifyContent:"center",
-                    }}
-                >
-                    <object type="image/svg+xml" data={Blocks_Loading}
-                        style={{
-                            width:"calc((100vw + 100vh) * 0.25 / 2)",
-                            height:"auto",
-                        }}
-                    />
                 </div>
             }</>
         </div>

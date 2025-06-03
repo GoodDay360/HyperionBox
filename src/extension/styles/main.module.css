@@ -8,6 +8,7 @@
     overflow: auto;
 }
 
+/* Header */
 .header{
     display: flex;
     width: 100%;
@@ -28,7 +29,6 @@
 }
 
 .search_box{
-    flex:1;
     display: flex;
     background: var(--background-color-layer-1);
     border-radius: 8px;
@@ -36,6 +36,8 @@
     padding: 12px;
     box-sizing: border-box;
     gap: 8px;
+    width: 100%;
+    
 }
 
 .search_box > input{
@@ -45,15 +47,65 @@
     width: 100%;
 }
 
+/* End->Header */
 
 .body{
+    width: 100%;
+    height: auto;
     display: flex;
-    flex:1;
-    box-sizing: border-box;
-    background: var(--background-color);
-    padding:12px;
     flex-direction: column;
+    justify-content: space-between;
+    gap:25px;
+    padding-left: 18px; padding-right: 18px;
+    box-sizing: border-box;
 }
+
+.item_container{
+    width: 100%;
+    height: auto;
+    background: var(--background-color);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:12px;
+}
+
+.item_box{
+    flex: 1;
+    height: auto;
+    background: var(--background-color-layer-1);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap:12px;
+}
+
+.item_icon_box{
+    width: max(60px, calc((100vw + 100vh)/2 * 0.0575));
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding:6px;
+    box-sizing: border-box;
+}
+
+.item_title{
+    font-family: var(--font-family-medium);
+    font-size: max(15pt, calc((100vw + 100vh)/2 * 0.0275));
+    color: var(--color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    user-select: none;
+}
+
+
+/* End->Body */
+
 
 .feedback_container{
     width: 100%;

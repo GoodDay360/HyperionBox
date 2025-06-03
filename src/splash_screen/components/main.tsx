@@ -64,7 +64,7 @@ function Splash_Screen() {
             const new_width = monitor_size.width*0.25;
             window.setSize(new LogicalSize(new_width, new_height));
 
-            console.log(import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION , import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION)
+
             
             try{
                 const config_path = await path.join(await path.appDataDir(),"config.json")
@@ -118,9 +118,9 @@ function Splash_Screen() {
                     const check_bin:any = [
                         {"7z": check_7z},
                         {"node": check_node},
-                        {"ffmpeg": check_ffmpeg},
-                        {"yt-dlp": check_yt_dlp},
-                        // {"extension_package": check_extension_package},
+                        // {"ffmpeg": check_ffmpeg},
+                        // {"yt-dlp": check_yt_dlp},
+                        {"extension-package": check_extension_package},
 
                     ]
 
@@ -131,9 +131,14 @@ function Splash_Screen() {
                         const availbe_version = manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
                         if (!config.bin[key]?.state || !semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
                             const result = await callable({manifest:manifest_data,setFeedback,setProgress});
+                            
                             if (result?.code === 200) {
                                 config.bin[key] = {state:true,version:availbe_version};
+                                if (key === "extension-package") {
+                                    config.bin.browser_path = result.browser_path
+                                }
                                 await write_config(config)
+
                             }else{
                                 console.error(result)
                                 setFeedback({text:`Error downloading ${key}`,color:"red"})
@@ -143,8 +148,6 @@ function Splash_Screen() {
                         }
                         setFeedback({text:`Download ${key} successfully.`})
                     }
-
-                    setFeedback({text:`Download extension_packages successfully.`})
                 }
                 
                 if (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0"){

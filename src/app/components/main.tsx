@@ -42,6 +42,8 @@ const Explore = lazy(() => import('../../explore/components/main'));
 const Preview = lazy(() => import('../../[preview]/components/main'));
 const Watch = lazy(() => import('../../[watch]/components/main'));
 const DownloadTask = lazy(()=> import('../../download_task/components/main'))
+const Extension = lazy(() => import('../../extension/components/main'));
+
 
 const theme = createTheme({
     typography: {
@@ -65,7 +67,7 @@ function App() {
 	const download_task_progress = useRef<any>({});
 
 	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
-	const menu_button_bottom:any = [{title:"Download Task", path:"download_task", icon:DownloadForOfflineRoundedIcon },{title:"Extensions", path:"extensions", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
+	const menu_button_bottom:any = [{title:"Download Task", path:"download_task", icon:DownloadForOfflineRoundedIcon },{title:"Extension", path:"extension", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
 	
 
 
@@ -87,7 +89,7 @@ function App() {
 			const config = await read_config();
 			pause_download_task.current = config.pause_download_task ? true : false;
 			download_task_worker({pause_download_task,download_task_info,download_task_progress});
-			set_menu({state:true,path:"download_task"});
+			set_menu({state:true,path:"extension"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 
 		}, import.meta.env.DEV ? 1500 : 0);
@@ -151,14 +153,15 @@ function App() {
 					}</>
 					
 					<Routes>
-						<Route path="/" element={<Splash_Screen key={1}/>}/>
-						<Route path="/watchlist/*" element={<Watchlist key={2}/>} />
-						<Route path="/explore/*" element={<Explore key={3}/>} />
+						<Route path="/" element={<Splash_Screen />}/>
+						<Route path="/watchlist/*" element={<Watchlist />} />
+						<Route path="/explore/*" element={<Explore/>} />
 						
-						<Route path="/download_task/*" element={<DownloadTask key={4}/>} />
+						<Route path="/download_task/*" element={<DownloadTask />} />
 						
-						<Route path="/preview/:source_id/:preview_id" element={<Preview key={5} />} />
-						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch key={6}/>} />
+						<Route path="/preview/:source_id/:preview_id" element={<Preview />} />
+						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch />} />
+						<Route path="/extension" element={<Extension />} />
 					</Routes>
 					{/* Fullscreen event listener snackbar */}
 					<Snackbar 
