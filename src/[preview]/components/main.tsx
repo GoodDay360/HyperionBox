@@ -70,8 +70,11 @@ import { request_remove_from_tag, request_tag_data, request_add_to_tag, request_
 import { get_local_preview, save_local_preview, remove_local_preview} from "../../global/scripts/manage_local_preview";
 import { get_watch_state } from "../../global/scripts/manage_watch_state";
 import { request_add_download_task } from "../../global/scripts/manage_download";
+import open_external from '../scripts/open_external';
 
 const FETCH_UPDATE_INTERVAL = 3; // In Hours
+let FIRST_RUN_TIMEOUT:any;
+
 
 const Preview = () => {
     const navigate = useNavigate();
@@ -102,7 +105,7 @@ const Preview = () => {
     const [selected_tag, set_selected_tag] = useState<any>([]);
     const [show_more_info, set_show_more_info] = useState<boolean>(false)
     const [current_page, set_current_page] = useState<number>(1);
-    const [is_error, set_is_error] = useState<any>({state:false,message:"Unable to request source"});
+    const [is_error, set_is_error] = useState<any>({state:false,message:"Unable to request source preview"});
 
     const last_selected_tag = useRef<any>([]);
 
@@ -243,12 +246,11 @@ const Preview = () => {
     },[])
 
     // Main Running event
-    const is_run = useRef<boolean>(false);
     useEffect(()=>{
-        if (is_run.current || !app_ready) return;
-        is_run.current = true;
+        if (!app_ready) return;
         set_is_ready(false);
-        (async () => {
+        clearTimeout(FIRST_RUN_TIMEOUT);
+        FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
             const load_tag_result = await load_tag_data();
             if (load_tag_result.code !== 200) {
                 set_is_error({state:true,message:load_tag_result.message});
@@ -290,8 +292,9 @@ const Preview = () => {
             }else{
                 await get_data({mode:"get"});
             }
-        })();
-        
+        }, import.meta.env.DEV ? 1500 : 0);
+
+        return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
     },[app_ready])
     // ====================
 
@@ -477,20 +480,32 @@ const Preview = () => {
                             fontSize:"calc((100vw + 100vh) * 0.0225 / 2)",
                         }}
                     >{is_error.message}</span>
-                    <Button variant="contained"
+                    <Button variant="contained" color='secondary'
                         onClick={async ()=>{
-                            await get_data({mode:"get"});
+                            await open_external({source_id,preview_id});
                         }}
-                    >Retry</Button>
-                    <Button variant="text"
-                        onClick={()=>{
-                            if (window.history.state && window.history.state.idx > 0) {
-                                navigate(-1);
-                            } else {
-                                console.error("No history to go back to");
-                            }
-                        }}
-                    >Go back</Button>
+                    >Open in external browser</Button>
+                    <div style={{
+                        display:"flex",
+                        flexDirection:"row",
+                        gap:"12px",
+                    }}>
+                        
+                        <Button variant="text"
+                            onClick={()=>{
+                                if (window.history.state && window.history.state.idx > 0) {
+                                    navigate(-1);
+                                } else {
+                                    console.error("No history to go back to");
+                                }
+                            }}
+                        >Go back</Button>
+                        <Button variant="contained"
+                            onClick={async ()=>{
+                                await get_data({mode:"get"});
+                            }}
+                        >Retry</Button>
+                    </div>
                 </div>
                 : <>{is_ready
                     ? <>
@@ -809,7 +824,7 @@ const Preview = () => {
                                     }}
                                 >
                                     <>{Object.keys(INFO).map((item_key:string,index:number)=>(<Fragment key={index}>
-                                        <>{!["cover","local_cover","description", "title"].includes(item_key) && (
+                                        {!["cover","local_cover","description", "title"].includes(item_key) && (
                                             <span
                                                 style={{
                                                     fontFamily: "var(--font-family-regular)",
@@ -821,7 +836,7 @@ const Preview = () => {
                                                 <span style={{fontFamily: "var(--font-family-bold)"}}>
                                                 {item_key[0].toUpperCase() + item_key.slice(1)}</span> {INFO[item_key]}
                                             </span>
-                                        )}</>
+                                        )}
                                     </Fragment>))
                                     }</>
                                 </div>

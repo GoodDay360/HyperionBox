@@ -29,13 +29,15 @@ import check_7z from '../scripts/check_7z';
 import check_yt_dlp from '../scripts/check_yt_dlp';
 import check_ffmpeg from '../scripts/check_ffmpeg';
 import check_extension_package from '../scripts/check_extension_package';
+import check_puppeteer_browser from '../scripts/check_puppeteer_browser';
 import initiate_extension from '../scripts/initiate_extension';
 import write_crash_log from '../../global/scripts/write_crash_log';
 import { read_config, write_config } from '../../global/scripts/manage_config';
+import check_internet_connection from '../../global/scripts/check_internet_connection';
 
 // Context Imports
 import { global_context } from '../../global/scripts/contexts';
-import { stat } from 'fs';
+
 
 
 let FIRST_RUN_TIMEOUT:any;
@@ -55,6 +57,7 @@ function Splash_Screen() {
             clearTimeout(FIRST_RUN_TIMEOUT);
             setFeedback({text:"Loading..."});
             const window = await getCurrentWindow();
+            const is_online = await check_internet_connection();
 
             window.setMaximizable(false);
             window.setResizable(false);
@@ -63,8 +66,6 @@ function Splash_Screen() {
             const new_height = monitor_size.height*0.5;
             const new_width = monitor_size.width*0.25;
             window.setSize(new LogicalSize(new_width, new_height));
-
-
             
             try{
                 const config_path = await path.join(await path.appDataDir(),"config.json")
@@ -72,81 +73,102 @@ function Splash_Screen() {
                 if (!file_exist) await writeTextFile(config_path, "{}")
                 
                 let config = await read_config();
-
-                if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION === "0")){
-
-                    setFeedback({text:"Checking manifest..."});
-                    
-                    let manifest_data:any;
-
-                    if (import.meta.env.DEV || import.meta.env.VITE_DEV_USE_LOCAL_BIN_MANIFEST === "1") {
-                        try{
-                            manifest_data = JSON.parse(await readTextFile(import.meta.env.VITE_DEV_LOCAL_BIN_MANIFEST_PATH));
-                        }catch(e){
-                            console.log("[MANIFEST] Error reading local manifest:",e);
-                            await write_crash_log(`[MANIFEST] Error reading local manifest:${JSON.stringify(e)}`);
-                            setFeedback({text:"Error reading local manifest.", color:"red"});
-                            return;
-                        }
-                        
-                    }else{
-                        const manifest_response:any = await new Promise((resolve,reject) =>{
-                            fetch(
-                                "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
-                                {method: "get"}
-                            )
-                            .then(async (response) => {
-                                const node_manifest = (await response.json());
-                                resolve({data:node_manifest, code:200})
-                            })
-                            .catch(error => {
-                                console.error('Error fetching the data:', error);
                 
-                                reject({message:error, code:500})
-                            });
-                        })
+                const check_bin:any = [
+                    {"7z": check_7z},
+                    {"node": check_node},
+                    // {"ffmpeg": check_ffmpeg},
+                    // {"yt-dlp": check_yt_dlp},
+                    {"extension-package": check_extension_package},
+                ]
+
+                if (is_online){
+                    if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION === "0")){
+
+                        setFeedback({text:"Checking manifest..."});
                         
-                        
-                        if (manifest_response.code === 200) {
-                            manifest_data = manifest_response.data;
+                        let manifest_data:any;
+
+                        if (import.meta.env.DEV || import.meta.env.VITE_DEV_USE_LOCAL_BIN_MANIFEST === "1") {
+                            try{
+                                manifest_data = JSON.parse(await readTextFile(import.meta.env.VITE_DEV_LOCAL_BIN_MANIFEST_PATH));
+                            }catch(e){
+                                console.log("[MANIFEST] Error reading local manifest:",e);
+                                await write_crash_log(`[MANIFEST] Error reading local manifest:${JSON.stringify(e)}`);
+                                setFeedback({text:"Error reading local manifest.", color:"red"});
+                                return;
+                            }
+                            
                         }else{
-                            setFeedback({text:`Failed to check manifest.`, color:"red"})
+                            const manifest_response:any = await new Promise((resolve,reject) =>{
+                                fetch(
+                                    "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
+                                    {method: "get"}
+                                )
+                                .then(async (response) => {
+                                    const node_manifest = (await response.json());
+                                    resolve({data:node_manifest, code:200})
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching the data:', error);
+                    
+                                    reject({message:error, code:500})
+                                });
+                            })
+                            
+                            
+                            if (manifest_response.code === 200) {
+                                manifest_data = manifest_response.data;
+                            }else{
+                                setFeedback({text:`Failed to check manifest.`, color:"red"})
+                                return;
+                            }
+                        }
+
+                        if (!config.bin) config.bin = {};
+                        for (const item of check_bin){
+                            const key = Object.keys(item)[0]
+                            const callable:any = item[key]
+                            const availbe_version = manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
+                            if (!config.bin[key]?.state || !semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
+                                const result = await callable({manifest:manifest_data,setFeedback,setProgress});
+                                
+                                if (result?.code === 200) {
+                                    config.bin[key] = {state:true,version:availbe_version};
+                                    await write_config(config)
+
+                                }else{
+                                    console.error(result)
+                                    setFeedback({text:`Error downloading ${key}`,color:"red"})
+                                    return;
+
+                                }
+                            }
+                            setFeedback({text:`Download ${key} successfully.`})
+                        }
+
+                        if (!config?.bin?.browser_path){
+                            const check_puppeteer_browser_result:any = await check_puppeteer_browser({config, setFeedback});
+                            if (check_puppeteer_browser_result.code === 200) {
+                                config.bin.browser_path = check_puppeteer_browser_result.browser_path;
+                                await write_config(config)
+                            }else{
+                                console.error(check_puppeteer_browser_result)
+                                setFeedback({text:`Error downloading puppeteer browser`,color:"red"})
+                                return;
+                            }
+                        }
+                    }
+                }else{
+                    for (const item of check_bin){
+                        if (!config.bin?.[Object.keys(item)[0]]?.state) {
+                            setFeedback({text:"Missing dependancies, Internet connection required.",color:"red"});
                             return;
                         }
                     }
-
-                    const check_bin:any = [
-                        {"7z": check_7z},
-                        {"node": check_node},
-                        // {"ffmpeg": check_ffmpeg},
-                        // {"yt-dlp": check_yt_dlp},
-                        {"extension-package": check_extension_package},
-
-                    ]
-
-                    if (!config.bin) config.bin = {};
-                    for (const item of check_bin){
-                        const key = Object.keys(item)[0]
-                        const callable:any = item[key]
-                        const availbe_version = manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
-                        if (!config.bin[key]?.state || !semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
-                            const result = await callable({manifest:manifest_data,setFeedback,setProgress});
-                            
-                            if (result?.code === 200) {
-                                config.bin[key] = {state:true,version:availbe_version};
-                                if (key === "extension-package") {
-                                    config.bin.browser_path = result.browser_path
-                                }
-                                await write_config(config)
-
-                            }else{
-                                console.error(result)
-                                setFeedback({text:`Error downloading ${key}`,color:"red"})
-                                return;
-
-                            }
-                        }
-                        setFeedback({text:`Download ${key} successfully.`})
+                    if (!config.bin?.browser_path){
+                        setFeedback({text:"Missing dependancies, Internet connection required.",color:"red"});
+                        return;
                     }
                 }
                 

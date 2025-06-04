@@ -1,7 +1,5 @@
 import { writeFile, BaseDirectory, exists, remove } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
-import { time } from "console";
-
 
 
 async function download_file_in_chunks({

@@ -53,7 +53,7 @@ import { get_watch_state, update_watch_state } from "../../global/scripts/manage
 import { get_local_preview,save_local_preview } from "../../global/scripts/manage_local_preview";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
 import rephrase_local_hls from "../scripts/rephrase_local_hls";
-import open_external from "../../global/scripts/open_external";
+import open_external from "../scripts/open_external";
 import { get_source_info } from "../../global/scripts/manage_extension";
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
@@ -660,7 +660,7 @@ function Watch() {
                             variant="contained" color="secondary"
                             
                             onClick={async()=>{
-                                await open_external({url:`${SOURCE_INFO.domain}/${source_id}/${preview_id}/${watch_id}/`});
+                                await open_external({source_id,preview_id,watch_id});
                             }}
                         >
                             Try open in external browser
@@ -695,7 +695,7 @@ function Watch() {
                                     watch_id,
                                     server_type:searchParams.get("server_type"),
                                     server_id:searchParams.get("server_id"),
-                                    force_update:false
+                                    force_update:true
                                 });
                             }}
                         >

@@ -1,6 +1,6 @@
 import { path } from '@tauri-apps/api';
 import { BaseDirectory, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
-
+import { fetch } from "@tauri-apps/plugin-http";
 
 const get_source = async () => {
 
@@ -11,7 +11,22 @@ const get_source = async () => {
         return {code:200, data:source_manifest};
 
         } else {
-            return {code:404, message:"Not exist"};
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/GoodDay360/HyperionBox-Extensions/refs/heads/main/sources.manifest.json', {
+                    method: 'GET',
+                });
+
+                if (!response.ok) {
+                    return {code:500, message:`HTTP error! Status: ${response.status}`};
+                }
+
+                const data = await response.json();
+                console.log(data)
+                return {code:200,data};
+            } catch (error) {
+                console.error('Fetch error:', error);
+                return {code:500, message:error};
+            }
         }
     }catch(e){
         console.error(e);

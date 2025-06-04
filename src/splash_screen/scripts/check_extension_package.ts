@@ -16,7 +16,6 @@ const chunkSize = 6 * 1024 * 1024;
 
 const check_extension_package = async ({manifest, setFeedback, setProgress}:any) => {
     try{
-        const config_manifest = await read_config();
         const url = manifest?.["extension-package"]?.[await platform()]?.[await arch()]?.url;
         if (!url) {
             setFeedback("Your system doesn't support this app.")
@@ -61,8 +60,6 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
         setFeedback({text:"Extracting extension_package..."})
         const path_7z = await get_7z_path;
         
-        if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
-
         const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -aoa -md=32m -mmt=3`
         const result = await execute_command({title:"extract",command:command})
 
@@ -82,24 +79,8 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
             await write_crash_log(`[check_extension_packages] npm install: ${JSON.stringify({code: 500, message: execute_install_npm_response.stderr})}`);
             return {code: 500, message: execute_install_npm_response.stderr};
         }
-        
-        if (!config_manifest?.bin?.browser_path){
-            setFeedback({text:`Installing puppeteer browser... might take a while for first time.`})
-            const npx_path = await get_npx_path;
-            const execute_install_browser_response = await execute_command({title:"npx-install",command:`"${npx_path}" puppeteer browsers install firefox@stable`,cwd:extract_dir})
-            if (execute_install_browser_response.stderr.trim()) {
-                await write_crash_log(`[check_extension_packages] npx install: ${JSON.stringify({code: 500, message: execute_install_browser_response.stderr})}`);
-                console.error({code: 500, message: execute_install_browser_response.stderr});
-                return {code: 500, message: execute_install_browser_response.stderr};
-                
-            }
-            const path_result = execute_install_browser_response.stdout.trim().split("\n")[1].split(" ");
-            path_result.shift();
-            const browser_path = path_result.join(" ").trim();
-            return {code: 200, message: 'OK', browser_path}
-        }else{
-            return {code: 200, message: 'OK', browser_path: config_manifest.bin.browser_path}
-        }
+
+        return {code: 200, message: 'OK'}
         
     }catch{(e:unknown)=>{
         console.error("[Error] check_extension_package: ", e);
