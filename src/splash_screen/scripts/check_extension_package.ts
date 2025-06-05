@@ -6,11 +6,9 @@ import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-a
 import get_7z_path from '../../global/scripts/get_7z_path';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
 import execute_command from '../../global/scripts/excute_command';
-import copy_recursive from '../../global/scripts/copy_recursive';
 import get_npm_path from '../../global/scripts/node/get_npm_path';
-import get_npx_path from '../../global/scripts/node/get_npx_path';
 import write_crash_log from '../../global/scripts/write_crash_log';
-import { read_config } from '../../global/scripts/manage_config';
+
 
 const chunkSize = 6 * 1024 * 1024; 
 

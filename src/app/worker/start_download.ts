@@ -1,7 +1,6 @@
 import { Parser } from 'm3u8-parser';
-import { convertFileSrc } from '@tauri-apps/api/core';
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, exists, remove, mkdir, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
 import write_crash_log from '../../global/scripts/write_crash_log';
 

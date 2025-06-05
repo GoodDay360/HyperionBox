@@ -1,5 +1,4 @@
-import { path } from '@tauri-apps/api';
-import { BaseDirectory, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
+import { readTextFile} from '@tauri-apps/plugin-fs';
 import { fetch } from "@tauri-apps/plugin-http";
 
 const get_source = async () => {

@@ -1,6 +1,5 @@
 import Database from '@tauri-apps/plugin-sql';
-import { error } from 'console';
-import { writeTextFile, readTextFile, exists, mkdir, BaseDirectory, remove } from "@tauri-apps/plugin-fs"
+import { exists, BaseDirectory, remove } from "@tauri-apps/plugin-fs"
 import { path } from "@tauri-apps/api"
 
 const DATABASE_PATH:string = 'sqlite:download_task.db'

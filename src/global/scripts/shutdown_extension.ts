@@ -5,7 +5,7 @@ import axios from 'axios';
 
 
 // Custom Imports
-import write_crash_log from '../../global/scripts/write_crash_log';
+import write_crash_log from './write_crash_log';
 
 const shutdown_extension = async () => {
     return await new Promise<any>(async (resolve, _) => {

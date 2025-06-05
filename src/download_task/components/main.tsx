@@ -1,9 +1,9 @@
 // React Import
 import { useEffect, useState, useCallback, useContext } from "react";
-import { useNavigate } from "react-router";
+
 
 // MUI Imports
-import { ButtonBase, Button } from '@mui/material';
+import { ButtonBase } from '@mui/material';
 
 // MUI Icon Imports
 import PlayCircleOutlineRoundedIcon from '@mui/icons-material/PlayCircleOutlineRounded';
@@ -16,7 +16,6 @@ import styles from "../styles/main.module.css";
 import RenderItem from "./render_item";
 
 // Custom Import
-import write_crash_log from "../../global/scripts/write_crash_log";
 import { download_task_context, global_context } from "../../global/scripts/contexts";
 import { read_config, write_config } from "../../global/scripts/manage_config";
 import { request_download_task } from "../../global/scripts/manage_download";
@@ -25,7 +24,7 @@ import { request_download_task } from "../../global/scripts/manage_download";
 let FIRST_RUN_TIMEOUT:any;
 
 const DownloadTask = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const {pause_download_task, download_task_info} = useContext<any>(download_task_context)
     const [task_info, set_task_info] = useState<any>({})
     const {app_ready} = useContext<any>(global_context)

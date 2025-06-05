@@ -1,38 +1,33 @@
 // React Import
-import { useEffect, useState, useRef, useCallback, useContext } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState, useCallback, useContext } from "react";
 
 // MUI Imports
-import { Button, ButtonBase, IconButton, Tooltip } from "@mui/material";
+import { Button } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 
 // MUI Icons Import
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
+
 
 // styles Import
 import styles from "../styles/main.module.css";
 
 
 // Lazy Load Imports
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Component Imports
 import Item from "./item";
 
 // Custom Import
 import { global_context } from "../../global/scripts/contexts";
-import write_crash_log from "../../global/scripts/write_crash_log";
 import { get_installed_sources } from "../../global/scripts/manage_extension";
 import get_source from "../scripts/get_source";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
-import { get } from "http";
 
 let FIRST_RUN_TIMEOUT:any;
 
 const Extension = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     
     const {app_ready} = useContext<any>(global_context);
     const [is_ready, set_is_ready] = useState<boolean>(false);

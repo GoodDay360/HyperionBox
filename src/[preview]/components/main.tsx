@@ -1,6 +1,6 @@
 // Tauri Imports
 import { path } from '@tauri-apps/api';
-import { writeFile, BaseDirectory, exists, remove, readTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, remove, readTextFile } from "@tauri-apps/plugin-fs";
 
 // React Imports
 import { useEffect, useRef, useState, Fragment, useMemo, useCallback, useContext } from "react";

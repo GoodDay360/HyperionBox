@@ -3,15 +3,13 @@ import { path } from '@tauri-apps/api';
 import {remove, BaseDirectory, exists} from '@tauri-apps/plugin-fs';
 
 // React Import
-import { useEffect, useState, useRef, useCallback, useContext } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
 
 // MUI Imports
-import { ButtonBase, IconButton, Tooltip } from "@mui/material";
+import {IconButton, Tooltip } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 
 // MUI Icons Import
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import UpgradeRoundedIcon from '@mui/icons-material/UpgradeRounded';
@@ -27,9 +25,6 @@ import semver from "semver";
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Custom Import
-import { global_context } from "../../global/scripts/contexts";
-import write_crash_log from "../../global/scripts/write_crash_log";
-import get_source from "../scripts/get_source";
 import { remove_source } from "../../global/scripts/manage_extension";
 import install_source from "../scripts/install_source";
 

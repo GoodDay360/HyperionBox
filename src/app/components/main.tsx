@@ -1,6 +1,6 @@
 
 
-import { lazy, useEffect, useState, useRef, useCallback } from "react";
+import { lazy, useEffect, useState, useRef } from "react";
 import { Routes, Route, useNavigate } from "react-router";
 
 
@@ -21,6 +21,7 @@ import DownloadForOfflineRoundedIcon from '@mui/icons-material/DownloadForOfflin
 
 // Style import
 import 'bootstrap/dist/css/bootstrap-reboot.min.css';
+import 'bootstrap/dist/css/bootstrap.css';
 import 'react-virtualized/styles.css';
 import "../../global/styles/global.css";
 import styles from "../styles/main.module.css";
@@ -43,6 +44,7 @@ const Preview = lazy(() => import('../../[preview]/components/main'));
 const Watch = lazy(() => import('../../[watch]/components/main'));
 const DownloadTask = lazy(()=> import('../../download_task/components/main'))
 const Extension = lazy(() => import('../../extension/components/main'));
+const Setting = lazy(() => import('../../setting/components/main'));
 
 
 const theme = createTheme({
@@ -67,7 +69,7 @@ function App() {
 	const download_task_progress = useRef<any>({});
 
 	const menu_button_top:any = [{title:"Watchlist", path:"watchlist", icon:ViewListIcon},{title:"Explore", path:"explore", icon:ExploreIcon}];
-	const menu_button_bottom:any = [{title:"Download Task", path:"download_task", icon:DownloadForOfflineRoundedIcon },{title:"Extension", path:"extension", icon:ExtensionIcon},{title:"Settings", path:"settings", icon:SettingsIcon}];
+	const menu_button_bottom:any = [{title:"Download Task", path:"download_task", icon:DownloadForOfflineRoundedIcon },{title:"Extension", path:"extension", icon:ExtensionIcon},{title:"Setting", path:"setting", icon:SettingsIcon}];
 	
 
 
@@ -76,11 +78,8 @@ function App() {
 		// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413");
 	},[menu])
 
-	const is_run = useRef<boolean>(false);
 	useEffect(()=>{
 		if (!app_ready) return;
-		if (is_run.current) return
-		is_run.current = true;
 		clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
 			await load_config_options();
@@ -89,7 +88,7 @@ function App() {
 			const config = await read_config();
 			pause_download_task.current = config.pause_download_task ? true : false;
 			download_task_worker({pause_download_task,download_task_info,download_task_progress});
-			set_menu({state:true,path:"extension"});
+			set_menu({state:true,path:"watchlist"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 
 		}, import.meta.env.DEV ? 1500 : 0);
@@ -153,15 +152,16 @@ function App() {
 					}</>
 					
 					<Routes>
-						<Route path="/" element={<Splash_Screen />}/>
-						<Route path="/watchlist/*" element={<Watchlist />} />
-						<Route path="/explore/*" element={<Explore/>} />
+						<Route path="/" element={<Splash_Screen key={1}/>}/>
+						<Route path="/watchlist/*" element={<Watchlist key={2}/>} />
+						<Route path="/explore/*" element={<Explore/>} key={3}/>
 						
-						<Route path="/download_task/*" element={<DownloadTask />} />
+						<Route path="/download_task/*" element={<DownloadTask key={4}/>} />
 						
-						<Route path="/preview/:source_id/:preview_id" element={<Preview />} />
-						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch />} />
-						<Route path="/extension" element={<Extension />} />
+						<Route path="/preview/:source_id/:preview_id" element={<Preview key={5}/>} />
+						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch key={6}/>} />
+						<Route path="/extension" element={<Extension key={7}/>} />
+						<Route path="/setting" element={<Setting key={8}/>} />
 					</Routes>
 					{/* Fullscreen event listener snackbar */}
 					<Snackbar 

@@ -1,9 +1,10 @@
 // Tauri Imports
+
 // Axios Imports
 import axios from 'axios';
 
 // Custom Imports
-import { read_config } from "../../global/scripts/manage_config";
+
 
 const get_list = async ({source_id, search}:{source_id:string,search:string}) => {
     return await new Promise<any>(async (resolve, reject) => {

@@ -10,12 +10,13 @@ import get_extension_directory from "../../global/scripts/get_extension_director
 import get_node_path from "../../global/scripts/node/get_node_path"
 import { read_config, write_config } from '../../global/scripts/manage_config';
 import write_crash_log from '../../global/scripts/write_crash_log';
-import shutdown_extension from './shutdown_extension';
+import shutdown_extension from '../../global/scripts/shutdown_extension';
 
 let port:any = null;
-let executor:any;
 getCurrentWindow().onCloseRequested(async () => {
-    await shutdown_extension();
+    if (port){
+        await shutdown_extension();
+    }
 });
 
 const initiate_extension = async () => {
@@ -48,7 +49,7 @@ const initiate_extension = async () => {
         "--browser_path", `"${config.bin.browser_path}"`
     ].join(" ")
 
-    executor = await execute_command({command:command, title:"initiate_extension",wait:false},{cwd:extension_directory});
+    await execute_command({command:command, title:"initiate_extension",wait:false},{cwd:extension_directory});
 
     // Waiting for extension to load before continous
     const max_check = 10

@@ -1,25 +1,19 @@
 
 // Tauri Plugin
 import { path } from '@tauri-apps/api';
-import { convertFileSrc } from '@tauri-apps/api/core';
-import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, exists, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
 import start_download from './start_download';
 // Node Improt
 
 
 // Custom Imports
-import { read_config } from "../../global/scripts/manage_config";
-import { request_current_task, request_download_task, request_remove_download_task, request_set_error_task } from "../../global/scripts/manage_download";
+
+import { request_current_task, request_remove_download_task, request_set_error_task } from "../../global/scripts/manage_download";
 import get_download_info from './get_download_info';
-import { download_task_context } from '../../global/scripts/contexts';
+
 import write_crash_log from '../../global/scripts/write_crash_log';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
-import execute_command from '../../global/scripts/excute_command';
-import get_yt_dlp_path from '../../global/scripts/get_yt_dlp_path';
-import get_ffmpeg_bin from '../../global/scripts/get_ffmpeg_bin';
-import path_to_file_url from '../../global/scripts/path_to_url';
 
-const QUALITY_LIST = [240,480,720,1080];
 
 const download_task_worker = async ({pause_download_task,download_task_info,download_task_progress}:any)=>{
     

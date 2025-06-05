@@ -1,11 +1,11 @@
 
 // React import
-import { useEffect, useState, useRef, useContext } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useState, useContext } from 'react';
+import { useSearchParams } from 'react-router';
 
 // Tauri Plugins
 import { path } from '@tauri-apps/api';
-import { exists, writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { exists, writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
 import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/window"
 import { platform, arch } from '@tauri-apps/plugin-os';
 
@@ -26,8 +26,6 @@ import styles from "../styles/main.module.css";
 // Custom imports
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
-import check_yt_dlp from '../scripts/check_yt_dlp';
-import check_ffmpeg from '../scripts/check_ffmpeg';
 import check_extension_package from '../scripts/check_extension_package';
 import check_puppeteer_browser from '../scripts/check_puppeteer_browser';
 import initiate_extension from '../scripts/initiate_extension';
@@ -42,8 +40,10 @@ import { global_context } from '../../global/scripts/contexts';
 
 let FIRST_RUN_TIMEOUT:any;
 function Splash_Screen() {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
+    const [searchParams] = useSearchParams();
+    
     const [feedback, setFeedback] = useState<any>({})
     const [progress, setProgress] = useState<any>({state:false,value:0})
 
@@ -51,6 +51,7 @@ function Splash_Screen() {
 
 
     useEffect(()=>{
+        set_app_ready(false);
         // The reason I use weird interval because of strict mode in development mode. Once use in production this won't effect the speed.
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
@@ -85,11 +86,11 @@ function Splash_Screen() {
                 if (is_online){
                     if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION === "0")){
 
-                        setFeedback({text:"Checking manifest..."});
+                        setFeedback({text:"Checking update..."});
                         
                         let manifest_data:any;
 
-                        if (import.meta.env.DEV || import.meta.env.VITE_DEV_USE_LOCAL_BIN_MANIFEST === "1") {
+                        if (import.meta.env.DEV && import.meta.env.VITE_DEV_USE_LOCAL_BIN_MANIFEST === "1") {
                             try{
                                 manifest_data = JSON.parse(await readTextFile(import.meta.env.VITE_DEV_LOCAL_BIN_MANIFEST_PATH));
                             }catch(e){
@@ -172,7 +173,7 @@ function Splash_Screen() {
                     }
                 }
                 
-                if (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0"){
+                if (searchParams.get("relaunch") !== "yes" && (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0")){
                     setFeedback({text:`Initiating extension...`})
                     const intiate_result = await initiate_extension();
                     if (intiate_result?.code !== 200) {

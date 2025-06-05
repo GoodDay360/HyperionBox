@@ -4,7 +4,6 @@
 import axios from 'axios';
 
 // Tauri Imports
-import { read_config } from "../../global/scripts/manage_config";
 import { path } from '@tauri-apps/api';
 import { exists, writeTextFile, mkdir, BaseDirectory, readTextFile } from '@tauri-apps/plugin-fs';
 

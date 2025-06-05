@@ -1,8 +1,8 @@
-import { exists,  readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { exists,  readTextFile, writeTextFile, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { path } from '@tauri-apps/api';
-import { BaseDirectory} from '@tauri-apps/plugin-fs';
 
 export const read_config = async () =>{
+    await mkdir(await path.appDataDir(), {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
     const config_path = await path.join(await path.appDataDir(),"config.json")
     const file_exist = await exists(config_path);
     if (!file_exist) {

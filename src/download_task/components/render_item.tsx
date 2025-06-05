@@ -1,20 +1,17 @@
 // React Import
-import { useEffect, useState, useRef, useCallback, useContext, Fragment } from "react";
+import { useEffect, useState, useContext, Fragment } from "react";
 import { useNavigate } from "react-router";
 
 // Tauri Import
-import { writeTextFile, readTextFile, exists, mkdir, BaseDirectory, remove } from "@tauri-apps/plugin-fs"
+import {  readTextFile, exists } from "@tauri-apps/plugin-fs"
 import { path } from "@tauri-apps/api"
 import { convertFileSrc } from '@tauri-apps/api/core';
 
 // MUI Imports
-import { ButtonBase, IconButton, Tooltip } from "@mui/material";
-import CircularProgress from '@mui/material/CircularProgress';
+import { ButtonBase, Tooltip } from "@mui/material";
 import LinearProgress from '@mui/material/LinearProgress';
 
 // MUI Icons Import
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import ExpandLessRoundedIcon from '@mui/icons-material/ExpandLessRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
@@ -26,7 +23,7 @@ import DeleteForeverRoundedIcon from '@mui/icons-material/DeleteForeverRounded';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // Context Import
-import { download_task_context, global_context } from "../../global/scripts/contexts";
+import { download_task_context } from "../../global/scripts/contexts";
 
 // Custom Import
 import {  request_remove_download_task, request_set_error_task } from "../../global/scripts/manage_download";

@@ -3,14 +3,14 @@
 // Tauri Plugins
 import { path } from "@tauri-apps/api";
 import { getCurrentWindow } from "@tauri-apps/api/window"
-import { writeFile, BaseDirectory, exists, remove, readTextFile } from "@tauri-apps/plugin-fs";
+import { BaseDirectory, exists, readTextFile } from "@tauri-apps/plugin-fs";
 
 // React Imports
-import { useEffect, useState, useRef, useContext, Fragment, useCallback, } from 'react';
+import { useEffect, useState, useRef, useContext, useCallback, } from 'react';
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 // Lazy Images Imports
-import { LazyLoadImage } from 'react-lazy-load-image-component';
+
 
 // Vidstack Imports
 import { MediaPlayer, MediaProvider, isHLSProvider, MediaPlayerInstance,  } from '@vidstack/react';
@@ -26,7 +26,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 // MUI Icons
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
-import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import PublishedWithChangesRoundedIcon from '@mui/icons-material/PublishedWithChangesRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
@@ -75,7 +74,7 @@ function Watch() {
     const [is_in_watchlist, set_is_in_watchlist] = useState<boolean>(false);
     const [current_page, set_current_page] = useState<number>(1);
 
-    const [SOURCE_INFO, SET_SOURCE_INFO] = useState<any>({});
+    const [_, SET_SOURCE_INFO] = useState<any>({});
     const [SERVER_INFO, SET_SERVER_INFO] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");

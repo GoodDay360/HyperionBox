@@ -1,9 +1,4 @@
-import { platform, arch } from '@tauri-apps/plugin-os';
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-apps/plugin-fs';
-
-// import JSZip from 'jszip';
-
 
 import execute_command from '../../global/scripts/excute_command';
 import get_npx_path from '../../global/scripts/node/get_npx_path';

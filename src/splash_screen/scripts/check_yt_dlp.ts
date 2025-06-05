@@ -1,7 +1,7 @@
 import { platform, arch } from '@tauri-apps/plugin-os';
 
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, exists, remove, mkdir, open, writeFile, readFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, exists, mkdir, readFile} from '@tauri-apps/plugin-fs';
 
 
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';

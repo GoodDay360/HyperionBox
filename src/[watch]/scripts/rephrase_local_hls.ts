@@ -1,7 +1,7 @@
 import { Parser } from 'm3u8-parser';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, readDir, exists, remove, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, mkdir, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
 
 const rephrase_local_hls = async ({input_file_path}:{input_file_path:string})=>{
     try{
