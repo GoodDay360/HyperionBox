@@ -4,8 +4,7 @@ import { useEffect, useState, useContext } from 'react';
 import { useSearchParams } from 'react-router';
 
 // Tauri Plugins
-import { path } from '@tauri-apps/api';
-import { exists, writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
+import {  readTextFile } from '@tauri-apps/plugin-fs';
 import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/window"
 import { platform, arch } from '@tauri-apps/plugin-os';
 
@@ -69,10 +68,6 @@ function Splash_Screen() {
             window.setSize(new LogicalSize(new_width, new_height));
             
             try{
-                const config_path = await path.join(await path.appDataDir(),"config.json")
-                const file_exist = await exists(config_path);
-                if (!file_exist) await writeTextFile(config_path, "{}")
-                
                 let config = await read_config();
                 
                 const check_bin:any = [
