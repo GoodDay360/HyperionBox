@@ -45,11 +45,11 @@ const check_yt_dlp = async ({manifest, setFeedback, setProgress}:any) => {
         setProgress({state:false,value:0})
 
         return {code: 200, message: 'OK'}
-    }catch{(e:any)=>{
+    }catch(e:any){
         console.error("[Error] check_YT-DLP: ", e);
         write_crash_log(`[Error] check_YT-DLP: ${JSON.stringify(e)}`)
         return {code:500, message:e};
-    }}
+    }
 }
 
 export default check_yt_dlp;

@@ -25,7 +25,7 @@ const check_puppeteer_browser = async ({setFeedback}:any) => {
         
         return {code: 200, message: 'OK', browser_path}
         
-    }catch(e:unknown){
+    }catch(e:any){
         console.error("[Error] check_extension_package: ", e);
         return {code:500, message:e};
     }

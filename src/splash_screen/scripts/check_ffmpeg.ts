@@ -79,10 +79,10 @@ const check_ffmpeg = async ({manifest, setFeedback, setProgress}:any) => {
         if (extract_response.code !== 200) return extract_response;
 
         return {code: 200, message: 'OK'}
-    }catch{(e:unknown)=>{
+    }catch(e:any){
         console.error("[Error] check_ffmpeg: ", e);
         return {code:500, message:e};
-    }}
+    }
 }
 
 export default check_ffmpeg;

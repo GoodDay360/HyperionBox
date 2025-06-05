@@ -79,10 +79,10 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         if (extract_response.code !== 200) return extract_response;
 
         return {code: 200, message: 'OK'}
-    }catch{(e:unknown)=>{
+    }catch(e){
         console.error("[Error] check_node: ", e);
         return {code:500, message:e};
-    }}
+    }
 }
 
 export default check_node;

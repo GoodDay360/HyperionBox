@@ -15,6 +15,7 @@ const chunkSize = 6 * 1024 * 1024;
 const check_extension_package = async ({manifest, setFeedback, setProgress}:any) => {
     try{
         const url = manifest?.["extension-package"]?.[await platform()]?.[await arch()]?.url;
+        console.log(url)
         if (!url) {
             setFeedback("Your system doesn't support this app.")
             return {code:500, message:"System not support."};
@@ -46,6 +47,7 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
         
         setFeedback({text:"Cleaning up..."})
         const extract_dir = await path.join(await path.appDataDir(),"extension")
+        await mkdir(extract_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)})
         const entries = await readDir(extract_dir, { baseDir: BaseDirectory.AppData });
 
         for (const entry of entries) {
@@ -80,10 +82,10 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
 
         return {code: 200, message: 'OK'}
         
-    }catch{(e:unknown)=>{
+    }catch(e:any){
         console.error("[Error] check_extension_package: ", e);
         return {code:500, message:e};
-    }}
+    }
 }
 
 export default check_extension_package;

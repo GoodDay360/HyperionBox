@@ -127,10 +127,10 @@ const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
         await remove(output_file,{baseDir:BaseDirectory.Temp})
 
         return {code: 200, message: 'OK'}
-    }catch{(e:unknown)=>{
+    }catch(e:any){
         console.error("[Error] check_7z: ", e);
         return {code:500, message:e};
-    }}
+    }
 }
 
 export default check_7z;
