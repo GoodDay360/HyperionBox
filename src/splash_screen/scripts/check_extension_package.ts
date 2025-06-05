@@ -75,9 +75,15 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
         const npm_path = await get_npm_path;
         setFeedback({text:`Installing extension packages... might take a while.`})
         const execute_install_npm_response = await execute_command({title:"npm-install",command:`"${npm_path}" install`,cwd:extract_dir})
-        if (execute_install_npm_response.stderr.trim()) {
-            await write_crash_log(`[check_extension_packages] npm install: ${JSON.stringify({code: 500, message: execute_install_npm_response.stderr})}`);
-            return {code: 500, message: execute_install_npm_response.stderr};
+        const stderr_result = execute_install_npm_response.stderr.trim()
+        if (stderr_result) {
+            if (stderr_result.includes("npm notice")) {
+                return {code: 200, message: 'OK'}
+            }else{
+                await write_crash_log(`[check_extension_packages] npm install: ${JSON.stringify({code: 500, message: execute_install_npm_response.stderr})}`);
+                return {code: 500, message: execute_install_npm_response.stderr};
+            }
+            
         }
 
         return {code: 200, message: 'OK'}
