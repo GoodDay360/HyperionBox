@@ -52,7 +52,7 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
 
         for (const entry of entries) {
             console.log(entry);
-            if (entry.isDirectory && !["sources","log"].includes(entry.name)) {
+            if (entry.isDirectory && !["sources", "log", "firefox"].includes(entry.name)) {
                 await remove(await path.join(extract_dir, entry.name), {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)})
             }
         }
