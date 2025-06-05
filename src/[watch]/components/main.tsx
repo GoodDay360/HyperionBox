@@ -371,7 +371,8 @@ function Watch() {
                                                     await get_data({
                                                         watch_id,
                                                         server_type:searchParams.get("server_type"),server_id:searchParams.get("server_id"),
-                                                        force_update:true
+                                                        force_update:true,
+                                                        check_local:false
                                                     });
                                                 }}
                                             >

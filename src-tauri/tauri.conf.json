@@ -20,10 +20,13 @@
     "security": {
       "csp": {
         "default-src": "'self' customprotocol: asset:",
-        "style-src": "'self' 'unsafe-inline';",
+        "script-src": "* 'unsafe-inline' 'unsafe-eval';",
+        "style-src": "* 'unsafe-inline';",
         "connect-src": "*;",
+        "frame-src": "* data:;",
         "img-src": "*;",
-        "media-src": "*;"
+        "media-src": "* blob:;",
+        "object-src": "* data:;"
       },
       "assetProtocol": {
         "enable": true,
