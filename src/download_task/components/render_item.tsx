@@ -36,6 +36,8 @@ const RenderItem = ({item, get_data}:any) => {
     const season_id = item.season_id;
     const preview_id = item.preview_id;
 
+    console.log("PPP", item)
+
     const navigate = useNavigate();
     
     const {pause_download_task, download_task_info, download_task_progress} = useContext<any>(download_task_context)

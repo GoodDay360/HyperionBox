@@ -35,7 +35,16 @@ const DownloadTask = () => {
     const get_data = async ()=>{
         const request_download_task_result = await request_download_task()
         if (request_download_task_result.code === 200 && request_download_task_result.data.length > 0){
-            SET_DOWNLOAD_TASK_DATA(request_download_task_result.data)
+            // SET_DOWNLOAD_TASK_DATA(request_download_task_result.data)
+            const sorted_data = [...request_download_task_result.data];
+            sorted_data.sort((_: any, b: any) => (
+                (task_info?.source_id === b?.source_id && 
+                task_info?.season_id === b?.season_id && 
+                task_info?.preview_id === b?.preview_id)
+                ? 1 : -1
+            ))
+            SET_DOWNLOAD_TASK_DATA(sorted_data)
+            console.log(sorted_data)
             set_feedback({state:false})
         }else{
             set_feedback({state:true,text:"No task found."})
@@ -61,14 +70,22 @@ const DownloadTask = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             set_pause_task(pause_download_task.current);
-            set_task_info(download_task_info.current);
+            
+            let need_update = false;
+            for (const key of Object.keys(download_task_info.current)){
+                if (task_info[key] !== download_task_info.current[key]){
+                    need_update = true;
+                    break;
+                }
+            }
+            if (need_update) set_task_info(download_task_info.current);
         }, 800);
         return () => clearInterval(interval);
     }, []);
 
     const RenderItemComponent = useCallback(({item, get_data}:any)=>{
         return <RenderItem item={item} get_data={get_data}/>;
-    },[])
+    },[DOWNLOAD_TASK_DATA])
 
     return (<>
         <div className={styles.container}>

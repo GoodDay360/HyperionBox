@@ -25,6 +25,7 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
         //     await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
         //     console.error(e)
         // }
+        download_task_progress.current = {};
         if (pause_download_task.current) {
             await new Promise(resolve => setTimeout(resolve, 8000));
             continue;
