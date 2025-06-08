@@ -69,6 +69,18 @@
 }
 
 
+.item_box_2{
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    gap:12px;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+}
+
+
 .body_box_2{
     width: 100%;
     height: auto;

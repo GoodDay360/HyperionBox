@@ -47,7 +47,7 @@ function Splash_Screen() {
     const [feedback, setFeedback] = useState<any>({})
     const [progress, setProgress] = useState<any>({state:false,value:0})
 
-    const { set_app_ready } = useContext<any>(global_context);
+    const { set_app_ready, set_menu } = useContext<any>(global_context);
 
     const start_setup = async () => {
         set_app_ready(false);
@@ -193,7 +193,6 @@ function Splash_Screen() {
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
             clearTimeout(FIRST_RUN_TIMEOUT);
-            
             await start_setup();
 
         }, import.meta.env.DEV ? 3000 : 0);
@@ -206,12 +205,19 @@ function Splash_Screen() {
             <img src={Icon}
                 className={styles.icon}
             />
-            <div style={{display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",gap:"12px"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:"12px", width:"100%"}}>
                 <span className={styles.feedback} style={{color:feedback.color || "var(--color)"}}>{feedback.text}</span>
                 <>{feedback?.type === "error" && 
-                    <Button variant='contained' color='secondary'
-                        onClick={async ()=>{await start_setup()}}
-                    >Retry</Button>
+                    <div className={styles.feedback_manage_box}>
+                        <Button variant='contained' color='primary'
+                            onClick={()=>{
+                                set_menu({state:false,path:"setting"})
+                            }}
+                        >Setting</Button>
+                        <Button variant='contained' color='secondary'
+                            onClick={async ()=>{await start_setup()}}
+                        >Retry</Button>
+                    </div>
                 }</>
             </div>
             {progress.state &&

@@ -35,7 +35,6 @@ const Setting = () => {
     const [repair_dependencies, set_repair_dependencies] = useState<any>({})
 
     useEffect(()=>{
-        if (!app_ready) return;
         set_feedback({state:true,text:"Gathering info..."})
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
@@ -43,7 +42,7 @@ const Setting = () => {
             set_is_ready(true);
         }, import.meta.env.DEV ? 1500 : 0);
 		return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
-    },[app_ready])
+    },[])
 
 
 
@@ -105,33 +104,42 @@ const Setting = () => {
                                     />
                                 </div>
                             </div>
+                            <div className={styles.item_box_2}>
+                                <Button variant="contained" color="secondary"
+                                    onClick={async ()=>{
+                                        console.log(repair_dependencies);
+                                        const repair = repair_dependencies;
+                                        const config = await read_config();
+                                        if (!config.bin || !Object.keys(config.bin)) config.bin = {}
+
+                                        config.bin.browser_path = CONFIG_MANIFEST?.bin?.browser_path;
+
+                                        if (repair?.["7z"]){
+                                            delete config?.bin?.["7z"];
+                                        }else if (repair?.["node"]){
+                                            delete config?.bin?.["node"];
+                                        }else if (repair?.["extension-package"]){
+                                            delete config?.bin?.["extension-package"];
+                                        }else if (repair?.["browser_path"]){
+                                            delete config?.bin?.["browser_path"]
+                                        }
+                                        await write_config(config);
+                                        await shutdown_extension();
+                                        set_menu({state:false,path:""});
+                                    }}
+                                
+                                >Apply</Button>
+                            </div>
                         </fieldset>
                     </div>
                     <div className={styles.body_box_2}>
-                        <Button variant="contained" color="secondary"
+                        <Button variant="contained" color="error"
                             onClick={async ()=>{
-                                console.log(repair_dependencies);
-                                const repair = repair_dependencies;
-                                const config = await read_config();
-                                if (!config.bin || !Object.keys(config.bin)) config.bin = {}
-
-                                config.bin.browser_path = CONFIG_MANIFEST?.bin?.browser_path;
-
-                                if (repair?.["7z"]){
-                                    delete config?.bin?.["7z"];
-                                }else if (repair?.["node"]){
-                                    delete config?.bin?.["node"];
-                                }else if (repair?.["extension-package"]){
-                                    delete config?.bin?.["extension-package"];
-                                }else if (repair?.["browser_path"]){
-                                    delete config?.bin?.["browser_path"]
-                                }
-                                await write_config(config);
                                 await shutdown_extension();
                                 set_menu({state:false,path:""});
                             }}
                         
-                        >Apply</Button>
+                        >Restart</Button>
                     </div>
                 </>
                 : <div className={styles.feedback_box}>
