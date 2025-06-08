@@ -85,7 +85,7 @@ function Watchlist() {
             const tag_data_result = await request_tag_data();
             if (tag_data_result.code === 200){
                 set_tag_data(tag_data_result.data);
-                if (tag_data_result.data.length) set_selected_tag(tag_data_result.data[0]);
+                if (tag_data_result.data.length > 0) set_selected_tag(tag_data_result.data[0]);
             }else return;
         })();
         return;
@@ -147,7 +147,7 @@ function Watchlist() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div className={styles.navigate_box}>
-                    <>{tag_data.length 
+                    <>{tag_data.length > 0
                         ? <Tooltip title="Scroll left">
                             <ButtonBase
                                 sx={{
@@ -190,7 +190,7 @@ function Watchlist() {
                             
                         </div>
                     </div>
-                    <>{tag_data.length 
+                    <>{tag_data.length > 0
                         ? <Tooltip title="Scroll right">
                             <ButtonBase
                                 sx={{
@@ -232,10 +232,10 @@ function Watchlist() {
                     </form>
                 </div>
             </div>
-            <>{tag_data.length
+            <>{tag_data.length > 0
 
                 ? <>
-                    {DATA.length
+                    {DATA.length > 0
                         ? <div className={styles.body}>
                             
                             <div className={styles.body_box_1}>
@@ -344,7 +344,7 @@ function Watchlist() {
                     {...{onClose:()=>{set_widget("")},
                         callback:({tag_data}:any)=>{
                             set_tag_data(tag_data);
-                            if (tag_data.length) set_selected_tag(tag_data[0]);
+                            if (tag_data.length > 0) set_selected_tag(tag_data[0]);
                         }
                         
                     }}

@@ -45,7 +45,7 @@ const Watch = lazy(() => import('../../[watch]/components/main'));
 const DownloadTask = lazy(()=> import('../../download_task/components/main'))
 const Extension = lazy(() => import('../../extension/components/main'));
 const Setting = lazy(() => import('../../setting/components/main'));
-
+const BrowseSource = lazy(() => import('../../explore/components/[browse_source]'));
 
 const theme = createTheme({
     typography: {
@@ -88,7 +88,7 @@ function App() {
 			const config = await read_config();
 			pause_download_task.current = config.pause_download_task ? true : false;
 			download_task_worker({pause_download_task,download_task_info,download_task_progress});
-			set_menu({state:true,path:"watchlist"});
+			set_menu({state:true,path:"explore/hianime"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 
 		}, import.meta.env.DEV ? 1500 : 0);
@@ -155,6 +155,7 @@ function App() {
 						<Route path="/" element={<Splash_Screen key={1}/>}/>
 						<Route path="/watchlist/*" element={<Watchlist key={2}/>} />
 						<Route path="/explore/*" element={<Explore/>} key={3}/>
+						<Route path="/explore/:source_id" element={<BrowseSource key={6}/>} />
 						
 						<Route path="/download_task/*" element={<DownloadTask key={4}/>} />
 						
