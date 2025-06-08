@@ -14,12 +14,13 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 // MUI Imports
 import { ButtonBase, Tooltip, Button, IconButton } from '@mui/material';
 import Fab from '@mui/material/Fab';
+import Pagination from '@mui/material/Pagination';
 
 // MUI Icons
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import Pagination from '@mui/material/Pagination';
+
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
 // Dayjs Imports

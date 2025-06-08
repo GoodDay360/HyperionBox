@@ -5,6 +5,7 @@ import { useNavigate } from "react-router";
 // MUI Imports
 import { ButtonBase, IconButton, Button } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
+import Pagination from '@mui/material/Pagination';
 
 // MUI Icons Import
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
@@ -38,6 +39,7 @@ const Explore = () => {
     
     const [DATA, SET_DATA] = useState<any>({});
     const [INSTALLED_SOURCE, SET_INSTALLED_SOURCE] = useState<any>([]);
+    const [SOURCE_PAGE, SET_SOURCE_PAGE] = useState<any>({current:1,max:1});
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [search_count, set_search_count] = useState<number>(0);
     const [is_searching, set_is_searching] = useState<boolean>(false);
@@ -76,8 +78,7 @@ const Explore = () => {
     const is_run = useRef<boolean>(false);
     const is_run_timeout = useRef<any>(null);
     const get_data = useCallback(()=>{
-        if (INSTALLED_SOURCE.length === 0 ) return;
-
+        if ((INSTALLED_SOURCE.length === 0) || !search) return;
         clearTimeout(is_run_timeout.current);
         const task = async () => {
             if (is_run.current) {
@@ -100,12 +101,17 @@ const Explore = () => {
                     }
                     const request = await get_list({source_id:source.id, search:search});
                     if (request.code === 200){
-                        if (!request.result.data?.length) continue;
                         data[source.id] = {
+                            status: {code:200, message:"OK"},
                             title: source.title,
                             data: request.result.data,
-                            max_page: request.result.max_page,
-                            status: request.result.status,
+                            max_page: request.result.max_page
+                        };
+                    }else{
+                        data[source.id] = {
+                            status: {code:500, message:request?.message || "Request failed."},
+                            title: source.title,
+                            max_page: 0,
                         };
                     }
                 }
@@ -114,10 +120,9 @@ const Explore = () => {
                 
             }catch(e){
                 SET_DATA({});
-                set_error(true)
+                set_error(true);
                 console.error(e);
-                await write_crash_log(`[Mode:String](Error at 'get_data'): ${String(e)}`);
-                await write_crash_log(`[Mode:JSON](Error at 'get_data'): ${JSON.stringify(e)}`);
+                await write_crash_log(`[Error at 'get_data' in Explore route -> unrelated to source]: ${JSON.stringify(e)}\n`);
             }
             cancel_search.current = false;
             set_is_searching(false);
@@ -134,11 +139,14 @@ const Explore = () => {
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
             set_is_ready(false);
-            const installed_source_result = await get_installed_sources();
+            const installed_source_result = await get_installed_sources({page:SOURCE_PAGE.current});
             if (installed_source_result.code === 200) {
                 SET_INSTALLED_SOURCE(installed_source_result.data);
+                SET_SOURCE_PAGE({...SOURCE_PAGE,max:installed_source_result.max_page});
+            }else{
+                set_error(true);
+                return;
             }
-
             set_is_ready(true);
         }, import.meta.env.DEV ? 1500 : 0);
         return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
@@ -261,9 +269,42 @@ const Explore = () => {
                         alignItems:"flex-start",
                     }}
                 >
-                    <>{item.data.map((_item:any,index:number)=>(
-                        <RenderItem key={index} source_id={source_id} _item={_item}/>
-                    ))}</>
+                    <>{(item.status.code === 200) 
+                    ? <>{(item.data.length > 0)
+                        ? <>{item.data.map((_item:any,index:number)=>(
+                            <RenderItem key={index} source_id={source_id} _item={_item}/>
+                        ))}</>
+                        : 
+                            <span
+                                style={{
+                                    color:"var(--color)",
+                                    fontFamily:"var(--font-family-medium)",
+                                    fontSize:"calc((100vw + 100vh)*0.028/2)",
+                                    wordBreak:"break-word",
+                                    width:"100%",
+                                    height:"auto",
+                                    textAlign:"center"
+                                }}
+                            
+                            >
+                                No Result
+                            </span>
+                        
+                    }</>
+                    : <span
+                            style={{
+                                color:"red",
+                                fontFamily:"var(--font-family-medium)",
+                                fontSize:"calc((100vw + 100vh)*0.028/2)",
+                                wordBreak:"break-word",
+                                width:"100%",
+                                height:"auto",
+                                textAlign:"center"
+                            }}
+                        >
+                            {item.status.message}
+                        </span>
+                    }</>
                 </div>
                 
             </div>
@@ -357,6 +398,34 @@ const Explore = () => {
                             </>
                         }</>
                     </div>
+                    <>{Object.keys(DATA).length > 0 &&
+                        <div className={styles.body_box_2}>
+                            <Pagination count={SOURCE_PAGE.max} page={SOURCE_PAGE.current} color="primary" showFirstButton showLastButton
+                                sx={{
+                                    ul: {
+                                        "& .MuiPaginationItem-root": {
+                                            color:"var(--color)",
+                                        }
+                                    }
+                                }}
+                                onChange={async (_, page:number)=>{
+                                    SET_SOURCE_PAGE({...SOURCE_PAGE, current:page});
+                                    set_is_searching(true)
+                                    const installed_source_result = await get_installed_sources({page});
+                                    if (installed_source_result.code === 200) {
+                                        SET_INSTALLED_SOURCE(installed_source_result.data);
+                                        SET_SOURCE_PAGE({...SOURCE_PAGE,max:installed_source_result.max_page});
+                                    }else{
+                                        set_error(true);
+                                        return;
+                                    }
+                                    await get_data();
+                                    
+                                }}
+                            />
+                            
+                        </div>
+                    }</>
                 </>
                 : <div className={styles.feedback_container}>
                     <span className={styles.feedback_text}>No source installed.</span>

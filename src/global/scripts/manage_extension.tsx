@@ -1,5 +1,7 @@
 import Database from '@tauri-apps/plugin-sql';
 
+const REQUEST_LIMIT = 10;
+
 async function setupDatabase(): Promise<void> {
     try {
         // Load the SQLite database
@@ -24,39 +26,56 @@ async function setupDatabase(): Promise<void> {
     }
 }
 
-export const get_installed_sources = async (offset?: number, limit?: number): Promise<any> => {
+export const get_all_installed_sources = async (): Promise<any> => {
     try {
-        // Check if only one of limit or offset is provided
-        if ((limit !== undefined && offset === undefined) || (limit === undefined && offset !== undefined)) {
-            return { code: 500, message: "Both 'offset' and 'limit' must be provided together." };
-        }
-    
-        
         await setupDatabase();
         const db = await Database.load('sqlite:extension.db');
-    
+
+        const query = `
+        SELECT *
+        FROM source
+        `;
+
+        const results: any = await db.select(query);
+        return { code: 200, message: "OK", data: results };
+    } catch (error) {
+        console.error('Error fetching all extension sources:', error);
+        return { code: 500, message: error };
+    }
+};
+
+export const get_installed_sources = async ({ page = 1 }: { page?: number }): Promise<any> => {
+    try {
+        const offset = (page - 1) * REQUEST_LIMIT;
+
+        await setupDatabase();
+        const db = await Database.load('sqlite:extension.db');
+
         let query: string;
         let params: any[] = [];
-    
-        if (limit === undefined && offset === undefined) {
-            // If neither limit nor offset is provided, fetch all rows
-            query = `
-            SELECT *
-            FROM source
-            `;
-        } else {
-            // Both limit and offset are provided
-            query = `
-            SELECT *
-            FROM source
-            LIMIT $1
-            OFFSET $2
-            `;
-            params = [limit, offset];
-        }
-    
+
+        query = `
+        SELECT *
+        FROM source
+        LIMIT $1
+        OFFSET $2
+        `;
+        params = [REQUEST_LIMIT, offset];
+
         const results: any = await db.select(query, params);
-        return { code: 200, message: "OK", data: results };
+
+        // Get the total count of rows
+        const totalCountQuery = `
+        SELECT COUNT(*) as count
+        FROM source
+        `;
+        const totalCountResult: any = await db.select(totalCountQuery);
+        const totalCount = totalCountResult[0].count;
+
+        // Calculate the max page
+        const max_page = Math.ceil(totalCount / REQUEST_LIMIT);
+
+        return { code: 200, message: "OK", data: results, max_page };
     } catch (error) {
         console.error('Error fetching extension sources:', error);
         return { code: 500, message: error };

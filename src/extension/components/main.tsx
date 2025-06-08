@@ -20,7 +20,7 @@ import Item from "./item";
 
 // Custom Import
 import { global_context } from "../../global/scripts/contexts";
-import { get_installed_sources } from "../../global/scripts/manage_extension";
+import { get_all_installed_sources } from "../../global/scripts/manage_extension";
 import get_source from "../scripts/get_source";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
 
@@ -51,7 +51,7 @@ const Extension = () => {
         }
         
 
-        const installed_source_result = await get_installed_sources();
+        const installed_source_result = await get_all_installed_sources();
         if (installed_source_result.code === 200) {
             SET_INSTALLED_SOURCE(installed_source_result.data);
         }

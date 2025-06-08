@@ -7,7 +7,7 @@ import axios from 'axios';
 
 
 const get_list = async ({source_id, search}:{source_id:string,search:string}) => {
-    return await new Promise<any>(async (resolve, reject) => {
+    return await new Promise<any>(async (resolve, _) => {
         const port = sessionStorage.getItem("extension_port");
         const body = {
             "source_id": source_id,
@@ -24,7 +24,7 @@ const get_list = async ({source_id, search}:{source_id:string,search:string}) =>
         }).then((res: any) => {
             resolve(res.data);
         }).catch((e: any) => {
-            reject({ code: 500, message: e });
+            resolve({ code: 500, message: e?.message });
         });
     })
 }

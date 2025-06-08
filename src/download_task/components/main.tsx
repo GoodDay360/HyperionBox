@@ -35,7 +35,6 @@ const DownloadTask = () => {
     const get_data = async ()=>{
         const request_download_task_result = await request_download_task()
         if (request_download_task_result.code === 200 && request_download_task_result.data.length > 0){
-            // SET_DOWNLOAD_TASK_DATA(request_download_task_result.data)
             const sorted_data = [...request_download_task_result.data];
             sorted_data.sort((_: any, b: any) => (
                 (task_info?.source_id === b?.source_id && 

@@ -55,6 +55,17 @@
     flex-direction: column;
 }
 
+.body_box_2{
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-self: flex-end;
+    padding:12px;
+}
+
 .feedback_container{
     width: 100%;
     height: 100%;

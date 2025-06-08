@@ -95,7 +95,7 @@ const Item = ({id,data,installed,installed_version}:{id:string,data:any,installe
                     <br />
                     - Current Version: {data.version}
                     
-                    {installed_version ? <span><br />- Installed Version: ${installed_version}</span> : ""}
+                    {installed_version ? <span><br />- Installed Version: {installed_version}</span> : ""}
                     
                 
                 </span>} 

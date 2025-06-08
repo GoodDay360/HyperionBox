@@ -42,6 +42,7 @@ const RenderItem = ({item, get_data}:any) => {
     
     const {pause_download_task, download_task_info, download_task_progress} = useContext<any>(download_task_context)
 
+    const [ITEM_DATA, SET_ITEM_DATA] = useState<any>(item.data);
     const [allow_manage, set_allow_manage] = useState<boolean>(true);
     const [cover, set_cover] = useState<string>("");
     const [title, set_title] = useState<string>("");
@@ -65,16 +66,16 @@ const RenderItem = ({item, get_data}:any) => {
     }, []);
 
     useEffect(()=>{
-        if (item.data.filter((item_data:any)=>!(
-            task_info?.source_id === source_id && 
-            task_info?.season_id === season_id && 
-            task_info?.preview_id === preview_id && 
-            task_info?.watch_id == item_data.watch_id
-        )).length > 0){
-            set_show_content(true);
-        }else{
-            set_show_content(false);
-        }
+        // if (item.data.filter((item_data:any)=>!(
+        //     task_info?.source_id === source_id && 
+        //     task_info?.season_id === season_id && 
+        //     task_info?.preview_id === preview_id && 
+        //     task_info?.watch_id == item_data.watch_id
+        // )).length > 0){
+        //     set_show_content(true);
+        // }else{
+        //     set_show_content(false);
+        // }
     },[task_info])
 
     useEffect(()=>{
@@ -163,7 +164,7 @@ const RenderItem = ({item, get_data}:any) => {
                                     }}
                                     onClick={async ()=>{
                                         set_allow_manage(false);
-                                        for (const item_data of item.data){
+                                        for (const item_data of ITEM_DATA){
                                             await request_remove_download_task({
                                                 source_id:source_id,
                                                 season_id:season_id,
@@ -182,7 +183,7 @@ const RenderItem = ({item, get_data}:any) => {
                             </Tooltip>
                         </div>
                     }</>
-                    <>{((item.data.length > 0 && pause_task) || (item.data.filter((item_data:any)=>!(
+                    <>{((ITEM_DATA.length > 0 && pause_task) || (ITEM_DATA.filter((item_data:any)=>!(
                         task_info?.source_id === source_id && 
                         task_info?.season_id === season_id && 
                         task_info?.preview_id === preview_id && 
@@ -215,7 +216,7 @@ const RenderItem = ({item, get_data}:any) => {
             </div>
             <>{show_content &&
                 <div className={styles.box_2}>
-                    <>{item.data.map((item_data:any,index:number)=>(
+                    <>{ITEM_DATA.map((item_data:any,index:number)=>(
                         <Fragment key={index}>
                             {(pause_task || !(
                                 task_info?.source_id === source_id && 
@@ -236,14 +237,19 @@ const RenderItem = ({item, get_data}:any) => {
                                         <Tooltip title={"Retry"}
                                             onClick={async ()=>{
                                                 set_allow_manage(false);
-                                                await request_set_error_task({
+                                                const request_result =await request_set_error_task({
                                                     source_id:source_id,
                                                     season_id:season_id,
                                                     preview_id:preview_id,
                                                     watch_id:item_data.watch_id,
                                                     error:false,
                                                 })
-                                                await get_data();
+                                                if (request_result.code === 200){
+                                                    const temp = ITEM_DATA;
+                                                    temp[index].error = false;
+                                                    SET_ITEM_DATA(temp);
+                                                }
+
                                                 set_allow_manage(true);
                                             }}
                                         >
@@ -253,14 +259,23 @@ const RenderItem = ({item, get_data}:any) => {
                                     <Tooltip title={"Remove"}
                                         onClick={async ()=>{
                                             set_allow_manage(false);
-                                            await request_remove_download_task({
+                                            const request_result = await request_remove_download_task({
                                                 source_id:source_id,
                                                 season_id:season_id,
                                                 preview_id:preview_id,
                                                 watch_id:item_data.watch_id,
                                                 clean:true
                                             })
-                                            await get_data();
+
+                                            if (request_result.code === 200) {
+                                                const temp = ITEM_DATA;
+                                                temp.splice(index, 1);
+                                                if (temp.length === 0){
+                                                    await get_data();
+                                                }
+                                                SET_ITEM_DATA(temp);
+                                            }
+                                            
                                             set_allow_manage(true);
                                         }}
                                     >
