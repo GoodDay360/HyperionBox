@@ -54,7 +54,7 @@ const Setting = () => {
                 ? <>
                     <div className={styles.body_box_1}>
                         <fieldset className={styles.fieldset_box}>
-                            <legend className="float-none w-auto">Dependencies</legend>
+                            <legend className={`float-none w-auto ${styles.legend_box}`}>Dependencies</legend>
                             <div className={styles.item_box}>
                                 <span className={styles.fieldset_text}>7z {CONFIG_MANIFEST?.bin?.["7z"] ? "Installed" : "Not Install"}</span>
                                 <div className={styles.check_box_frame}>

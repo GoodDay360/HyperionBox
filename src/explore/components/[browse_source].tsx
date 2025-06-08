@@ -19,6 +19,7 @@ import Pagination from '@mui/material/Pagination';
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
 import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
@@ -81,6 +82,17 @@ function BrowseSource() {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div className={styles.filter_box}>
+                    <IconButton color="primary" size='large' type="submit" 
+                            onClick={async ()=>{
+                                if (window.history.state && window.history.state.idx > 0) {
+                                    navigate(-1);
+                                } else {
+                                    console.error("No history to go back to");
+                                }
+                            }}
+                        >
+                            <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} />
+                        </IconButton>
                     <form className={styles.search_container} onSubmit={(e)=>{e.preventDefault()}}>
                         <div className={styles.search_box}>
                             <input type='text' placeholder='Search' value={search}

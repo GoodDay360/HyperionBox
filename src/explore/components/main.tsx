@@ -217,8 +217,9 @@ const Explore = () => {
                 flexShrink:0,
                 flexGrow:0,
             }}>
-                <div
-                    style={{
+                <ButtonBase
+                    onClick={() => {navigate(`/explore/${source_id}`)}}
+                    sx={{
                         borderBottom:"2px solid var(--color)",
                         width:"100%",
                         display:"flex",
@@ -253,7 +254,7 @@ const Explore = () => {
                         >+{item.max_page-1} pages</h3>
                     </>)}</>
                     
-                </div>
+                </ButtonBase>
                 <div
                     style={{
                         display:"flex",
