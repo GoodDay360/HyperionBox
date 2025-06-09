@@ -218,7 +218,9 @@ const Explore = () => {
                 flexGrow:0,
             }}>
                 <ButtonBase
-                    onClick={() => {navigate(`/explore/${source_id}`)}}
+                    onClick={() => {
+                        navigate(`/explore/${source_id}/${SEARCH_REF}`)
+                    }}
                     sx={{
                         borderBottom:"2px solid var(--color)",
                         width:"100%",
@@ -229,31 +231,32 @@ const Explore = () => {
                         boxSizing:"border-box",
                     }}
                 >
-                    <h3
-                        style={{
-                            color:"var(--color)",
-                            fontFamily:"var(--font-family-medium)",
-                            fontSize:"calc((100vw + 100vh)*0.035/2)",
-                            wordBreak:"break-word",
-                            width:"auto",
-                            padding:"12px",
-                            justifySelf:"flex-start",
-                        }}
-                    >{item.title}</h3>
-                    <>{item.max_page > 1 && (<>
+                    <>
                         <h3
                             style={{
-                                color:"var(--color-2)",
+                                color:"var(--color)",
                                 fontFamily:"var(--font-family-medium)",
-                                fontSize:"calc((100vw + 100vh)*0.025/2)",
+                                fontSize:"calc((100vw + 100vh)*0.035/2)",
                                 wordBreak:"break-word",
                                 width:"auto",
                                 padding:"12px",
-                                justifySelf:"flex-end",
+                                justifySelf:"flex-start",
                             }}
-                        >+{item.max_page-1} pages</h3>
-                    </>)}</>
-                    
+                        >{item.title}</h3>
+                        <>{item.max_page > 1 && (<>
+                            <h3
+                                style={{
+                                    color:"var(--color-2)",
+                                    fontFamily:"var(--font-family-medium)",
+                                    fontSize:"calc((100vw + 100vh)*0.025/2)",
+                                    wordBreak:"break-word",
+                                    width:"auto",
+                                    padding:"12px",
+                                    justifySelf:"flex-end",
+                                }}
+                            >+{item.max_page-1} pages</h3>
+                        </>)}</>
+                    </>
                 </ButtonBase>
                 <div
                     style={{
@@ -310,7 +313,7 @@ const Explore = () => {
                 
             </div>
         </>)
-    },[])
+    },[search])
 
     return (<>
         <div className={styles.container}>
@@ -323,7 +326,7 @@ const Explore = () => {
                         <form className={styles.search_container} onSubmit={(e)=>e.preventDefault()}>
                             <div className={styles.search_box}>
                                 <input type='text' placeholder='Search' value={search} required
-                                    onChange={(e)=>set_search(e.target.value)}
+                                    onChange={(e)=>{set_search(e.target.value)}}
                                 />
                             </div>
                             <>{is_searching 

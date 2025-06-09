@@ -88,7 +88,7 @@ function App() {
 			const config = await read_config();
 			pause_download_task.current = config.pause_download_task ? true : false;
 			download_task_worker({pause_download_task,download_task_info,download_task_progress});
-			set_menu({state:true,path:"explore/hianime"});
+			set_menu({state:true,path:"watchlist"});
 			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
 
 		}, import.meta.env.DEV ? 1500 : 0);
@@ -155,14 +155,14 @@ function App() {
 						<Route path="/" element={<Splash_Screen key={1}/>}/>
 						<Route path="/watchlist/*" element={<Watchlist key={2}/>} />
 						<Route path="/explore/*" element={<Explore/>} key={3}/>
-						<Route path="/explore/:source_id" element={<BrowseSource key={6}/>} />
+						<Route path="/explore/:source_id/:search" element={<BrowseSource key={4}/>} />
 						
-						<Route path="/download_task/*" element={<DownloadTask key={4}/>} />
+						<Route path="/download_task/*" element={<DownloadTask key={5}/>} />
 						
-						<Route path="/preview/:source_id/:preview_id" element={<Preview key={5}/>} />
-						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch key={6}/>} />
-						<Route path="/extension" element={<Extension key={7}/>} />
-						<Route path="/setting" element={<Setting key={8}/>} />
+						<Route path="/preview/:source_id/:preview_id" element={<Preview key={6}/>} />
+						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch key={7}/>} />
+						<Route path="/extension" element={<Extension key={8}/>} />
+						<Route path="/setting" element={<Setting key={9}/>} />
 					</Routes>
 					{/* Fullscreen event listener snackbar */}
 					<Snackbar 

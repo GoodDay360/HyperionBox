@@ -6,13 +6,14 @@ import axios from 'axios';
 // Custom Imports
 
 
-const get_list = async ({source_id, search}:{source_id:string,search:string}) => {
+const get_list = async ({source_id, search, page=1}:{source_id:string,search:string,page?:number}) => {
     return await new Promise<any>(async (resolve, _) => {
         const port = sessionStorage.getItem("extension_port");
         const body = {
             "source_id": source_id,
             "method": "get_list",
             "search": search,
+            page
         }
         axios({
             method: 'POST',

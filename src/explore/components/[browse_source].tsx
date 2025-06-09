@@ -5,7 +5,7 @@
 
 // React Imports
 import { useEffect, useState, useRef, useContext, useCallback } from 'react';
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 // Lazy Images Imports
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -14,6 +14,7 @@ import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { ButtonBase, Tooltip, Button, IconButton } from '@mui/material';
 import Fab from '@mui/material/Fab';
 import Pagination from '@mui/material/Pagination';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // MUI Icons
 import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
@@ -33,30 +34,52 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 // Custom Imports
 import styles from "../styles/browse_source.module.css";
 import { global_context } from '../../global/scripts/contexts';
+import get_list from '../scripts/get_list';
 
+let FIRST_RUN_TIMEOUT:any;
 
 function BrowseSource() {
     const navigate = useNavigate();
+    const { source_id, search }:any = useParams();
     const {app_ready} = useContext<any>(global_context);
-    const { set_menu } = useContext<any>(global_context);
 
+    const [is_ready, set_is_ready] = useState<boolean>(false);
+    const [is_error, set_is_error] = useState<any>({state:false, message:""});
+    const [PAGE, SET_PAGE] = useState<any>({current:1,max:1});
+    const [SEARCH, SET_SEARCH] = useState<string>(search);
 
-    const [search, set_search] = useState<string>("");
-    const [search_mode, set_search_mode] = useState<Boolean>(false)
-    const [tag_data, set_tag_data] = useState<any>([]);
-    const [selected_tag, set_selected_tag] = useState<string>("");
     const [DATA, SET_DATA] = useState<any>([]);
-    const [max_page, set_max_page] = useState<number>(0);
-    const [current_page, set_current_page] = useState<number>(1);
-    const [widget, set_widget] = useState<string>("");
 
+    const get_data = async({search,page}:{search:string,page:number})=>{
+        set_is_ready(false);
+        const request = await get_list({source_id:source_id, search,page});
+        if (request.code === 200){
+            console.log(request.result.data)
+            SET_DATA(request.result.data)
+            SET_PAGE({current:page,max:request.result.max_page})
+        }else{
+            set_is_error({state:true, message:request?.message||"Request failed."});
+        }
+        set_is_ready(true);
+    }
+
+
+    useEffect(()=>{
+            if (!app_ready) return;
+            clearTimeout(FIRST_RUN_TIMEOUT);
+            FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
+                set_is_ready(false);
+                await get_data({search:SEARCH,page:PAGE.current});
+            }, import.meta.env.DEV ? 1500 : 0);
+            return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
+        },[app_ready])
 
     const RenderItem:any = useCallback(({item}:{item:any}) => {
         
         return (<div>
             <ButtonBase className={styles.cover_box}          
                 onClick={()=>{
-                    navigate(`/preview/${item.source_id}/${item.preview_id}`);
+                    navigate(`/preview/${source_id}/${item.id}`);
                 }}
             >
                 <div className={styles.cover}>                
@@ -83,78 +106,88 @@ function BrowseSource() {
             <div className={styles.header}>
                 <div className={styles.filter_box}>
                     <IconButton color="primary" size='large' type="submit" 
-                            onClick={async ()=>{
-                                if (window.history.state && window.history.state.idx > 0) {
-                                    navigate(-1);
-                                } else {
-                                    console.error("No history to go back to");
-                                }
-                            }}
-                        >
-                            <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} />
-                        </IconButton>
+                        onClick={async ()=>{
+                            if (window.history.state && window.history.state.idx > 0) {
+                                navigate(-1);
+                            } else {
+                                console.error("No history to go back to");
+                            }
+                        }}
+                    >
+                        <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} />
+                    </IconButton>
                     <form className={styles.search_container} onSubmit={(e)=>{e.preventDefault()}}>
                         <div className={styles.search_box}>
-                            <input type='text' placeholder='Search' value={search}
-                                onChange={(e)=>{set_search(e.target.value)}}
+                            <input type='text' placeholder='Search' value={SEARCH}
+                                onChange={(e)=>{SET_SEARCH(e.target.value)}}
                             ></input>
                         </div>
                         <IconButton color="primary" size='large' type="submit" 
                             onClick={async ()=>{
-                                
+                                if (!is_ready) return;
+                                set_is_ready(false);
+                                SET_PAGE({...PAGE,current:1});
+                                await get_data({search:SEARCH,page:1});
                             }}
                         >
-                            <SearchRoundedIcon sx={{color:"var(--icon-color-1)"}} />
+                            <>{is_ready
+                                ? <SearchRoundedIcon sx={{color:"var(--icon-color-1)"}} />
+                                : <CircularProgress color="primary" size="20px"/>
+                            }</>
+                            
                         </IconButton>
                     </form>
                 </div>
             </div>
-            <>{DATA.length > 0
-                ? <div className={styles.body}>
-                    
-                    <div className={styles.body_box_1}>
-                        <>{DATA.map((item:any,index:number)=>(
-                            <RenderItem key={index} item={item}/>
-                        ))}</>
-                        
-                    </div>
-                    <div className={styles.body_box_2}>
-                        <Pagination count={max_page} page={current_page} color="primary" showFirstButton showLastButton
-                            sx={{
-                                ul: {
-                                    "& .MuiPaginationItem-root": {
-                                        color:"var(--color)",
-                                    }
-                                }
-                            }}
-                            onChange={async (_, page:number)=>{
+            <>{is_ready
+                ? <>{!is_error.state
+                    ? <>{DATA.length > 0
+                        ? <div className={styles.body}>
+                            
+                            <div className={styles.body_box_1}>
+                                <>{DATA.map((item:any,index:number)=>(
+                                    <RenderItem key={index} item={item}/>
+                                ))}</>
                                 
-                            }}
-                        />
-                        
+                            </div>
+                            <div className={styles.body_box_2}>
+                                <Pagination count={PAGE.max} page={PAGE.current} color="primary" showFirstButton showLastButton
+                                    sx={{
+                                        ul: {
+                                            "& .MuiPaginationItem-root": {
+                                                color:"var(--color)",
+                                            }
+                                        }
+                                    }}
+                                    onChange={async (_, page:number)=>{
+                                        SET_PAGE({...PAGE,current:page});
+                                        await get_data({search:SEARCH,page});
+                                    }}
+                                />
+                                
+                            </div>
+                        </div>
+                        : <div className={styles.feedback_box}>
+                            <span className={styles.feedback_text}>
+                                Search no result.
+                            </span>
+                        </div>
+                        }
+                    </>
+                    : <div className={styles.feedback_box}>
+                        <span className={styles.feedback_text}
+                            style={{color:"red"}}
+                        >
+                            {is_error.message}
+                        </span>
                     </div>
+                }</>
+                : <div className={styles.feedback_box}>
+                    <span className={styles.feedback_text}>
+                        Searching...
+                    </span>
                 </div>
-                : <div
-                    style={{
-                        width:"100%",
-                        height:"100%",
-                        display:"flex",
-                        justifyContent:"center",
-                        alignItems:"center",
-                        flexDirection:"column",
-                        gap:"18px"
-                    }}
-                >
-                    <span 
-                        style={{
-                            color:"var(--color)",
-                            fontFamily:"var(--font-family-bold)",
-                            fontSize: "calc((100vw + 100vh)*0.0325/2)",
-                        }}
-                    >Search no result.</span>
-                </div>
-                }
-            </>
+            }</>
             
         </div>
     </>);
