@@ -3,7 +3,7 @@ import {  readTextFile } from '@tauri-apps/plugin-fs';
 import write_crash_log from '../../global/scripts/write_crash_log';
 
 const get_app_manifest = async ({setFeedback}:any)=>{
-    
+
     if (import.meta.env.DEV && import.meta.env.VITE_DEV_USE_LOCAL_APP_MANIFEST === "1") {
         try{
             return {code:200, data:JSON.parse(await readTextFile(import.meta.env.VITE_DEV_LOCAL_APP_MANIFEST_PATH))};
@@ -21,8 +21,9 @@ const get_app_manifest = async ({setFeedback}:any)=>{
                 {method: "get"}
             )
             .then(async (response) => {
-                const node_manifest = (await response.json());
-                resolve({data:node_manifest, code:200})
+                const manifest = (await response.json());
+                console.log("ONLINE", manifest)
+                resolve({data:manifest, code:200})
             })
             .catch(error => {
                 console.error('Error fetching the data:', error);

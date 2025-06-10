@@ -20,8 +20,8 @@ const get_bin_manifest = async ({setFeedback}:any)=>{
                 {method: "get"}
             )
             .then(async (response) => {
-                const node_manifest = (await response.json());
-                resolve({data:node_manifest, code:200})
+                const manifest = (await response.json());
+                resolve({data:manifest, code:200})
             })
             .catch(error => {
                 console.error('Error fetching the data:', error);
