@@ -58,7 +58,7 @@ const check_update = async ({ setFeedback, setProgress}:any) => {
         
         const temp_dir = await path.join(await path.tempDir(),"com.hyperionbox.app")
         await mkdir(temp_dir, {recursive:true,baseDir:BaseDirectory.Temp}).catch(e=>{console.error(e)})
-        const output_file = await path.join(temp_dir, `hyperionbox_updater_${version}.exe`)
+        const output_file = await path.join(temp_dir, `hyperionbox_updater_${version}.msi`)
 
         let start_size = 0;
         if (await exists(output_file)) {

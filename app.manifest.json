@@ -1,7 +1,7 @@
 {
     "windows": {
         "x86_64": {
-            "url": "https://td.telegram.org/tx64/tsetup-x64.5.15.3.exe",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/hyperionbox-1.0.0/HyperionBox_1.0.0_x64_en-US.msi",
             "version":"1.2.0"
         }
     }
