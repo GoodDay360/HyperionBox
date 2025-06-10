@@ -46,6 +46,7 @@ const DownloadTask = () => {
             console.log(sorted_data)
             set_feedback({state:false})
         }else{
+            SET_DOWNLOAD_TASK_DATA([])
             set_feedback({state:true,text:"No task found."})
         }
         
@@ -77,10 +78,13 @@ const DownloadTask = () => {
                     break;
                 }
             }
+
+            if (Object.keys(download_task_info.current).length === 0 && Object.keys(task_info).length !== 0) need_update = true;
+
             if (need_update) set_task_info(download_task_info.current);
         }, 800);
         return () => clearInterval(interval);
-    }, []);
+    }, [task_info]);
 
     const RenderItemComponent = useCallback(({item, get_data}:any)=>{
         return <RenderItem item={item} get_data={get_data}/>;

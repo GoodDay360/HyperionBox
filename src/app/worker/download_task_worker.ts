@@ -1,7 +1,7 @@
 
 // Tauri Plugin
 import { path } from '@tauri-apps/api';
-import { BaseDirectory, exists, mkdir, readFile, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, exists, mkdir, readFile, writeTextFile, readTextFile, remove } from '@tauri-apps/plugin-fs';
 import start_download from './start_download';
 // Node Improt
 
@@ -16,15 +16,16 @@ import download_file_in_chunks from '../../global/scripts/download_file_in_chunk
 
 
 const download_task_worker = async ({pause_download_task,download_task_info,download_task_progress}:any)=>{
+    const download_cache_dir = await path.join(await path.appDataDir(), ".cache", "download");
+    try{
+        if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true})
+    }catch(e){
+        await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
+        console.error(e)
+    }
     
     while (true){
-        // const download_cache_dir = await path.join(await path.appDataDir(), ".cache", "download");
-        // try{
-        //     if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
-        // }catch(e){
-        //     await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
-        //     console.error(e)
-        // }
+        
         download_task_progress.current = {};
         if (pause_download_task.current) {
             await new Promise(resolve => setTimeout(resolve, 8000));
