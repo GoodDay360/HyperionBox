@@ -16,7 +16,17 @@
     "core:window:allow-set-fullscreen",
     "core:window:allow-center",
     "core:window:allow-destroy",
+    "core:window:allow-close",
     "opener:default",
+    "opener:allow-open-path",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
     "log:default",
     "shell:default",
     "shell:allow-kill",
@@ -109,6 +119,7 @@
     "sql:allow-execute",
     "http:default",
     "process:default",
-    "process:allow-restart"
+    "process:allow-restart",
+    "dialog:default"
   ]
 }

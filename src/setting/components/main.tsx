@@ -27,7 +27,7 @@ let FIRST_RUN_TIMEOUT:any;
 const Setting = () => {
     // const navigate = useNavigate();
     
-    const {app_ready, set_menu} = useContext<any>(global_context)
+    const {set_menu} = useContext<any>(global_context)
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [feedback, set_feedback] = useState<any>({state:false,text:""})
     const [CONFIG_MANIFEST, SET_CONFIG_MANIFEST] = useState<any>({})

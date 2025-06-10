@@ -4,22 +4,18 @@
 
 
 // React Imports
-import { useEffect, useState, useRef, useContext, useCallback } from 'react';
+import { useEffect, useState, useContext, useCallback } from 'react';
 import { useNavigate, useParams } from "react-router";
 
 // Lazy Images Imports
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 // MUI Imports
-import { ButtonBase, Tooltip, Button, IconButton } from '@mui/material';
-import Fab from '@mui/material/Fab';
+import { ButtonBase, IconButton } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
 import CircularProgress from '@mui/material/CircularProgress';
 
 // MUI Icons
-import ArrowForwardIosRoundedIcon from '@mui/icons-material/ArrowForwardIosRounded';
-import ArrowBackIosRoundedIcon from '@mui/icons-material/ArrowBackIosRounded';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';

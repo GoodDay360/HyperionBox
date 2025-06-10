@@ -4,7 +4,6 @@ import { useEffect, useState, useContext } from 'react';
 import { useSearchParams } from 'react-router';
 
 // Tauri Plugins
-import {  readTextFile } from '@tauri-apps/plugin-fs';
 import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/window"
 import { platform, arch } from '@tauri-apps/plugin-os';
 
@@ -23,14 +22,17 @@ import Icon from "../../assets/images/icon.png"
 import styles from "../styles/main.module.css";
 
 // Custom imports
+import check_update from '../scripts/check_update';
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
 import check_extension_package from '../scripts/check_extension_package';
 import check_puppeteer_browser from '../scripts/check_puppeteer_browser';
 import initiate_extension from '../scripts/initiate_extension';
-import write_crash_log from '../../global/scripts/write_crash_log';
+
 import { read_config, write_config } from '../../global/scripts/manage_config';
 import check_internet_connection from '../../global/scripts/check_internet_connection';
+import get_bin_manifest from '../scripts/get_bin_manifest';
+
 
 // Context Imports
 import { global_context } from '../../global/scripts/contexts';
@@ -75,47 +77,27 @@ function Splash_Screen() {
             ]
 
             if (is_online){
+                
+                if ((await platform() === "windows") && (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_APP_VERIFICATION === "0"))){
+                    setFeedback({text:"Checking update..."});
+                    const check_update_result = await check_update({setFeedback, setProgress});
+                    if (check_update_result?.code !== 200) {
+                        return;
+                    }
+                }
                 if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_BIN_VERIFICATION === "0")){
 
-                    setFeedback({text:"Checking update..."});
+                    setFeedback({text:"Checking dependancies..."});
                     
-                    let manifest_data:any;
+                    const get_bin_manifest_result = await get_bin_manifest({setFeedback});
 
-                    if (import.meta.env.DEV && import.meta.env.VITE_DEV_USE_LOCAL_BIN_MANIFEST === "1") {
-                        try{
-                            manifest_data = JSON.parse(await readTextFile(import.meta.env.VITE_DEV_LOCAL_BIN_MANIFEST_PATH));
-                        }catch(e){
-                            console.log("[MANIFEST] Error reading local manifest:",e);
-                            await write_crash_log(`[MANIFEST] Error reading local manifest:${JSON.stringify(e)}`);
-                            setFeedback({text:"Error reading local manifest.", color:"red",type:"error"});
-                            return;
-                        }
-                        
+                    let manifest_data:any = {};
+                    if (get_bin_manifest_result.code === 200) {
+                        manifest_data = get_bin_manifest_result.data;
                     }else{
-                        const manifest_response:any = await new Promise((resolve,reject) =>{
-                            fetch(
-                                "https://raw.githubusercontent.com/GoodDay360/HyperionBox/refs/heads/main/bin.manifest.json",
-                                {method: "get"}
-                            )
-                            .then(async (response) => {
-                                const node_manifest = (await response.json());
-                                resolve({data:node_manifest, code:200})
-                            })
-                            .catch(error => {
-                                console.error('Error fetching the data:', error);
-                
-                                reject({message:error, code:500})
-                            });
-                        })
-                        
-                        
-                        if (manifest_response.code === 200) {
-                            manifest_data = manifest_response.data;
-                        }else{
-                            setFeedback({text:`Failed to check manifest.`, color:"red",type:"error"})
-                            return;
-                        }
+                        return;
                     }
+                    
 
                     if (!config.bin) config.bin = {};
                     for (const item of check_bin){

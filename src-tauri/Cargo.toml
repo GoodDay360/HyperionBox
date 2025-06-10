@@ -1,8 +1,8 @@
 [package]
 name = "hyperionbox"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+version = "1.0.0"
+description = "Fast animes/movies streaming app that support watch progress and download for many sources."
+authors = ["GoodDay360"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -31,3 +31,4 @@ tauri-plugin-http = "2.4.2"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 urlencoding = "2.1"
 tauri-plugin-process = "2"
+tauri-plugin-dialog = "2"

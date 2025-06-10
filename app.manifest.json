@@ -1,0 +1,8 @@
+{
+    "windows": {
+        "x86_64": {
+            "url": "https://td.telegram.org/tx64/tsetup-x64.5.15.3.exe",
+            "version":"1.0.0"
+        }
+    }
+}
