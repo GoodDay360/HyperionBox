@@ -10,7 +10,8 @@ An open-source anime and movie streaming app that supports many sources through 
 - ⬇️ **Download videos** for offline viewing.
 - 🎨 **Modern UI** for a smooth and intuitive experience.
 - 🔍 **Advanced search** for quick content discovery.
-- 👾 **Currently in beta** If you find any bugs/issues, report them to [Issues](https://github.com/GoodDay360/HyperionBox/issues)
+- 🧩 **Extension**: check source code is in this [repository](https://github.com/GoodDay360/HyperionBox-Extensions).
+- 👾 **Currently in beta** If you find any bugs/issues, report them to [Issues](https://github.com/GoodDay360/HyperionBox/issues).
 
 ## 📸 Screenshot
 ### Watchlist 
