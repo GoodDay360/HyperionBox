@@ -102,18 +102,18 @@ function Watch() {
     let is_updating_state = false
     useEffect(() => {
         if (!is_ready || is_error.state) return;
-        if (media_player_ref.current) {
+        if (media_player_ref.current !== null) {
             if (!is_media_ready || !is_in_watchlist){
                 media_player_ref.current.currentTime = 0;
                 clearInterval(update_state_interval);
                 return;
             }else{
-                media_player_ref.current.currentTime = media_player_state_ref.current.current_time??0;
+                media_player_ref.current.currentTime = media_player_state_ref.current?.current_time || -1;
                 clearInterval(update_state_interval);
                 update_state_interval = setInterval(async () => {
                     if (is_updating_state) return;
                     is_updating_state = true
-                    const player_state = media_player_ref.current.state;
+                    const player_state = media_player_ref.current;
 
                     await update_watch_state({source_id,preview_id,watch_id,
                         state:{
@@ -147,6 +147,8 @@ function Watch() {
                     const get_watch_state_result = await get_watch_state({source_id,preview_id,watch_id});
                     if (get_watch_state_result.code === 200) {
                         media_player_state_ref.current = get_watch_state_result.data;
+                    }else{
+                        media_player_state_ref.current = {};
                     }
                     set_is_in_watchlist(true)
                 }else set_is_in_watchlist(false);
@@ -156,7 +158,8 @@ function Watch() {
             if (request_item_tags_result?.data?.length > 0){
                 get_watch_result = await get_watch({
                     source_id,preview_id,watch_id,
-                    server_type: server_type || media_player_state_ref.current.server_type, server_id: server_id || media_player_state_ref.current.server_id,
+                    server_type: server_type || media_player_state_ref.current.server_type, 
+                    server_id: server_id || media_player_state_ref.current.server_id,
                     check_local,force_update,
                 });
 
