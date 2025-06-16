@@ -66,7 +66,7 @@ const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
         })
         
         
-        const extract_result = await new Promise<any>(async (resolve,reject)=>{
+        await new Promise<any>(async (resolve,reject)=>{
             const zip = new JSZip();
 
             zip.loadAsync(buf)

@@ -50,7 +50,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
         const command = await platform() === 'windows'
-        ? `"${path_7z}" x "${output_file}" -aoa -o"${temp_dir}" && "${path_7z}" x "${temp_dir}\\*.tar" -aoa -o"${extract_dir}"`
+        ? `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa`
         : `"${path_7z}" x "${output_file}" -so | "${path_7z}" x -aoa -si -ttar -o"${extract_dir}"`;
         const result = await execute_command({title:"extract",command:command})
         if (result.stderr) {
