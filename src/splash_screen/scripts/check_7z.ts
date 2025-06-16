@@ -13,7 +13,7 @@ const chunkSize = 6 * 1024 * 1024;
 const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
 
     try{
-
+        console.log("my os is", await platform(), await arch())
         const url = manifest?.["7z"]?.[await platform()]?.[await arch()]?.url;
         if (!url) {
             setFeedback("Your system doesn't support this app.")
