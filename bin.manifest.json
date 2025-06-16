@@ -5,12 +5,24 @@
                 "url": "https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip",
                 "version":"1.0.0"
             }
+        },
+        "linux": {
+            "x86_64": {
+                "url": "https://nodejs.org/dist/v22.16.0/node-v22.16.0-linux-x64.tar.xz",
+                "version": "1.0.0"
+            }
         }
     },
     "7z":{
         "windows": {
             "x86_64": {
                 "url": "https://github.com/GoodDay360/HyperionBox/releases/download/7zip-v1/7z2409-windows.zip",
+                "version": "1.0.0"
+            }
+        },
+        "linux": {
+            "x86_64": {
+                "url": "https://github.com/GoodDay360/HyperionBox/releases/download/7zip-v1/7z2409-linux-x64.zip",
                 "version": "1.0.0"
             }
         }
