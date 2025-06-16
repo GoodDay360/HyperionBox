@@ -6,8 +6,8 @@ import { BaseDirectory, exists, remove, mkdir, open, writeFile, readFile} from '
 import JSZip from 'jszip';
 
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
-
-
+import execute_command from '../../global/scripts/execute_command';
+import get_7z_path from '../../global/scripts/get_7z_path';
 const chunkSize = 6 * 1024 * 1024; 
 
 const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
@@ -66,67 +66,74 @@ const check_7z = async ({manifest, setFeedback, setProgress}:any) => {
         })
         
         
+        const extract_result = await new Promise<any>(async (resolve,reject)=>{
+            const zip = new JSZip();
 
-        const zip = new JSZip();
+            zip.loadAsync(buf)
+            .then(async (zip) => {
+                const bin_dir = await path.join(await path.appDataDir(),"bin")
+                const extract_dir = await path.join(bin_dir,"7z")
 
-        zip.loadAsync(buf)
-        .then(async (zip) => {
-            const bin_dir = await path.join(await path.appDataDir(),"bin")
-            const extract_dir = await path.join(bin_dir,"7z")
+                if (await exists(extract_dir)) {
+                    await remove(extract_dir,{baseDir:BaseDirectory.AppData, recursive:true})
+                };
 
-            if (await exists(extract_dir)) {
-                await remove(extract_dir,{baseDir:BaseDirectory.AppData, recursive:true})
-            };
+                await mkdir(extract_dir, {baseDir: BaseDirectory.AppData, recursive:true});
 
-            await mkdir(extract_dir, {baseDir: BaseDirectory.AppData, recursive:true});
+                for (const relativePath in zip.files) {
+                    const result = await new Promise<any>(async (resolve,reject)=>{
+                        const file = zip.files[relativePath];
+                    
+                        if (!file.dir) {
+                            file.async("uint8array")
+                            .then((content) => {
 
-            for (const relativePath in zip.files) {
-                const result = await new Promise<any>(async (resolve,reject)=>{
-                    const file = zip.files[relativePath];
-                
-                    if (!file.dir) {
-                        file.async("uint8array")
-                        .then((content) => {
-
-                            resolve({type: "file", path:relativePath, data: new Uint8Array(content)})
-                        })
-                        .catch((error) => {
-                            console.error("Error reading file:", error);
-                            reject(error)
-                        });
-                    }else{
-                        resolve({type: "dir", path:relativePath})
+                                resolve({type: "file", path:relativePath, data: new Uint8Array(content)})
+                            })
+                            .catch((error) => {
+                                console.error("Error reading file:", error);
+                                reject(error)
+                            });
+                        }else{
+                            resolve({type: "dir", path:relativePath})
+                        }
+                    })
+                    const extract_response = await new Promise<any>(async (resolve,reject)=>{
+                        if (result.type === "dir"){
+                            mkdir(await path.join(extract_dir,result.path), {baseDir: BaseDirectory.AppData})
+                            .then(()=>resolve({code:200,message:"OK"}))
+                            .catch((e)=>{reject({code:500,message:"[dir]"+e});return;})
+                        }else if (result.type === "file"){
+                            writeFile(await path.join(extract_dir,result.path), result.data, {baseDir: BaseDirectory.AppData, create:true})
+                            .then(()=>resolve({code:200,message:"OK"}))
+                            .catch((e)=>{reject({code:500,message:"[file]"+e});return;})
+                        }
+                    })
+                    if (extract_response.code !== 200) {
+                        reject(extract_response);
+                        return
                     }
-                })
-
-                
-                
-
-                const extract_response = await new Promise<any>(async (resolve,reject)=>{
-                    if (result.type === "dir"){
-                        mkdir(await path.join(extract_dir,result.path), {baseDir: BaseDirectory.AppData})
-                        .then(()=>resolve({code:200,message:"OK"}))
-                        .catch((e)=>reject({code:500,message:"[dir]"+e}))
-                    }else if (result.type === "file"){
-                        writeFile(await path.join(extract_dir,result.path), result.data, {baseDir: BaseDirectory.AppData, create:true})
-                        .then(()=>resolve({code:200,message:"OK"}))
-                        .catch((e)=>reject({code:500,message:"[file]"+e}))
-                    }
-                })
-                if (extract_response.code === 500) return extract_response
-                
-            };
+                };
+                resolve({code:200,message:"OK"})
+            })
+            .catch(async (error) => {
+                console.error("Error loading ZIP:", error);
+                await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
+                reject(error);
+            });
         })
-        .catch(async (error) => {
-            console.error("Error loading ZIP:", error);
-            await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
-            return {code:500, message:error};
-        });
 
-        
+        if (!await exists(await get_7z_path)) return {code:500, message:"7z install failed."}
+
         await remove(output_file,{baseDir:BaseDirectory.Temp})
 
-        return {code: 200, message: 'OK'}
+        if (await platform() !== "windows"){
+            const execute_result = await execute_command({title:"7z_chmod",command:`chmod +x ${await get_7z_path}`, wait:true, spawn:false});
+            if (execute_result.stderr) {
+                return {code:500, message:execute_result.stderr};
+            }
+        }
+        return {code:200, message:"OK"}
     }catch(e:any){
         console.error("[Error] check_7z: ", e);
         return {code:500, message:e};

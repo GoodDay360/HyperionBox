@@ -5,7 +5,7 @@ import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-a
 // import JSZip from 'jszip';
 import get_7z_path from '../../global/scripts/get_7z_path';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
-import execute_command from '../../global/scripts/excute_command';
+import execute_command from '../../global/scripts/execute_command';
 import get_npm_path from '../../global/scripts/node/get_npm_path';
 import write_crash_log from '../../global/scripts/write_crash_log';
 

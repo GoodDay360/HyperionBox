@@ -37,10 +37,16 @@
           "name": "windows-shell",
           "cmd": "cmd.exe",
           "args": [
-            "/c",
-            {
-              "validator": "^.*$"
-            }
+            "/S /C",
+            {"validator": "^.*$"}
+          ]
+        },
+        {
+          "name": "unix-shell",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            { "validator": "^.*$" }
           ]
         }
       ]
@@ -52,10 +58,16 @@
           "name": "windows-shell",
           "cmd": "cmd.exe",
           "args": [
-            "/c",
-            {
-              "validator": "^.*$"
-            }
+            "/S /C",
+            {"validator": "^.*$"}
+          ]
+        },
+        {
+          "name": "unix-shell",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            { "validator": "^.*$" }
           ]
         }
       ]
@@ -86,10 +98,16 @@
           "path": "$APPDATA"
         },
         {
+          "path": "$APPDATA/**"
+        },
+        {
           "path": "$APPDATA/**/*"
         },
         {
           "path": "$TEMP"
+        },
+        {
+          "path": "$TEMP/**"
         },
         {
           "path": "$TEMP/**/*"

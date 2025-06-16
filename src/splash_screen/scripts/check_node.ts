@@ -5,7 +5,7 @@ import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-a
 // import JSZip from 'jszip';
 import get_7z_path from '../../global/scripts/get_7z_path';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
-import execute_command from '../../global/scripts/excute_command';
+import execute_command from '../../global/scripts/execute_command';
 import copy_recursive from '../../global/scripts/copy_recursive';
 
 const chunkSize = 6 * 1024 * 1024; 
@@ -49,35 +49,55 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         const extract_dir = await path.join(bin_dir,"node")
         if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
-        const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa -md=32m -mmt=3`
+        const command = await platform() === 'windows'
+        ? `"${path_7z}" x "${output_file}" -aoa -o"${temp_dir}" && "${path_7z}" x "${temp_dir}\\*.tar" -aoa -o"${extract_dir}"`
+        : `"${path_7z}" x "${output_file}" -so | "${path_7z}" x -aoa -si -ttar -o"${extract_dir}"`;
         const result = await execute_command({title:"extract",command:command})
         if (result.stderr) {
             await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
             return {code:500, message:result.stderr, at:"check_node.tsx -> excute_command -> extract"}
         };
-        
-        const extract_response = await new Promise<any>(async (resolve,reject)=>{
+        if (await platform() === 'windows'){
+            const extract_response = await new Promise<any>(async (resolve,reject)=>{
+                const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
+                const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-v'));
+
+                const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
+                
+                await copy_recursive({src:extracted_node_dir, dest:extract_dir})
+                .catch((e)=>{
+                    reject({code:500, message:e})
+                    console.error("[Error] copy_recursive:", e);
+                })
+
+                await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
+                .catch((e)=>{
+                    reject({code:500, message:e})
+                    console.error("[Error] remove:", e);
+                })
+                resolve({code:200, message:"OK"})
+            })
+            if (extract_response.code !== 200) return extract_response;
+        }else{
             const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
             const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-v'));
 
             const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
-            
-            await copy_recursive({src:extracted_node_dir, dest:extract_dir})
-            .catch((e)=>{
-                reject({code:500, message:e})
-                console.error("[Error] copy_recursive:", e);
-            })
-
+            console.log(extracted_node_dir);
+            console.log(extract_dir)
+            const copy_result = await execute_command({title:"copy_recursive",command:`cp -r . "${extract_dir}"`,cwd:extracted_node_dir})
+            if (copy_result.stderr) {
+                return {code: 500, message: copy_result.stderr}
+            }
             await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
             .catch((e)=>{
-                reject({code:500, message:e})
                 console.error("[Error] remove:", e);
+                return {code:500, message:e}
             })
-            resolve({code:200, message:"OK"})
-        })
-        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true})
-        if (extract_response.code !== 200) return extract_response;
+        }
 
+        if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true})
+        
         return {code: 200, message: 'OK'}
     }catch(e){
         console.error("[Error] check_node: ", e);

@@ -5,7 +5,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { readTextFile, exists, BaseDirectory, mkdir, remove } from '@tauri-apps/plugin-fs';
 
 // Custom Imports
-import execute_command from "../../global/scripts/excute_command"
+import execute_command from "../../global/scripts/execute_command"
 import get_extension_directory from "../../global/scripts/get_extension_directory"
 import get_node_path from "../../global/scripts/node/get_node_path"
 import { read_config, write_config } from '../../global/scripts/manage_config';

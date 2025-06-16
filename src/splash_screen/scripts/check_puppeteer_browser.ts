@@ -1,6 +1,6 @@
 import { path } from '@tauri-apps/api';
 
-import execute_command from '../../global/scripts/excute_command';
+import execute_command from '../../global/scripts/execute_command';
 import write_crash_log from '../../global/scripts/write_crash_log';
 import get_node_dir from '../../global/scripts/node/get_node_dir';
 const check_puppeteer_browser = async ({setFeedback}:any) => {

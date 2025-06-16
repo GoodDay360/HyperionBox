@@ -32,6 +32,7 @@ import initiate_extension from '../scripts/initiate_extension';
 import { read_config, write_config } from '../../global/scripts/manage_config';
 import check_internet_connection from '../../global/scripts/check_internet_connection';
 import get_bin_manifest from '../scripts/get_bin_manifest';
+import get_7z_path from '../../global/scripts/get_7z_path';
 
 
 // Context Imports
