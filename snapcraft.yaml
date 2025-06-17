@@ -19,6 +19,7 @@ apps:
     extensions: [gnome]
     plugs:
       - network
+      - network-status
       - portals
     # Add whatever plugs you need here, see https://snapcraft.io/docs/snapcraft-interfaces for more info.
     # The gnome extension already includes [ desktop, desktop-legacy, gsettings, opengl, wayland, x11, mount-observe, calendar-service ]
@@ -28,6 +29,7 @@ apps:
       - single-instance-plug # add this if you're using the single-instance plugin
     environment:
       GST_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gstreamer-1.0
+      TMPDIR: $SNAP_USER_COMMON/tmp
 # Add these lines only if you're using the single-instance plugin
 # Check https://v2.tauri.app/plugin/single-instance/ for details
 slots:
@@ -37,6 +39,8 @@ slots:
    name: org.hyperionbox.SingleInstance # Remember to change net_mydomain_MyApp to your app ID with "_" instead of "." and "-"
 
 plugs:
+  audio-playback:
+    interface: audio-playback
   portals:
     interface: portal
   single-instance-plug:

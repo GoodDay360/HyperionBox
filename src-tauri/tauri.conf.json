@@ -22,11 +22,11 @@
         "default-src": "'self' customprotocol: asset:",
         "script-src": "* 'unsafe-inline' 'unsafe-eval';",
         "style-src": "* 'unsafe-inline';",
-        "connect-src": "*;",
-        "frame-src": "* data:;",
-        "img-src": "*;",
-        "media-src": "* blob:;",
-        "object-src": "* data:;"
+        "connect-src": "* blob: data: asset: asset://localhost",
+        "frame-src": "* blob: data: asset: asset://localhost",
+        "img-src": "* blob: data: asset: asset://localhost",
+        "media-src": "* blob: data: asset: asset://localhost",
+        "object-src": "* blob: data: asset: asset://localhost"
       },
       "assetProtocol": {
         "enable": true,
