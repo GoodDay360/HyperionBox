@@ -1,38 +1,55 @@
-import { BaseDirectory, readDir, mkdir, copyFile} from '@tauri-apps/plugin-fs';
+import { BaseDirectory, readDir, mkdir, copyFile } from '@tauri-apps/plugin-fs';
 import { path } from '@tauri-apps/api';
 
-async function copy_recursive({ src, dest, threads = 3 }:any) {
-    return await new Promise(async (resolve, reject) => {
-        const entries = await readDir(src, { baseDir: BaseDirectory.AppData });
-        await mkdir(dest, { recursive: true, baseDir: BaseDirectory.AppData }).catch(e => { console.error(e) });
+const copy_recursive = async ({
+  src,
+  dest,
+  threads = 3,
+}: {
+  src: string;
+  dest: string;
+  threads?: number;
+}): Promise<void> => {
+  return new Promise(async (resolve, reject) => {
+    const queue: Array<{ src: string; dest: string }> = [{ src, dest }];
+    let errorOccurred = false;
 
-        const fileCopyPromises = [];
-        let activeThreads = 0;
+    const worker = async () => {
+      while (queue.length > 0 && !errorOccurred) {
+        const { src, dest } = queue.shift()!;
+        try {
+          const entries = await readDir(src, { baseDir: BaseDirectory.AppData });
+          await mkdir(dest, { recursive: true, baseDir: BaseDirectory.AppData });
 
-        for (const entry of entries) {
+          for (const entry of entries) {
             const srcPath = await path.join(src, entry.name);
             const destPath = await path.join(dest, entry.name);
 
             if (entry.isDirectory) {
-                fileCopyPromises.push(copy_recursive({ src: srcPath, dest: destPath, threads }));
+              queue.push({ src: srcPath, dest: destPath });
             } else {
-                fileCopyPromises.push(copyFile(srcPath, destPath, { fromPathBaseDir: BaseDirectory.AppData, toPathBaseDir: BaseDirectory.AppData }).catch(e => { console.error(e); reject(e) }));
+              await copyFile(srcPath, destPath, {
+                fromPathBaseDir: BaseDirectory.AppData,
+                toPathBaseDir: BaseDirectory.AppData,
+              });
             }
-
-            activeThreads++;
-            if (activeThreads >= threads) {
-                await Promise.all(fileCopyPromises);
-                fileCopyPromises.length = 0;  // Clear the array after processing
-                activeThreads = 0;
-            }
+          }
+        } catch (err) {
+          errorOccurred = true;
+          reject(err);
         }
+      }
+    };
 
-        // Wait for the remaining file copy promises to complete
-        await Promise.all(fileCopyPromises);
+    const workers = Array.from({ length: threads }, () => worker());
 
-        resolve(true);
-    });
-}
-
+    try {
+      await Promise.all(workers);
+      if (!errorOccurred) resolve();
+    } catch (_) {
+      // already rejected inside worker
+    }
+  });
+};
 
 export default copy_recursive;

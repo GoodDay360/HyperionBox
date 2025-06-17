@@ -1,6 +1,6 @@
 import { path } from '@tauri-apps/api';
-
-import execute_command from '../../global/scripts/excute_command';
+import { platform } from '@tauri-apps/plugin-os';
+import execute_command from '../../global/scripts/execute_command';
 import write_crash_log from '../../global/scripts/write_crash_log';
 import get_node_dir from '../../global/scripts/node/get_node_dir';
 const check_puppeteer_browser = async ({setFeedback}:any) => {
@@ -8,13 +8,24 @@ const check_puppeteer_browser = async ({setFeedback}:any) => {
         setFeedback({text:`Installing puppeteer browser... might take a while.`})
         const cwd = await path.join(await path.appDataDir(),"extension")
 
-        // const npx_path = await get_npx_path;
+
         const node_dir = await get_node_dir;
 
-        const command = [
-            `SET PATH="${node_dir}";%PATH%`, "\n",
-            `npx @puppeteer/browsers install firefox@stable`
-        ].join(" ")
+        let command
+        if (await platform() === "windows") {
+            command = [
+                `SET PATH="${node_dir}";%PATH%`, "\n",
+                `npx @puppeteer/browsers install firefox@stable`
+            ].join(" ")
+        }else{
+            // Require `gstreamer1.0-plugins-bad gstreamer1.0-plugins-good gstreamer1.0-libav`
+
+            command = [
+                `export PATH="${node_dir}:$PATH"`, '&&',
+                `npx @puppeteer/browsers install firefox@stable`
+            ].join(' ');
+
+        }
 
         const execute_install_browser_response = await execute_command({title:"npx_install_puppeteer_browser",command, cwd})
         const stderr_result = execute_install_browser_response.stderr.trim()

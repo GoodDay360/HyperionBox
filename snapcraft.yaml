@@ -1,0 +1,81 @@
+name: hyperionbox
+base: core22
+version: '1.1.0'
+summary: An open-source anime and movie streaming desktop app. # 79 char long summary
+description: |
+  An open-source anime and movie streaming desktop app that support watch progress and download for many sources.
+
+grade: stable
+confinement: strict
+
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1
+
+apps:
+  hyperionbox:
+    command: usr/bin/hyperionbox
+    desktop: usr/share/applications/HyperionBox.desktop
+    extensions: [gnome]
+    plugs:
+     - network
+    # Add whatever plugs you need here, see https://snapcraft.io/docs/snapcraft-interfaces for more info.
+    # The gnome extension already includes [ desktop, desktop-legacy, gsettings, opengl, wayland, x11, mount-observe, calendar-service ]
+     - single-instance-plug # add this if you're using the single-instance plugin
+    slots:
+    # Add the slots you need to expose to other snaps
+     - single-instance-plug # add this if you're using the single-instance plugin
+    environment:
+      GST_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gstreamer-1.0
+# Add these lines only if you're using the single-instance plugin
+# Check https://v2.tauri.app/plugin/single-instance/ for details
+slots:
+ single-instance:
+   interface: dbus
+   bus: session
+   name: org.hyperionbox.SingleInstance # Remember to change net_mydomain_MyApp to your app ID with "_" instead of "." and "-"
+
+plugs:
+ single-instance-plug:
+   interface: dbus
+   bus: session
+   name: org.hyperionbox.SingleInstance # Remember to change net_mydomain_MyApp to your app ID with "_" instead of "." and "-"
+
+package-repositories:
+  - type: apt
+    components: [main]
+    suites: [noble]
+    key-id: 78E1918602959B9C59103100F1831DDAFC42E99D
+    url: http://ppa.launchpad.net/snappy-dev/snapcraft-daily/ubuntu
+
+parts:
+  build-app:
+    plugin: dump
+    build-snaps:
+      - node/20/stable
+      - rustup/latest/stable
+    build-packages:
+      - libwebkit2gtk-4.1-dev
+      - build-essential
+      - curl
+      - wget
+      - file
+      - libxdo-dev
+      - libssl-dev
+      - libayatana-appindicator3-dev
+      - librsvg2-dev
+      - dpkg
+    stage-packages:
+      - libwebkit2gtk-4.1-0
+      - libayatana-appindicator3-1
+      - gstreamer1.0-plugins-bad
+      - gstreamer1.0-plugins-good
+      - gstreamer1.0-libav
+    source: .
+    override-build: |
+      set -eu
+      rustup default stable
+      npm install
+      npm run tauri build -- --bundles deb
+      dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
+      sed -i -e "s|Icon=HyperionBox|Icon=/usr/share/icons/hicolor/32x32/apps/HyperionBox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop

@@ -103,7 +103,7 @@ function Splash_Screen() {
                     for (const item of check_bin){
                         const key = Object.keys(item)[0]
                         const callable:any = item[key]
-                        const availbe_version = manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
+                        const availbe_version = manifest_data?.[key]?.version ||manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
                         if (!config.bin[key]?.state || !semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
                             const result = await callable({manifest:manifest_data,setFeedback,setProgress});
                             
@@ -146,6 +146,7 @@ function Splash_Screen() {
                 }
             }
             
+            console.log("It here21")
             if (searchParams.get("relaunch") !== "yes" && (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0")){
                 setFeedback({text:`Initiating extension...`})
                 const intiate_result = await initiate_extension();
@@ -155,6 +156,7 @@ function Splash_Screen() {
                 }
                 
             }
+            console.log("It here22")
 
             setFeedback({text:"Launching..."});
             window.setMaximizable(true);
@@ -162,8 +164,9 @@ function Splash_Screen() {
             window.setAlwaysOnTop(false);
 
             set_app_ready(true);
-        }catch(e){
+        }catch(e:any){
             console.error(e)
+            console.error('Stack trace:', e.stack);
             setFeedback({text:`Error: ${e}`,color:"red",type:"error"})
             return;
         }

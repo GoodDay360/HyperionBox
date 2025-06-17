@@ -3,11 +3,11 @@
 import { path } from '@tauri-apps/api';
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { readTextFile, exists, BaseDirectory, mkdir, remove } from '@tauri-apps/plugin-fs';
-
+import { platform } from '@tauri-apps/plugin-os';
 // Custom Imports
-import execute_command from "../../global/scripts/excute_command"
+import execute_command from "../../global/scripts/execute_command"
 import get_extension_directory from "../../global/scripts/get_extension_directory"
-import get_node_path from "../../global/scripts/node/get_node_path"
+import get_node_dir from '../../global/scripts/node/get_node_dir';
 import { read_config, write_config } from '../../global/scripts/manage_config';
 import write_crash_log from '../../global/scripts/write_crash_log';
 import shutdown_extension from '../../global/scripts/shutdown_extension';
@@ -36,18 +36,34 @@ const initiate_extension = async () => {
     }
 
     const extension_directory = await get_extension_directory;
-    const node_path = await get_node_path;
+    
     const extension_log_dir = await path.join(await path.appDataDir(), "log", "extension")
     if (!await exists(extension_log_dir)) await mkdir(extension_log_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
     const log_path = await path.join(extension_log_dir, "initiate_extension_result.json");
     if (await exists(log_path)) await remove(log_path, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
     const route_path = await path.join(extension_directory, "route.js");
-    const command = [
-        `"${node_path}"`, `"${route_path}"`,
-        "--log_path", `"${log_path}"`,
-        "--port", `"${config.exstension_port}"`,
-        "--browser_path", `"${config.bin.browser_path}"`
-    ].join(" ")
+    
+   
+    const node_dir = await get_node_dir;
+    let command
+    if (await platform() === "windows") {
+        command = [
+            `SET PATH="${node_dir}";%PATH%`, "\n",
+            `node`, `"${route_path}"`,
+            "--log_path", `"${log_path}"`,
+            "--port", `"${config.exstension_port}"`,
+            "--browser_path", `"${config.bin.browser_path}"`
+        ].join(" ")
+    }else{
+        command = [
+            `export PATH="${node_dir}:$PATH"`, '&&',
+            `node`, `"${route_path}"`,
+            "--log_path", `"${log_path}"`,
+            "--port", `"${config.exstension_port}"`,
+            "--browser_path", `"${config.bin.browser_path}"`
+        ].join(' ');
+
+    }
 
     await execute_command({command:command, title:"initiate_extension",wait:false},{cwd:extension_directory});
 

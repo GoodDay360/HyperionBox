@@ -6,7 +6,7 @@ import { exists, remove, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs';
 import { add_source } from "../../global/scripts/manage_extension";
 import get_7z_path from "../../global/scripts/get_7z_path";
 import get_extension_directory from "../../global/scripts/get_extension_directory";
-import execute_command from '../../global/scripts/excute_command';
+import execute_command from '../../global/scripts/execute_command';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
 import write_crash_log from '../../global/scripts/write_crash_log';
 
