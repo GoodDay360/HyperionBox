@@ -44,11 +44,7 @@
         }
     },
     "extension-package":{
-        "windows": {
-            "x86_64": {
-                "url": "https://github.com/GoodDay360/HyperionBox-Extensions/releases/download/Package/Package-Latest.zip",
-                "version": "1.0.0"
-            }
-        }
+        "url": "https://github.com/GoodDay360/HyperionBox-Extensions/releases/download/Package/Package-Latest.zip",
+        "version": "1.0.0"
     }
 }

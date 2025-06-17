@@ -1,4 +1,4 @@
-import { platform, arch } from '@tauri-apps/plugin-os';
+import { platform } from '@tauri-apps/plugin-os';
 import { path } from '@tauri-apps/api';
 import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-apps/plugin-fs';
 
@@ -6,15 +6,14 @@ import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-a
 import get_7z_path from '../../global/scripts/get_7z_path';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
 import execute_command from '../../global/scripts/execute_command';
-import get_npm_path from '../../global/scripts/node/get_npm_path';
 import write_crash_log from '../../global/scripts/write_crash_log';
-
+import get_node_dir from '../../global/scripts/node/get_node_dir';
 
 const chunkSize = 6 * 1024 * 1024; 
 
 const check_extension_package = async ({manifest, setFeedback, setProgress}:any) => {
     try{
-        const url = manifest?.["extension-package"]?.[await platform()]?.[await arch()]?.url;
+        const url = manifest?.["extension-package"]?.url;
         console.log(url)
         if (!url) {
             setFeedback("Your system doesn't support this app.")
@@ -60,8 +59,8 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
         setFeedback({text:"Extracting extension_package..."})
         const path_7z = await get_7z_path;
         
-        const command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -aoa -md=32m -mmt=3`
-        const result = await execute_command({title:"extract",command:command})
+        const extract_command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -aoa -md=32m -mmt=3`
+        const result = await execute_command({title:"extract",command:extract_command})
 
 
         if (result.stderr) {
@@ -71,10 +70,23 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
 
 
         if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true});
+        const node_dir = await get_node_dir;
+        let command
+        if (await platform() === "windows") {
+            command = [
+                `SET PATH="${node_dir}";%PATH%`, "\n",
+                `npm install`
+            ].join(" ")
+        }else{
+            command = [
+                `export PATH="${node_dir}:$PATH"`, '&&',
+                'npm install'
+            ].join(' ');
 
-        const npm_path = await get_npm_path;
+        }
+        
         setFeedback({text:`Installing extension packages... might take a while.`})
-        const execute_install_npm_response = await execute_command({title:"npm-install",command:`"${npm_path}" install`,cwd:extract_dir})
+        const execute_install_npm_response = await execute_command({title:"npm-install",command,cwd:extract_dir})
         const stderr_result = execute_install_npm_response.stderr.trim()
         if (stderr_result) {
             if (stderr_result.includes("npm notice")) {

@@ -83,12 +83,20 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
             const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-v'));
 
             const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
-            console.log(extracted_node_dir);
-            console.log(extract_dir)
+            
             const copy_result = await execute_command({title:"copy_recursive",command:`cp -r . "${extract_dir}"`,cwd:extracted_node_dir})
             if (copy_result.stderr) {
                 return {code: 500, message: copy_result.stderr}
             }
+
+            
+            const execute_result = await execute_command({title:"node_chmod",command:`chmod -R u+rx ${await path.join(extract_dir, 'bin')}`, wait:true, spawn:false});
+            if (execute_result.stderr) {
+                return {code:500, message:execute_result.stderr};
+            }
+
+            
+
             await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
             .catch((e)=>{
                 console.error("[Error] remove:", e);

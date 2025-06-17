@@ -91,27 +91,15 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        {
-          "path": "**"
-        },
-        {
-          "path": "$APPDATA"
-        },
-        {
-          "path": "$APPDATA/**"
-        },
-        {
-          "path": "$APPDATA/**/*"
-        },
-        {
-          "path": "$TEMP"
-        },
-        {
-          "path": "$TEMP/**"
-        },
-        {
-          "path": "$TEMP/**/*"
-        }
+        {"path": "**"},
+        {"path": "$APPDATA/**"},
+        {"path": "$APPDATA/*"},
+        {"path": "$APPDATA/"},
+        {"path": "$APPDATA/.cache"},
+        {"path": "$APPDATA/.cache/**"},
+        {"path": "$TEMP/**"},
+        {"path": "$TEMP/*"},
+        {"path": "$TEMP/"}
       ]
     },
     "os:default",

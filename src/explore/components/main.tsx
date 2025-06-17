@@ -313,7 +313,7 @@ const Explore = () => {
                 
             </div>
         </>)
-    },[search])
+    },[])
 
     return (<>
         <div className={styles.container}>
