@@ -1,6 +1,9 @@
 # Env
 .env.development
 
+# snap
+hyperionbox_*.snap
+
 # Logs
 logs
 *.log
