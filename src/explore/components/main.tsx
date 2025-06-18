@@ -46,7 +46,7 @@ const Explore = () => {
     const [is_searching_hover, set_is_searching_hover] = useState<boolean>(false);
     const [error,set_error] = useState<boolean>(false);
     
-    const cancel_search = useRef<boolean>(false);
+    
     
     // Restore Previous State on navigation
     useEffect(()=>{
@@ -65,6 +65,10 @@ const Explore = () => {
     },[search_count])
     // ===================================
 
+    const is_run = useRef<boolean>(false);
+    const is_run_timeout = useRef<any>(null);
+    const cancel_search = useRef<boolean>(false);
+
     useEffect(()=>{
         cancel_search.current = false;
         if (SEARCH_REF) set_search(SEARCH_REF);
@@ -75,8 +79,7 @@ const Explore = () => {
         }
     },[])
 
-    const is_run = useRef<boolean>(false);
-    const is_run_timeout = useRef<any>(null);
+    
     const get_data = useCallback(()=>{
         if ((INSTALLED_SOURCE.length === 0) || !search) return;
         const task = async () => {
@@ -99,6 +102,7 @@ const Explore = () => {
                         cancel_search.current = false;
                         break;
                     }
+                    console.log("it get here")
                     const request = await get_list({source_id:source.id, search:search});
                     if (request.code === 200){
                         data[source.id] = {
@@ -131,9 +135,7 @@ const Explore = () => {
         (async () => {
             await task();
         })();
-        return ()=>{
-            clearTimeout(is_run_timeout.current);
-        };
+        return;
     },[search, INSTALLED_SOURCE]);
 
     useEffect(()=>{
@@ -153,7 +155,6 @@ const Explore = () => {
         }, import.meta.env.DEV ? 1500 : 0);
         return ()=>{
             clearTimeout(FIRST_RUN_TIMEOUT);
-            clearTimeout(is_run_timeout.current);
         };
             
     },[app_ready])
