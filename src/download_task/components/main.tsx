@@ -83,7 +83,10 @@ const DownloadTask = () => {
 
             if (need_update) set_task_info(download_task_info.current);
         }, 800);
-        return () => clearInterval(interval);
+        return () => {
+            console.log("Clearing interval for download task");
+            clearInterval(interval)
+        };
     }, [task_info]);
 
     const RenderItemComponent = useCallback(({item, get_data}:any)=>{

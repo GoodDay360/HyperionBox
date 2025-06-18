@@ -79,10 +79,10 @@ const Explore = () => {
     const is_run_timeout = useRef<any>(null);
     const get_data = useCallback(()=>{
         if ((INSTALLED_SOURCE.length === 0) || !search) return;
-        clearTimeout(is_run_timeout.current);
         const task = async () => {
+            clearTimeout(is_run_timeout.current);
             if (is_run.current) {
-                setTimeout(async() => await task(), 1000);
+                is_run_timeout.current = setTimeout(async() => await task(), 1000);
                 return;
             };
             is_run.current = true;
@@ -131,7 +131,9 @@ const Explore = () => {
         (async () => {
             await task();
         })();
-        return;
+        return ()=>{
+            clearTimeout(is_run_timeout.current);
+        };
     },[search, INSTALLED_SOURCE]);
 
     useEffect(()=>{
@@ -149,7 +151,11 @@ const Explore = () => {
             }
             set_is_ready(true);
         }, import.meta.env.DEV ? 1500 : 0);
-        return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
+        return ()=>{
+            clearTimeout(FIRST_RUN_TIMEOUT);
+            clearTimeout(is_run_timeout.current);
+        };
+            
     },[app_ready])
 
     const RenderItem = useCallback(({source_id, _item}:{source_id:string,_item?:any}) => {
