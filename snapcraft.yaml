@@ -20,6 +20,7 @@ apps:
     plugs:
       - network
       - network-status
+      - network-bind
       - portals
     # Add whatever plugs you need here, see https://snapcraft.io/docs/snapcraft-interfaces for more info.
     # The gnome extension already includes [ desktop, desktop-legacy, gsettings, opengl, wayland, x11, mount-observe, calendar-service ]
