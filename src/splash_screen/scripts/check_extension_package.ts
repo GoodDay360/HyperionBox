@@ -75,12 +75,12 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
         if (await platform() === "windows") {
             command = [
                 `SET PATH="${node_dir}";%PATH%`, "\n",
-                `npm install`
+                `npm install --loglevel=error`
             ].join(" ")
         }else{
             command = [
                 `export PATH="${node_dir}:$PATH"`, '&&',
-                'npm install'
+                'npm install --loglevel=error'
             ].join(' ');
 
         }
