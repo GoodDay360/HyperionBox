@@ -93,6 +93,7 @@ const Preview = () => {
     const selected_download_data = useRef<any>([])
     
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
+    const [CURRENT_SEASON_ID, _] = useState<string>("0");
     const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
     const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
     const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
@@ -340,7 +341,7 @@ const Preview = () => {
 
         useEffect(()=>{
             ;(async ()=>{
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id);
+                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, CURRENT_SEASON_ID);
 
                 const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
 
@@ -411,7 +412,7 @@ const Preview = () => {
                             },
                         });
                     }
-                    navigate(`/watch/${source_id}/${preview_id}/${item.id}`);
+                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`);
                 }}
             >
                 <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
@@ -444,7 +445,7 @@ const Preview = () => {
                     <IconButton 
                         onClick={()=>{
                             set_widget({type:"remove_download", onSubmit: async ()=>{
-                                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", item.id);
+                                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, CURRENT_SEASON_ID, "download", item.id);
                                 await remove(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
                                 set_available_local(false);
                             }});
@@ -727,7 +728,7 @@ const Preview = () => {
                                             }}
                                             onClick={async ()=>{
                                                 if (CURRENT_WATCH_INDEX > 0) {
-                                                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_WATCH_ID}`);
+                                                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${CURRENT_WATCH_ID}`);
                                                 }else{
                                                     const watch_id = EPISODE_DATA?.[0]?.[0]?.id;
                                                     const watch_index = EPISODE_DATA?.[0]?.[0]?.index;
@@ -745,7 +746,7 @@ const Preview = () => {
                                                                 },
                                                             });
                                                         }
-                                                        navigate(`/watch/${source_id}/${preview_id}/${watch_id}`);
+                                                        navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}`);
                                                     }
                                                 }
                                                 

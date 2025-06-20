@@ -141,7 +141,7 @@ export const request_add_to_tag = async ({ tag_name, source_id, preview_id, titl
         source_id: string,
         preview_id: string,
         title: string,
-    }) => {
+}) => {
     // Validate the input
     if (!tag_name.match(/^[a-zA-Z0-9_][a-zA-Z0-9_ ]*$/)) {
         return { code: 500, message: `Invalid tag name format.` };

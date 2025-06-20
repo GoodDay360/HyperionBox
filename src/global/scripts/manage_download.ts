@@ -16,13 +16,14 @@ async function setup_table() {
         const createQuery = `
         CREATE TABLE download_task ( 
             source_id TEXT NOT NULL,
-            season_id INT DEFAULT 0,
             preview_id TEXT NOT NULL, 
+            season_id TEXT DEFAULT "0",
             title TEXT NOT NULL,
             watch_index INT NOT NULL,
             watch_id TEXT NOT NULL,
             quality INT NOT NULL,
-            server_type TEXT NOT NULL,
+            server_id TEXT DEFAULT "",
+            server_type TEXT DEFAULT "",
             type_schema INT NOT NULL,
             datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
             error INTEGER DEFAULT 0
@@ -39,14 +40,14 @@ export async function request_download_task(): Promise<{ code: number, data: any
     const query = `
         SELECT *
         FROM download_task
-        ORDER BY source_id, season_id, preview_id, watch_index, datetime DESC
+        ORDER BY source_id, preview_id, season_id, watch_index, datetime DESC
     `;
     const results: any[] = await db.select(query);
 
-    const request_result: { source_id: string, season_id: string, preview_id: string, quality: number, server_type:string, type_schema: string, data: { watch_index: number, watch_id: string, title: string, error: boolean }[] }[] = [];
+    const request_result: { source_id: string, preview_id: string, season_id: string, quality: number, server_type:string, type_schema: string, data: { watch_index: number, watch_id: string, title: string, error: boolean }[] }[] = [];
 
     results.forEach((result) => {
-        const existingItemIndex = request_result.findIndex((item) => item.source_id === result.source_id && item.season_id === result.season_id && item.preview_id === result.preview_id && item.type_schema === result.type_schema);
+        const existingItemIndex = request_result.findIndex((item) => item.source_id === result.source_id && item.preview_id === result.preview_id && item.season_id === result.season_id && item.type_schema === result.type_schema);
         if (existingItemIndex !== -1) {
             request_result[existingItemIndex].data.push({
                 watch_index: result.watch_index,
@@ -57,8 +58,8 @@ export async function request_download_task(): Promise<{ code: number, data: any
         } else {
             request_result.push({
                 source_id: result.source_id,
-                season_id: result.season_id,
                 preview_id: result.preview_id,
+                season_id: result.season_id,
                 quality: result.quality,
                 server_type: result.server_type,
                 type_schema: result.type_schema,
@@ -83,8 +84,8 @@ export async function request_download_task(): Promise<{ code: number, data: any
 
 export async function request_add_download_task({
     source_id,
-    season_id=0,
     preview_id,
+    season_id="0",
     title,
     watch_index,
     watch_id,
@@ -93,8 +94,8 @@ export async function request_add_download_task({
     type_schema
 }: {
     source_id: string,
-    season_id?: number,
     preview_id: string,
+    season_id?: string,
     title:string,
     watch_index:number,
     watch_id: string,
@@ -102,7 +103,7 @@ export async function request_add_download_task({
     server_type: string,
     type_schema: number
 }) {
-    if (type_schema === 2 && !season_id){
+    if (type_schema === 2 && season_id!=="0"){
         return { code: 422, message: "type_schema:2 require season_id!"};
     }
     await setup_table();
@@ -117,10 +118,10 @@ export async function request_add_download_task({
         return { code: 403, message: "Already Exist" };
     }
     const insertQuery = `
-        INSERT INTO download_task (source_id, season_id, preview_id, title, watch_index, watch_id, quality, server_type, type_schema)
+        INSERT INTO download_task (source_id, preview_id, season_id, title, watch_index, watch_id, quality, server_type, type_schema)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     `;
-    await db.execute(insertQuery, [source_id, season_id, preview_id, title, watch_index, watch_id, quality, server_type, type_schema]);
+    await db.execute(insertQuery, [source_id, preview_id, season_id, title, watch_index, watch_id, quality, server_type, type_schema]);
     return { code: 200, message: "Added successfully" };
 }
 
@@ -142,14 +143,14 @@ export async function request_current_task(): Promise<any> {
 
 export async function request_remove_download_task({
     source_id,
-    season_id=0,
     preview_id,
+    season_id="0",
     watch_id,
     clean=false,
 }: {
     source_id: string,
-    season_id?: number,
     preview_id: string,
+    season_id?: string,
     watch_id: string,
     clean?: boolean,
 }) {
@@ -157,12 +158,12 @@ export async function request_remove_download_task({
     const db = await Database.load(DATABASE_PATH);
     const deleteQuery = `
         DELETE FROM download_task
-        WHERE source_id = $1 AND season_id = $2 AND preview_id = $3 AND watch_id = $4
+        WHERE source_id = $1 AND preview_id = $2 AND season_id = $3 AND watch_id = $4
     `;
-    await db.execute(deleteQuery, [source_id, season_id, preview_id, watch_id]);
+    await db.execute(deleteQuery, [source_id, preview_id, season_id, watch_id]);
 
     if (clean){
-        const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", watch_id);
+        const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id);
         if (await exists(main_dir)) await remove(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
     }
     
@@ -173,14 +174,14 @@ export async function request_remove_download_task({
 
 export async function request_set_error_task({
     source_id,
-    season_id=0,
     preview_id,
+    season_id="0",
     watch_id,
     error=true
 }: {
     source_id: string,
-    season_id?: number,
     preview_id: string,
+    season_id?: string,
     watch_id: string,
     error?: boolean
 }) {
@@ -189,8 +190,8 @@ export async function request_set_error_task({
     const updateQuery = `
         UPDATE download_task
         SET error = $5
-        WHERE source_id = $1 AND season_id = $2 AND preview_id = $3 AND watch_id = $4
+        WHERE source_id = $1 AND preview_id = $2 AND season_id = $3 AND watch_id = $4
     `;
-    await db.execute(updateQuery, [source_id, season_id, preview_id, watch_id, error ? 1 : 0]);
+    await db.execute(updateQuery, [source_id, preview_id, season_id, watch_id, error ? 1 : 0]);
     return { code: 200, message: "Error set successfully" };
 }

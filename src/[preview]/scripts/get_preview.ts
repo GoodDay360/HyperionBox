@@ -36,10 +36,6 @@ const get_preview = async ({source_id,preview_id}:{source_id:string,preview_id:s
             resolve({ code: 500, message: e });
         });
 
-        // readTextFile(await path.join(await path.appDataDir(), "log", "extension", "get_preview_result.json"), {baseDir:BaseDirectory.AppData})
-        // .then((res) => {resolve(JSON.parse(res))})
-        // .catch((e) => {reject({ code: 500, message: e });});
-        
     })
 }
 

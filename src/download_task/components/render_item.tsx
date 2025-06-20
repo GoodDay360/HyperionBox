@@ -33,8 +33,8 @@ import styles from "../styles/render_item.module.css";
 
 const RenderItem = ({item, get_data}:any) => {
     const source_id = item.source_id;
-    const season_id = item.season_id;
     const preview_id = item.preview_id;
+    const season_id = item.season_id;
 
     console.log("PPP", item)
 
@@ -122,8 +122,8 @@ const RenderItem = ({item, get_data}:any) => {
                         <span className={styles.title}>{title??"?"}</span>
                         <>{(
                             task_info.source_id === source_id && 
-                            task_info.season_id === season_id &&
                             task_info.preview_id === preview_id) &&
+                            task_info.season_id === season_id &&
                             !pause_task
                             && <>
                                 <span className={styles.title}>Episode {task_info?.watch_index}: {task_info.watch_title}</span>
@@ -167,8 +167,8 @@ const RenderItem = ({item, get_data}:any) => {
                                         for (const item_data of ITEM_DATA){
                                             await request_remove_download_task({
                                                 source_id:source_id,
-                                                season_id:season_id,
                                                 preview_id:preview_id,
+                                                season_id:season_id,
                                                 watch_id:item_data.watch_id,
                                                 clean:true
                                             })
@@ -185,8 +185,8 @@ const RenderItem = ({item, get_data}:any) => {
                     }</>
                     <>{((ITEM_DATA.length > 0 && pause_task) || (ITEM_DATA.filter((item_data:any)=>!(
                         task_info?.source_id === source_id && 
-                        task_info?.season_id === season_id && 
                         task_info?.preview_id === preview_id && 
+                        task_info?.season_id === season_id && 
                         task_info?.watch_id == item_data.watch_id
                     )).length > 0)) &&
                         <ButtonBase 
@@ -220,8 +220,8 @@ const RenderItem = ({item, get_data}:any) => {
                         <Fragment key={index}>
                             {(pause_task || !(
                                 task_info?.source_id === source_id && 
-                                task_info?.season_id === season_id && 
                                 task_info?.preview_id === preview_id && 
+                                task_info?.season_id === season_id && 
                                 task_info?.watch_id == item_data.watch_id
                             )) &&
                                 <div className={styles.item_data_box}>
@@ -239,8 +239,8 @@ const RenderItem = ({item, get_data}:any) => {
                                                 set_allow_manage(false);
                                                 const request_result =await request_set_error_task({
                                                     source_id:source_id,
-                                                    season_id:season_id,
                                                     preview_id:preview_id,
+                                                    season_id:season_id,
                                                     watch_id:item_data.watch_id,
                                                     error:false,
                                                 })
@@ -261,8 +261,8 @@ const RenderItem = ({item, get_data}:any) => {
                                             set_allow_manage(false);
                                             const request_result = await request_remove_download_task({
                                                 source_id:source_id,
-                                                season_id:season_id,
                                                 preview_id:preview_id,
+                                                season_id:season_id,
                                                 watch_id:item_data.watch_id,
                                                 clean:true
                                             })

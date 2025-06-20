@@ -160,7 +160,7 @@ function App() {
 						<Route path="/download_task/*" element={<DownloadTask key={5}/>} />
 						
 						<Route path="/preview/:source_id/:preview_id" element={<Preview key={6}/>} />
-						<Route path="/watch/:source_id/:preview_id/:watch_id" element={<Watch key={7}/>} />
+						<Route path="/watch/:source_id/:preview_id/:season_id/:watch_id" element={<Watch key={7}/>} />
 						<Route path="/extension" element={<Extension key={8}/>} />
 						<Route path="/setting" element={<Setting key={9}/>} />
 					</Routes>

@@ -62,7 +62,7 @@ function Watch() {
     const navigate = useNavigate();
     const {app_ready} = useContext<any>(global_context);
     
-    const { source_id, preview_id, watch_id }:any = useParams();
+    const { source_id, preview_id, season_id, watch_id }:any = useParams();
     const [searchParams] = useSearchParams();
 
     const [is_online, set_is_online] = useState<boolean>(false);
@@ -75,6 +75,7 @@ function Watch() {
     const [current_page, set_current_page] = useState<number>(1);
 
     const [_, SET_SOURCE_INFO] = useState<any>({});
+    const [CURRENT_SEASON_ID, __] = useState<string>(season_id);
     const [SERVER_INFO, SET_SERVER_INFO] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");
@@ -239,7 +240,7 @@ function Watch() {
 
         useEffect(()=>{
             ;(async ()=>{
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id);
+                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id);
 
                 const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
 
@@ -296,7 +297,7 @@ function Watch() {
                 
                 onClick={async ()=>{
                     set_is_ready(false);
-                    navigate(`/watch/${source_id}/${preview_id}/${item.id}`, {replace: true});
+                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`, {replace: true});
                     const local_preview_result = await get_local_preview({source_id,preview_id});
                     if (local_preview_result.code === 200){
                         const data = local_preview_result.result
@@ -499,7 +500,7 @@ function Watch() {
                                                             }}
                                                             onClick={async ()=>{
                                                                 if (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) return;
-                                                                navigate(`/watch/${source_id}/${preview_id}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
+                                                                navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
                                                                 await get_data({
                                                                     watch_id,
                                                                     server_type,
@@ -567,7 +568,7 @@ function Watch() {
                                                             paddingRight:"calc((100vw + 100vh)*0.0575/2)",
                                                         }}
                                                         onClick={async ()=>{
-                                                            navigate(`/watch/${source_id}/${preview_id}/${watch_id}/`, { replace: true });
+                                                            navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/`, { replace: true });
                                                             await get_data({
                                                                 watch_id,
                                                                 check_local:false,

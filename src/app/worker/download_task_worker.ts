@@ -37,22 +37,22 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
             const data = request_current_task_result?.data;
             const type_schema = data.type_schema;
             const source_id = data.source_id;
-            const season_id = data.season_id;
             const preview_id = data.preview_id;
+            const season_id = data.season_id;
             const server_type = data.server_type;
             const quality = data.quality;
             const watch_id = data.watch_id;
             const watch_index = data.watch_index;
             const watch_title = data.title;
             
-            const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", watch_id)
+            const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id)
             const manifest_path = await path.join(main_dir, "manifest.json");
 
             if (await exists(manifest_path)) {
                 try{
                     JSON.parse(await readTextFile(manifest_path, {baseDir:BaseDirectory.AppData}));
-                    await write_crash_log(`[Download Task] ${source_id}->${season_id}->${preview_id}->${watch_id} already exist. Skipping...`);
-                    await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
+                    await write_crash_log(`[Download Task] ${source_id}->${preview_id}->${season_id}->${watch_id} already exist. Skipping...`);
+                    await request_remove_download_task({source_id, preview_id, season_id, watch_id: watch_id});
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     continue;
                 }catch(e){
@@ -60,7 +60,7 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 }
             }
 
-            download_task_info.current = {source_id,season_id,preview_id,watch_id,watch_index,watch_title};
+            download_task_info.current = {source_id,preview_id,season_id,watch_id,watch_index,watch_title};
             let retry = 0;
             let info_result:any;
 
@@ -75,7 +75,7 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                     console.log("aa", data.server_info.current_server_type , server_type)
                     if (data.server_info.current_server_type !== server_type) {
                         if (retry >= 3) {
-                            const message = `[Download Task] Error unable to find matching server type for ${source_id}->${season_id}->${preview_id}->${watch_id}`
+                            const message = `[Download Task] Error unable to find matching server type for ${source_id}->${preview_id}->${season_id}->${watch_id}`
                             await write_crash_log(message);
                             console.error(message);
                             info_result = {code:404, message};
@@ -141,10 +141,10 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 }
 
                 if (!prefer_source) {
-                    await write_crash_log(`[Download Task] There an issue finding prefer source: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                    await write_crash_log(`[Download Task] There an issue finding prefer source: ${source_id}->${preview_id}->${season_id}->${watch_id}`)
                     await write_crash_log(`[Download Task] Removing from download task->skipping...`)
-                    await request_set_error_task({source_id, season_id, preview_id, watch_id: watch_id, error: true});
-                    console.error(`[Download Task] There an issue finding prefer source: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                    await request_set_error_task({source_id, preview_id, season_id, watch_id: watch_id, error: true});
+                    console.error(`[Download Task] There an issue finding prefer source: ${source_id}->${preview_id}->${season_id}->${watch_id}`)
                     continue;
                 }
 
@@ -166,9 +166,9 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 }else if (start_download_result.code === 410){
                     continue;
                 }else{
-                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id}`)
                     await write_crash_log(`[Download Task] Removing from download task->skipping...`)
-                    await request_set_error_task({source_id, season_id, preview_id, watch_id: watch_id, error:true});
+                    await request_set_error_task({source_id, preview_id, season_id, watch_id: watch_id, error:true});
                     continue;
                 }
 
@@ -203,11 +203,11 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 
                 await writeTextFile(manifest_path, JSON.stringify(manifest), {baseDir:BaseDirectory.AppData}).catch(e=>{console.error("[Error] Write manifest: ",e)});
                 
-                await request_remove_download_task({source_id, season_id, preview_id, watch_id: watch_id});
+                await request_remove_download_task({source_id, preview_id, season_id, watch_id: watch_id});
             }else{
-                await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${season_id}->${preview_id}->${watch_id}`)
+                await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id}`)
                 await write_crash_log(`[Download Task] Removing from download task->skipping...`);
-                await request_set_error_task({source_id, season_id, preview_id, watch_id: watch_id, error:true});
+                await request_set_error_task({source_id, preview_id, season_id, watch_id: watch_id, error:true});
             }
             await new Promise(resolve => setTimeout(resolve, 1000));
         }else{

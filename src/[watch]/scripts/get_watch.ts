@@ -17,8 +17,8 @@ dayjs.extend(utc);
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 
-const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,check_local=true,force_update=false}:{
-    source_id:string,preview_id:string,
+const get_watch = async ({source_id,preview_id,season_id="0",watch_id,server_type,server_id,check_local=true,force_update=false}:{
+    source_id:string,preview_id:string,season_id?:string,
     watch_id:string,server_type:string|null,server_id:string|null,
     force_update?:boolean,check_local?:boolean
 }) => {
@@ -26,7 +26,7 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,ch
         try{
             // Load from local first
             if (check_local) {
-                const local_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, "download", watch_id, "manifest.json")
+                const local_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "manifest.json")
                 if (await exists(local_manifest_path)) {
                     try {
                         const manifest_data = JSON.parse(await readTextFile(local_manifest_path, {baseDir:BaseDirectory.AppData}));
@@ -59,11 +59,12 @@ const get_watch = async ({source_id,preview_id,watch_id,server_type,server_id,ch
             const body = {
                 "cache_dir": await path.join(await path.appDataDir(), ".cache"),
                 "method": "get_watch",
-                "source_id": source_id,
-                "preview_id": preview_id,
-                "watch_id": watch_id,
-                "server_type": server_type,
-                "server_id": server_id
+                source_id,
+                preview_id,
+                season_id,
+                watch_id,
+                server_type,
+                server_id
             }
             axios({
                 method: 'POST',

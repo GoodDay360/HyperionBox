@@ -11,8 +11,9 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 
-const open_external = async ({source_id,preview_id,watch_id}:{
+const open_external = async ({source_id,season_id="0",preview_id,watch_id}:{
     source_id:string,
+    season_id?:string,
     preview_id:string,
     watch_id:string
 }) => {
@@ -20,9 +21,10 @@ const open_external = async ({source_id,preview_id,watch_id}:{
         
         const port = sessionStorage.getItem("extension_port");
         const body = {
-            "source_id": source_id,
-            "preview_id": preview_id,
-            "watch_id": watch_id,
+            source_id,
+            season_id,
+            preview_id,
+            watch_id,
         }
         axios({
             method: 'POST',
