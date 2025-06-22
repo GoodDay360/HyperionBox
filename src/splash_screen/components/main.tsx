@@ -148,7 +148,7 @@ function Splash_Screen() {
             
             console.log("It here21")
             if (searchParams.get("relaunch") !== "yes" && (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0")){
-                setFeedback({text:`Initiating extension...`})
+                setFeedback({text:`Initializing extension...`})
                 const intiate_result = await initiate_extension();
                 if (intiate_result?.code !== 200) {
                     setFeedback({text:intiate_result.message,color:"red",type:"error"});
