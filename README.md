@@ -1,5 +1,5 @@
 # HyperionBox 
-[![Download](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/GoodDay360/HyperionBox/releases/latest) [<img src="https://github.com/GoodDay360/HyperionBox/blob/main/src/assets/images/icon.png?raw=true" align="right" title="HyperionBox" width="110" height="110"> ](https://github.com/GoodDay360/HyperionBox)
+[![Download](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/GoodDay360/HyperionBox/releases/latest)    [![Get it from the Snap Store](https://snapcraft.io/en/light/install.svg)](https://snapcraft.io/hyperionbox)    [<img src="https://github.com/GoodDay360/HyperionBox/blob/main/src/assets/images/icon.png?raw=true" align="right" title="HyperionBox" width="110" height="110"> ](https://github.com/GoodDay360/HyperionBox)
 
 An open-source anime and movie streaming desktop app that supports many sources through extensions.
 
