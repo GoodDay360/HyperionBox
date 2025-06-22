@@ -38,7 +38,7 @@ slots:
  single-instance:
    interface: dbus
    bus: session
-   name: org.hyperionbox.SingleInstance # Remember to change net_mydomain_MyApp to your app ID with "_" instead of "." and "-"
+   name: org_hyperionbox_SingleInstance # Remember to change net_mydomain_MyApp to your app ID with "_" instead of "." and "-"
 
 plugs:
   audio-playback:
@@ -46,7 +46,7 @@ plugs:
   single-instance-plug:
     interface: dbus
     bus: session
-    name: org.hyperionbox.SingleInstance # Remember to change net_mydomain_MyApp to your app ID with "_" instead of "." and "-"
+    name: org_hyperionbox_SingleInstance # Remember to change net_mydomain_MyApp to your app ID with "_" instead of "." and "-"
 
 package-repositories:
   - type: apt
