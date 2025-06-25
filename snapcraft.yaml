@@ -92,4 +92,4 @@ parts:
       npm install
       npm run tauri build -- --bundles deb
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
-      sed -i -e "s|Icon=hyperionbox|Icon=/usr/share/icons/hicolor/32x32/apps/hyperionbox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
+      sed -i -e "s|Icon=hyperionbox|Icon=/usr/share/icons/hicolor/256x256@2/apps/hyperionbox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
