@@ -8,6 +8,13 @@ description: |
 grade: stable
 confinement: strict
 
+architectures:
+  - build-on: amd64
+    build-for: amd64
+  - build-on: amd64
+    build-for: arm64
+
+
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1
@@ -85,4 +92,4 @@ parts:
       npm install
       npm run tauri build -- --bundles deb
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
-      sed -i -e "s|Icon=HyperionBox|Icon=/usr/share/icons/hicolor/32x32/apps/HyperionBox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
+      sed -i -e "s|Icon=hyperionbox|Icon=/usr/share/icons/hicolor/32x32/apps/hyperionbox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
