@@ -635,8 +635,6 @@ const Preview = () => {
                                         <InputLabel sx={{color:"var(--color)"}}>Watchlist</InputLabel>
                                         <Select
                                             sx={{color:"var(--color)", background:"var(--background-color-layer-1)"}}
-                                            labelId="demo-multiple-checkbox-label"
-                                            id="demo-multiple-checkbox"
                                             multiple
                                             value={selected_tag}
                                             onChange={(event:any)=>{

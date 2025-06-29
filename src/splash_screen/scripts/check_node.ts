@@ -57,32 +57,20 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
             await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
             return {code:500, message:result.stderr, at:"check_node.tsx -> excute_command -> extract"}
         };
+
+        const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
+        const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-v'));
+
+        const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
+
+
         if (await platform() === 'windows'){
-            const extract_response = await new Promise<any>(async (resolve,reject)=>{
-                const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
-                const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-v'));
-
-                const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
-                
-                await copy_recursive({src:extracted_node_dir, dest:extract_dir})
-                .catch((e)=>{
-                    reject({code:500, message:e})
-                    console.error("[Error] copy_recursive:", e);
-                })
-
-                await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
-                .catch((e)=>{
-                    reject({code:500, message:e})
-                    console.error("[Error] remove:", e);
-                })
-                resolve({code:200, message:"OK"})
-            })
-            if (extract_response.code !== 200) return extract_response;
+            const command = `robocopy . "${extract_dir}" /E /COPY:DATS /MT:3 /R:0 /W:0 /NFL /NDL`
+            const copy_result = await execute_command({title:"copy_recursive",command,cwd:extracted_node_dir})
+            if (copy_result.stderr) {
+                return {code: 500, message: copy_result.stderr}
+            }
         }else{
-            const entries = await readDir(extract_dir,{baseDir:BaseDirectory.AppData})
-            const node_folder_name:any = entries.find(entr => entr.name.startsWith('node-v'));
-
-            const extracted_node_dir = await path.join(extract_dir, node_folder_name.name);
             
             const copy_result = await execute_command({title:"copy_recursive",command:`cp -r . "${extract_dir}"`,cwd:extracted_node_dir})
             if (copy_result.stderr) {
@@ -94,15 +82,14 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
             if (execute_result.stderr) {
                 return {code:500, message:execute_result.stderr};
             }
-
             
-
-            await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
-            .catch((e)=>{
-                console.error("[Error] remove:", e);
-                return {code:500, message:e}
-            })
         }
+
+        await remove(extracted_node_dir,{baseDir:BaseDirectory.AppData, recursive:true})
+        .catch((e)=>{
+            console.error("[Error] remove:", e);
+            return {code:500, message:e}
+        })
 
         if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true})
         
