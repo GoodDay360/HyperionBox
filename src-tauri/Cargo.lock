@@ -2152,6 +2152,7 @@ dependencies = [
  "tauri-plugin-sql",
  "tauri-plugin-theme",
  "urlencoding",
+ "walkdir",
 ]
 
 [[package]]
