@@ -76,6 +76,7 @@ function Watch() {
 
     const [_, SET_SOURCE_INFO] = useState<any>({});
     const [CURRENT_SEASON_ID, __] = useState<string>(season_id);
+    const [CURRENT_SEASON_INDEX, ___] = useState<number>(0);
     const [SERVER_INFO, SET_SERVER_INFO] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");
@@ -174,7 +175,7 @@ function Watch() {
             
             if (get_watch_result.code === 200) {
                 const data = get_watch_result.result;
-
+                console.log("REQUEST RESULT", data);
                 SET_EPISODE_DATA(data.episodes);
                 SET_MEDIA_TRACK(data.media_info.track);
                 SET_MEDIA_TYPE(data.media_info.type);
@@ -584,8 +585,8 @@ function Watch() {
                                 </div>
                             </div>
                             <div className={styles.body_box_2}>
-                                <>{EPISODE_DATA?.length 
-                                    ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(
+                                <>{EPISODE_DATA?.length > 0
+                                    ? <>{EPISODE_DATA[CURRENT_SEASON_INDEX][current_page-1].map((item:any,index:number)=>(
                                         <RenderItem key={index} item={item}/>
                                     ))}</>
                                     : <></>
