@@ -90,6 +90,6 @@ parts:
       set -eu
       rustup default stable
       npm install
-      npm run tauri build -- --bundles deb --loglevel=error
+      npm --loglevel=error run tauri build -- --bundles deb 
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
       sed -i -e "s|Icon=hyperionbox|Icon=/usr/share/icons/hicolor/256x256@2/apps/hyperionbox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
