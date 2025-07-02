@@ -2,12 +2,11 @@
 
 
 // React Import
-import { useEffect, useState, useContext } from "react";
+import { useState, useContext } from "react";
 
 
 // MUI Imports
 import { Button, Tooltip } from '@mui/material';
-import CircularProgress from '@mui/material/CircularProgress';
 import TextField from '@mui/material/TextField';
 import Checkbox from '@mui/material/Checkbox';
 

@@ -3,32 +3,27 @@ import { invoke } from '@tauri-apps/api/core';
 import { path } from '@tauri-apps/api';
 
 // React Import
-import { useEffect, useState, useContext } from "react";
+import { useEffect } from "react";
 
 
 // MUI Imports
-import { Button, Tooltip } from '@mui/material';
-import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
+
 
 // MUI Icon Imports
-import HandymanRoundedIcon from '@mui/icons-material/HandymanRounded';
+
 
 // styles Import
 import styles from "../styles/main.module.css";
 
 // Custom Import
-import {  global_context } from "../../global/scripts/contexts";
-import { read_config, write_config } from "../../global/scripts/manage_config";
-import shutdown_extension from '../../global/scripts/shutdown_extension';
+
 
 
 
 const Storage = ({}:any) => {
     // const navigate = useNavigate();
 
-    const {set_menu} = useContext<any>(global_context)
+    // const {set_menu} = useContext<any>(global_context)
         
     useEffect(()=>{
         ;(async () => {

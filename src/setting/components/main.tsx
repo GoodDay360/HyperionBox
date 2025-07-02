@@ -6,20 +6,19 @@ import { useEffect, useState, useContext } from "react";
 
 
 // MUI Imports
-import { Button, Tooltip } from '@mui/material';
+import { Button} from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
+
 
 // MUI Icon Imports
-import HandymanRoundedIcon from '@mui/icons-material/HandymanRounded';
+
 
 // styles Import
 import styles from "../styles/main.module.css";
 
 // Custom Import
 import {  global_context } from "../../global/scripts/contexts";
-import { read_config, write_config } from "../../global/scripts/manage_config";
+import { read_config } from "../../global/scripts/manage_config";
 import shutdown_extension from '../../global/scripts/shutdown_extension';
 
 
