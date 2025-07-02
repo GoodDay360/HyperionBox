@@ -94,6 +94,7 @@ const Preview = () => {
     
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
     const [CURRENT_SEASON_ID, _] = useState<string>("0");
+    const [CURRENT_SEASON_INDEX, __] = useState<number>(0);
     const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
     const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
     const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
@@ -635,8 +636,6 @@ const Preview = () => {
                                         <InputLabel sx={{color:"var(--color)"}}>Watchlist</InputLabel>
                                         <Select
                                             sx={{color:"var(--color)", background:"var(--background-color-layer-1)"}}
-                                            labelId="demo-multiple-checkbox-label"
-                                            id="demo-multiple-checkbox"
                                             multiple
                                             value={selected_tag}
                                             onChange={(event:any)=>{
@@ -730,8 +729,8 @@ const Preview = () => {
                                                 if (CURRENT_WATCH_INDEX > 0) {
                                                     navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${CURRENT_WATCH_ID}`);
                                                 }else{
-                                                    const watch_id = EPISODE_DATA?.[0]?.[0]?.id;
-                                                    const watch_index = EPISODE_DATA?.[0]?.[0]?.index;
+                                                    const watch_id = EPISODE_DATA?.[0]?.[0]?.[0]?.id;
+                                                    const watch_index = EPISODE_DATA?.[0]?.[0]?.[0]?.index;
                                                     if (watch_id && watch_index) {
                                                         set_is_ready(false);
                                                         const local_preview_result = await get_local_preview({source_id,preview_id});
@@ -824,6 +823,7 @@ const Preview = () => {
                                         gap:"8px",
                                     }}
                                 >
+                                    
                                     <>{Object.keys(INFO).map((item_key:string,index:number)=>(<Fragment key={index}>
                                         {!["cover","local_cover","description", "title"].includes(item_key) && (
                                             <span
@@ -886,8 +886,9 @@ const Preview = () => {
                                         </Tooltip>
                                     </div>
                                 }</>
-                                <>{EPISODE_DATA?.length 
-                                    ? <>{EPISODE_DATA[current_page-1].map((item:any,index:number)=>(
+                                
+                                <>{EPISODE_DATA?.length > 0
+                                    ? <>{EPISODE_DATA[CURRENT_SEASON_INDEX][current_page-1].map((item:any,index:number)=>(
                                         <EPISODE_COMPONENT key={index} item={item}/>
                                     ))}</>
                                     : <></>

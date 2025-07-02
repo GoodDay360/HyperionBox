@@ -6,6 +6,8 @@ import { useSearchParams } from 'react-router';
 // Tauri Plugins
 import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/window"
 import { platform, arch } from '@tauri-apps/plugin-os';
+import { path } from '@tauri-apps/api';
+import { exists, BaseDirectory, remove } from '@tauri-apps/plugin-fs';
 
 // Material UI 
 import LinearProgress from '@mui/material/LinearProgress';
@@ -78,7 +80,7 @@ function Splash_Screen() {
 
             if (is_online){
                 
-                if ((await platform() === "windows") && (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_APP_VERIFICATION === "0"))){
+                if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_APP_VERIFICATION === "0")){
                     setFeedback({text:"Checking update..."});
                     const check_update_result = await check_update({setFeedback, setProgress});
                     if (check_update_result?.code !== 200) {
@@ -146,7 +148,7 @@ function Splash_Screen() {
                 }
             }
             
-            console.log("It here21")
+            
             if (searchParams.get("relaunch") !== "yes" && (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_INITIATE_EXTENSION === "0")){
                 setFeedback({text:`Initializing extension...`})
                 const intiate_result = await initiate_extension();
@@ -156,7 +158,12 @@ function Splash_Screen() {
                 }
                 
             }
-            console.log("It here22")
+            
+            setFeedback({text:"Cleaning up cache..."});
+            const cache_dir = await path.join(await path.appDataDir(), ".cache");
+            if (await exists(cache_dir, {baseDir:BaseDirectory.AppData})) {
+                await remove(cache_dir, {recursive:true, baseDir:BaseDirectory.AppData}).catch(e=>{console.error(`[Error] At cleaning up cache: ${e}`)});
+            }
 
             setFeedback({text:"Launching..."});
             window.setMaximizable(true);

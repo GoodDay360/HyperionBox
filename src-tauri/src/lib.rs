@@ -1,11 +1,34 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 use tauri::Manager;
-
+use std::fs;
+use walkdir::WalkDir;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
+
+#[tauri::command]
+fn get_folder_size(path: String) -> Result<u64, String> {
+    let walker = WalkDir::new(&path)
+        .into_iter()
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| format!("Failed to walk directory: {}", e))?;
+
+    let size = walker
+        .iter()
+        .filter_map(|entry| {
+            fs::metadata(entry.path())
+                .map_err(|e| println!("Error reading metadata: {}", e))
+                .ok()
+        })
+        .filter(|m| m.is_file())
+        .map(|m| m.len())
+        .sum();
+
+    Ok(size)
+}
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -26,7 +49,9 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            greet, get_folder_size
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

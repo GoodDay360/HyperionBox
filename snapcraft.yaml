@@ -1,6 +1,6 @@
 name: hyperionbox
 base: core22
-version: '1.1.0'
+version: '1.1.2'
 summary: An open-source anime and movie streaming desktop app. # 79 char long summary
 description: |
   An open-source anime and movie streaming desktop app that support watch progress and download for many sources.
@@ -39,6 +39,7 @@ apps:
     environment:
       GST_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gstreamer-1.0
       TMPDIR: $SNAP_USER_COMMON/tmp
+      WEBKIT_DISABLE_COMPOSITING_MODE: 1
 # Add these lines only if you're using the single-instance plugin
 # Check https://v2.tauri.app/plugin/single-instance/ for details
 slots:
@@ -90,6 +91,6 @@ parts:
       set -eu
       rustup default stable
       npm install
-      npm run tauri build -- --bundles deb
+      npm run tauri build -- --bundles deb 
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
       sed -i -e "s|Icon=hyperionbox|Icon=/usr/share/icons/hicolor/256x256@2/apps/hyperionbox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop

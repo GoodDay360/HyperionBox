@@ -108,14 +108,6 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 
                 const new_local_source:any = []
 
-                // const prefer_quality = QUALITY_LIST[quality-1];
-
-                // let prefer_source_index = 0;
-                // for (const source of watch_data.media_info.source){
-                //     if (prefer_quality >= source.quality){
-                //         prefer_source_index++;
-                //     }
-                // }
                 
                 let prefer_source:any = null;
 

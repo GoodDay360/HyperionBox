@@ -62,7 +62,8 @@ function App() {
 	const [fullscreen_snackbar, set_fullscreen_snackbar] = useState<any>({});
 	const [menu, set_menu] = useState<any>({state:false,path:""});
 
-	const [app_ready, set_app_ready ] = useState<boolean>(false);
+	const [app_ready, set_app_ready] = useState<boolean>(false);
+	const [allow_use_app, set_allow_use_app] = useState<boolean>(true);
 
 	const pause_download_task = useRef<boolean>(false);
 	const download_task_info = useRef<any>({});
@@ -101,6 +102,7 @@ function App() {
 			value={{
 				...{fullscreen_snackbar, set_fullscreen_snackbar},
 				...{app_ready, set_app_ready},
+				...{allow_use_app, set_allow_use_app},
 				...{menu, set_menu},
 			}}
 		>
@@ -109,7 +111,7 @@ function App() {
 							...{pause_download_task, download_task_info,download_task_progress},
 						}}
 					>
-				<div className={styles.container}>
+				<div className={styles.container} style={{pointerEvents: allow_use_app ? "all" : "none"}}>
 					<>{menu.state &&
 						<div className={styles.menu_container}>
 							<div className={styles.menu}>
