@@ -3,7 +3,7 @@ import { path } from '@tauri-apps/api';
 import { BaseDirectory, exists, mkdir, readFile} from '@tauri-apps/plugin-fs';
 import { Window } from "@tauri-apps/api/window";
 import { openPath } from '@tauri-apps/plugin-opener';
-import { ask } from '@tauri-apps/plugin-dialog';
+import { ask, message } from '@tauri-apps/plugin-dialog';
 import { platform, arch } from '@tauri-apps/plugin-os';
 import { getVersion } from '@tauri-apps/api/app';
 
@@ -45,14 +45,20 @@ const check_update = async ({ setFeedback, setProgress}:any) => {
             if (semver.eq(current_version, version)) {
                 return {code:200, message:"No update available."};
             }else{
-                const answer = await ask(`There is new version available. Update now?\n\nCurrent Version: ${current_version}\nAvailable Version: ${version}`, {
-                    title: 'HyperionBox Updater',
-                    kind: 'info',
-                });
-                if (!answer) {
-                    return {code:200, message:"Skip update."};
+                if (await platform() === "windows"){
+                    const answer = await ask(`There is new version available. Update now?\n\nCurrent Version: ${current_version}\nAvailable Version: ${version}`, {
+                        title: 'HyperionBox Updater',
+                        kind: 'info',
+                    });
+                    if (!answer) {
+                        return {code:200, message:"Skip update."};
+                    }
+                }else{
+                    await message(`There is new version available.\nIt is recommended to update to the latest version.\n\nCurrent Version: ${current_version}\nAvailable Version: ${version}`, {
+                        title: 'HyperionBox Updater',
+                        kind: 'info',
+                    });
                 }
-                
             }
         }
         

@@ -80,7 +80,7 @@ function Splash_Screen() {
 
             if (is_online){
                 
-                if ((await platform() === "windows") && (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_APP_VERIFICATION === "0"))){
+                if (!import.meta.env.DEV || (import.meta.env.VITE_DEV_SKIP_APP_VERIFICATION === "0")){
                     setFeedback({text:"Checking update..."});
                     const check_update_result = await check_update({setFeedback, setProgress});
                     if (check_update_result?.code !== 200) {
