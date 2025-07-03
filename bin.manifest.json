@@ -51,7 +51,6 @@
         "windows": {
             "x86_64": {
                 "url": "https://ftp.mozilla.org/pub/firefox/releases/140.0.2/win64/en-US/Firefox%20Setup%20140.0.2.exe",
-
                 "version": "140.0.2"
             }
         }
