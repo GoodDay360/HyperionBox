@@ -1,6 +1,7 @@
 // Tauri Plugins
 import { path } from '@tauri-apps/api';
 import { exists, remove, BaseDirectory, mkdir } from '@tauri-apps/plugin-fs';
+import { platform } from '@tauri-apps/plugin-os';
 
 // Custom Imports
 import { add_source } from "../../global/scripts/manage_extension";
@@ -42,7 +43,13 @@ const install_source = async ({id,url,domain,icon,title,description,version}
 
     await download_file_in_chunks({url:url, output_file: zip_file})
     
-    const command = `"${path_7z}" x "${zip_file}" -o"${sources_dir}" -aoa -md=32m -mmt=3`
+    let command
+
+    if (await platform() === "windows") {
+        command = `& "${path_7z}" x "${zip_file}" -o"${sources_dir}" -aoa -md=32m -mmt=3`
+    }else{
+        command = `"${path_7z}" x "${zip_file}" -o"${sources_dir}" -aoa -md=32m -mmt=3`
+    }
 
     const result = await execute_command({title:"extract_source",command:command})
     if (result.stderr) {
