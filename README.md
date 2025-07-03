@@ -3,8 +3,9 @@
 
 [![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/hyperionbox)
 
-An open-source anime and movie streaming desktop app that supports many sources through extensions.
+[![Join Our Discord](https://img.shields.io/badge/Join-Discord-5865F2?logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/TkArvnVvNG)
 
+An open-source anime and movie streaming desktop app that supports many sources through extensions.
 
 ## ✨ Features
 - 🎬 **Stream anime and movies** seamlessly from various sources.
