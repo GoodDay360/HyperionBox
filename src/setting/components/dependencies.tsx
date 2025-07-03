@@ -77,16 +77,16 @@ const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
 
                 <div className={styles.item_box}>
                     <TextField label="Puppeeteer Browser Path" variant="outlined" focused
-                        placeholder={CONFIG_MANIFEST?.bin?.browser_path}
+                        placeholder={CONFIG_MANIFEST?.bin?.browser?.path}
                         sx={{
                             flex:1,
                             input: { color: 'var(--color)'}, 
                             textField: {color: 'var(--color)'},
                             label:{color: 'var(--color)'}
                         }}
-                        value={CONFIG_MANIFEST?.bin?.browser_path}
+                        value={CONFIG_MANIFEST?.bin?.browser?.path}
                         onChange={(e)=>{
-                            SET_CONFIG_MANIFEST({...CONFIG_MANIFEST,bin:{...CONFIG_MANIFEST.bin,browser_path:e.target.value}})
+                            SET_CONFIG_MANIFEST({...CONFIG_MANIFEST,bin:{...CONFIG_MANIFEST.bin,browser:{state: e.target.value?true:false, path:e.target.value}}})
                         }}
                     />
                     <div className={styles.check_box_frame}>
@@ -108,16 +108,21 @@ const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
                             const config = await read_config();
                             if (!config.bin || !Object.keys(config.bin)) config.bin = {}
 
-                            config.bin.browser_path = CONFIG_MANIFEST?.bin?.browser_path;
-
+                            if (config.bin.browser?.state) {
+                                config.bin.browser.path = CONFIG_MANIFEST?.bin?.browser.path;
+                            }
+                            
                             if (repair?.["7z"]){
                                 delete config?.bin?.["7z"];
-                            }else if (repair?.["node"]){
+                            }
+                            if (repair?.["node"]){
                                 delete config?.bin?.["node"];
-                            }else if (repair?.["extension-package"]){
+                            }
+                            if (repair?.["extension-package"]){
                                 delete config?.bin?.["extension-package"];
-                            }else if (repair?.["browser_path"]){
-                                delete config?.bin?.["browser_path"]
+                            }
+                            if (repair?.["browser"]){
+                                delete config?.bin?.["browser"]
                             }
                             await write_config(config);
                             await shutdown_extension();
