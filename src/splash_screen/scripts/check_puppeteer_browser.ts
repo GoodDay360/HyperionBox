@@ -14,7 +14,8 @@ const check_puppeteer_browser = async ({setFeedback}:any) => {
         let command
         if (await platform() === "windows") {
             command = [
-                `SET PATH="${node_dir}";%PATH%`, "\n",
+                `$NODE_DIR = "$env:${node_dir}"`, "\n",
+                `$env:PATH = "$NODE_DIR;$env:PATH"`, "\n",
                 `npx @puppeteer/browsers install firefox@stable`
             ].join(" ")
         }else{

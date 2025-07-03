@@ -74,7 +74,8 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
         let command
         if (await platform() === "windows") {
             command = [
-                `SET PATH="${node_dir}";%PATH%`, "\n",
+                `$NODE_DIR = "$env:${node_dir}"`, "\n",
+                `$env:PATH = "$NODE_DIR;$env:PATH"`, "\n",
                 `npm install --loglevel=error`
             ].join(" ")
         }else{
