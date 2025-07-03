@@ -28,7 +28,7 @@ import check_update from '../scripts/check_update';
 import check_node from '../scripts/check_node';
 import check_7z from '../scripts/check_7z';
 import check_extension_package from '../scripts/check_extension_package';
-import check_puppeteer_browser from '../scripts/check_puppeteer_browser';
+import check_browser from '../scripts/check_browser';
 import initiate_extension from '../scripts/initiate_extension';
 
 import { read_config, write_config } from '../../global/scripts/manage_config';
@@ -76,6 +76,7 @@ function Splash_Screen() {
                 // {"ffmpeg": check_ffmpeg},
                 // {"yt-dlp": check_yt_dlp},
                 {"extension-package": check_extension_package},
+                {"browser": check_browser},
             ]
 
             if (is_online){
@@ -105,12 +106,15 @@ function Splash_Screen() {
                     for (const item of check_bin){
                         const key = Object.keys(item)[0]
                         const callable:any = item[key]
-                        const availbe_version = manifest_data?.[key]?.version ||manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
+                        const availbe_version = manifest_data?.[key]?.version || manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
+                        
                         if (!config.bin[key]?.state || !semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
                             const result = await callable({manifest:manifest_data,setFeedback,setProgress});
                             
                             if (result?.code === 200) {
-                                config.bin[key] = {state:true,version:availbe_version};
+                                console.log(key, manifest_data)
+                                config.bin[key] = {state:true, version:availbe_version};
+                                if (key === "browser") config.bin[key].path = result.browser_path;
                                 await write_config(config)
 
                             }else{
@@ -120,20 +124,22 @@ function Splash_Screen() {
 
                             }
                         }
+                        
                         setFeedback({text:`Download ${key} successfully.`})
                     }
 
-                    if (!config?.bin?.browser_path){
-                        const check_puppeteer_browser_result:any = await check_puppeteer_browser({config, setFeedback});
-                        if (check_puppeteer_browser_result.code === 200) {
-                            config.bin.browser_path = check_puppeteer_browser_result.browser_path;
-                            await write_config(config)
-                        }else{
-                            console.error(check_puppeteer_browser_result)
-                            setFeedback({text:`Error downloading puppeteer browser`,color:"red",type:"error"})
-                            return;
-                        }
-                    }
+                    // Check Browser
+                    // if (!config?.bin?.browser_path){
+                    //     const check_browser_result:any = await check_browser({config, setFeedback});
+                    //     if (check_browser_result.code === 200) {
+                    //         config.bin.browser_path = check_browser_result.browser_path;
+                    //         await write_config(config)
+                    //     }else{
+                    //         console.error(check_browser_result)
+                    //         setFeedback({text:`Error downloading puppeteer browser`,color:"red",type:"error"})
+                    //         return;
+                    //     }
+                    // }
                 }
             }else{
                 for (const item of check_bin){

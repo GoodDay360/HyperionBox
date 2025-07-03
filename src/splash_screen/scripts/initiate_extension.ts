@@ -53,7 +53,7 @@ const initiate_extension = async () => {
             `& node`, `"${route_path}"`,
             "--log_path", `"${log_path}"`,
             "--port", `"${config.exstension_port}"`,
-            "--browser_path", `"${config.bin.browser_path}"`
+            "--browser_path", `"${config.bin.browser.path}"`
         ].join(" ")
         
     }else{
