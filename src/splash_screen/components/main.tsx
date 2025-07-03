@@ -108,13 +108,36 @@ function Splash_Screen() {
                         const callable:any = item[key]
                         const availbe_version = manifest_data?.[key]?.version || manifest_data?.[key]?.[await platform()]?.[await arch()]?.version
                         
-                        if (!config.bin[key]?.state || !semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
+                        const windows_no_need_version_check_keys:string[] = []
+                        const linux_no_need_version_check_keys = ["browser"]
+
+                        let need_install = false
+
+                        if (config.bin[key]?.state){
+                            if (await platform() === "windows" && !windows_no_need_version_check_keys.includes(key)){
+                                if (!semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
+                                    need_install = true
+                                }
+                            }else if (await platform() === "linux" && !linux_no_need_version_check_keys.includes(key)){
+                                if (!semver.valid(config.bin[key]?.version) || semver.lt(config.bin[key]?.version, availbe_version)){
+                                    need_install = true
+                                }
+                            }
+                        }else{
+                            need_install = true
+                        }
+
+                        if (need_install){
                             const result = await callable({manifest:manifest_data,setFeedback,setProgress});
-                            
                             if (result?.code === 200) {
                                 console.log(key, manifest_data)
                                 config.bin[key] = {state:true, version:availbe_version};
-                                if (key === "browser") config.bin[key].path = result.browser_path;
+                                if (key === "browser") {
+                                    config.bin[key].path = result.browser_path
+                                    if (await platform() !== "windows"){
+                                        delete config.bin[key].version
+                                    }
+                                };
                                 await write_config(config)
 
                             }else{
@@ -123,9 +146,10 @@ function Splash_Screen() {
                                 return;
 
                             }
+                            setFeedback({text:`Download ${key} successfully.`})
                         }
                         
-                        setFeedback({text:`Download ${key} successfully.`})
+                        
                     }
 
                     // Check Browser
