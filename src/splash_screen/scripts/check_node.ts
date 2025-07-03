@@ -6,6 +6,7 @@ import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-a
 import get_7z_path from '../../global/scripts/get_7z_path';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
 import execute_command from '../../global/scripts/execute_command';
+import write_crash_log from '../../global/scripts/write_crash_log';
 
 const chunkSize = 6 * 1024 * 1024; 
 
@@ -55,6 +56,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         const result = await execute_command({title:"extract",command:command})
         if (result.stderr) {
             await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
+            await write_crash_log(`[check_node.tsx -> excute_command -> extract]: ${result.stderr}`);
             return {code:500, message:result.stderr, at:"check_node.tsx -> excute_command -> extract"}
         };
 

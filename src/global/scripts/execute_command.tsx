@@ -24,7 +24,7 @@ const execute_command: any = async ({
 
 	if (plat === "windows") {
 		script_path = await path.join(executor_dir, `${title}.bat`);
-		await writeTextFile(script_path, command, {
+		await writeTextFile(script_path, `chcp 65001 >nul\n${command}`, {
 			baseDir: BaseDirectory.AppData,
 			create: true
 		}).catch(console.error);
