@@ -43,17 +43,19 @@ const initiate_extension = async () => {
     if (await exists(log_path)) await remove(log_path, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
     const route_path = await path.join(extension_directory, "route.js");
     
-   
+    
     const node_dir = await get_node_dir;
     let command
     if (await platform() === "windows") {
         command = [
-            `SET PATH="${node_dir}";%PATH%`, "\n",
-            `node`, `"${route_path}"`,
+            `$NODE_DIR = "$env:${node_dir}"`, "\n",
+            `$env:PATH = "$NODE_DIR;$env:PATH"`, "\n",
+            `& node`, `"${route_path}"`,
             "--log_path", `"${log_path}"`,
             "--port", `"${config.exstension_port}"`,
-            "--browser_path", `"${config.bin.browser_path}"`
+            "--browser_path", `"${config.bin.browser.path}"`
         ].join(" ")
+        
     }else{
         command = [
             `export PATH="${node_dir}:$PATH"`, '&&',

@@ -23,8 +23,8 @@ const execute_command: any = async ({
 	}).catch(console.error);
 
 	if (plat === "windows") {
-		script_path = await path.join(executor_dir, `${title}.bat`);
-		await writeTextFile(script_path, command, {
+		script_path = await path.join(executor_dir, `${title}.ps1`);
+		await writeTextFile(script_path, "\uFEFF"+command, {
 			baseDir: BaseDirectory.AppData,
 			create: true
 		}).catch(console.error);
@@ -35,10 +35,10 @@ const execute_command: any = async ({
 		shell_command = command;
 	}
 
-	const shellArg = plat === "windows" ? "/c" : "-c";
-
+	const shellArg = plat === "windows" ? ["-ExecutionPolicy", "Bypass", " -File"] : ["-c"];
+	console.log([...shellArg, shell_command]);
 	if (wait) {
-		const result = await Command.create(system_shell, [shellArg, shell_command], {
+		const result = await Command.create(system_shell, [...shellArg, shell_command], {
 			cwd: workspace
 		}).execute();
 
@@ -49,7 +49,7 @@ const execute_command: any = async ({
 		if (result.stderr.trim()) console.error(result.stderr);
 		return result;
 	} else {
-		const result = await Command.create(system_shell, [shellArg, shell_command], {
+		const result = await Command.create(system_shell, [...shellArg, shell_command], {
 			cwd: workspace
 		});
 

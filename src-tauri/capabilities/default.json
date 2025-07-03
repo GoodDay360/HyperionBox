@@ -35,9 +35,9 @@
       "allow": [
         {
           "name": "windows-shell",
-          "cmd": "cmd.exe",
+          "cmd": "powershell.exe",
           "args": [
-            "/S /C",
+            "-ExecutionPolicy", "Bypass", " -File",
             {"validator": "^.*$"}
           ]
         },
@@ -56,9 +56,9 @@
       "allow": [
         {
           "name": "windows-shell",
-          "cmd": "cmd.exe",
+          "cmd": "powershell.exe",
           "args": [
-            "/S /C",
+            "-ExecutionPolicy", "Bypass", " -File",
             {"validator": "^.*$"}
           ]
         },

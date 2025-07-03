@@ -6,6 +6,7 @@ import { BaseDirectory, readDir, exists, remove, mkdir, readFile} from '@tauri-a
 import get_7z_path from '../../global/scripts/get_7z_path';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
 import execute_command from '../../global/scripts/execute_command';
+import write_crash_log from '../../global/scripts/write_crash_log';
 
 const chunkSize = 6 * 1024 * 1024; 
 
@@ -47,13 +48,15 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         const bin_dir = await path.join(await path.appDataDir(),"bin")
         const extract_dir = await path.join(bin_dir,"node")
         if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
+        await mkdir(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
         const command = await platform() === 'windows'
-        ? `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa`
+        ? `& "${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa`
         : `"${path_7z}" x "${output_file}" -so | "${path_7z}" x -aoa -si -ttar -o"${extract_dir}"`;
         const result = await execute_command({title:"extract",command:command})
         if (result.stderr) {
             await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
+            await write_crash_log(`[check_node.tsx -> excute_command -> extract]: ${result.stderr}`);
             return {code:500, message:result.stderr, at:"check_node.tsx -> excute_command -> extract"}
         };
 
@@ -64,15 +67,19 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
 
 
         if (await platform() === 'windows'){
-            const command = `robocopy . "${extract_dir}" /E /COPY:DATS /MT:3 /R:0 /W:0 /NFL /NDL`
+            const command = `& robocopy . "${extract_dir}" /E /COPY:DATS /MT:3 /R:0 /W:0 /NFL /NDL`
             const copy_result = await execute_command({title:"copy_recursive",command,cwd:extracted_node_dir})
             if (copy_result.stderr) {
+                await write_crash_log(`[check_node.tsx -> excute_command -> copy_recursive]: ${copy_result.stderr}`);
+                console.error("[check_node.tsx -> excute_command -> copy_recursive]: ", copy_result.stderr);
                 return {code: 500, message: copy_result.stderr}
             }
         }else{
             
             const copy_result = await execute_command({title:"copy_recursive",command:`cp -r . "${extract_dir}"`,cwd:extracted_node_dir})
             if (copy_result.stderr) {
+                await write_crash_log(`[check_node.tsx -> excute_command -> copy_recursive]: ${copy_result.stderr}`)
+                console.error("[check_node.tsx -> excute_command -> copy_recursive]: ", copy_result.stderr);
                 return {code: 500, message: copy_result.stderr}
             }
 

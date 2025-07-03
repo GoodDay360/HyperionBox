@@ -46,5 +46,14 @@
     "extension-package":{
         "url": "https://github.com/GoodDay360/HyperionBox-Extensions/releases/download/Package/Package-Latest.zip",
         "version": "1.1.2"
+    },
+    "browser":{
+        "windows": {
+            "x86_64": {
+                "url": "https://ftp.mozilla.org/pub/firefox/releases/140.0.2/win64/en-US/Firefox%20Setup%20140.0.2.exe",
+
+                "version": "140.0.2"
+            }
+        }
     }
 }
