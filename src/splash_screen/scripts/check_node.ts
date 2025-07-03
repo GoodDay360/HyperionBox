@@ -47,6 +47,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         const bin_dir = await path.join(await path.appDataDir(),"bin")
         const extract_dir = await path.join(bin_dir,"node")
         if (await exists(extract_dir)) await remove(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
+        await mkdir(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
         const command = await platform() === 'windows'
         ? `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa`
