@@ -83,7 +83,7 @@ const check_browser = async ({manifest, setFeedback, setProgress}:any) => {
             };
 
 
-            // if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true});
+            if (await exists(output_file)) await remove(output_file, {baseDir:BaseDirectory.Temp, recursive:true});
 
             if (await exists(await path.join(extract_dir, "setup.exe"))) await remove(await path.join(extract_dir, "setup.exe"), {baseDir:BaseDirectory.AppData, recursive:true});
 
