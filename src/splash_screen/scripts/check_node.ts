@@ -51,7 +51,7 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
         await mkdir(extract_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)})
 
         const command = await platform() === 'windows'
-        ? `"${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa`
+        ? `& "${path_7z}" x "${output_file}" -o"${extract_dir}" -ir!node-v*/ -aoa`
         : `"${path_7z}" x "${output_file}" -so | "${path_7z}" x -aoa -si -ttar -o"${extract_dir}"`;
         const result = await execute_command({title:"extract",command:command})
         if (result.stderr) {
@@ -67,15 +67,19 @@ const check_node = async ({manifest, setFeedback, setProgress}:any) => {
 
 
         if (await platform() === 'windows'){
-            const command = `robocopy . "${extract_dir}" /E /COPY:DATS /MT:3 /R:0 /W:0 /NFL /NDL`
+            const command = `& robocopy . "${extract_dir}" /E /COPY:DATS /MT:3 /R:0 /W:0 /NFL /NDL`
             const copy_result = await execute_command({title:"copy_recursive",command,cwd:extracted_node_dir})
             if (copy_result.stderr) {
+                await write_crash_log(`[check_node.tsx -> excute_command -> copy_recursive]: ${copy_result.stderr}`);
+                console.error("[check_node.tsx -> excute_command -> copy_recursive]: ", copy_result.stderr);
                 return {code: 500, message: copy_result.stderr}
             }
         }else{
             
             const copy_result = await execute_command({title:"copy_recursive",command:`cp -r . "${extract_dir}"`,cwd:extracted_node_dir})
             if (copy_result.stderr) {
+                await write_crash_log(`[check_node.tsx -> excute_command -> copy_recursive]: ${copy_result.stderr}`)
+                console.error("[check_node.tsx -> excute_command -> copy_recursive]: ", copy_result.stderr);
                 return {code: 500, message: copy_result.stderr}
             }
 

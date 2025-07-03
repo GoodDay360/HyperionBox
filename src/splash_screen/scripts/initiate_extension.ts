@@ -50,7 +50,7 @@ const initiate_extension = async () => {
         command = [
             `$NODE_DIR = "$env:${node_dir}"`, "\n",
             `$env:PATH = "$NODE_DIR;$env:PATH"`, "\n",
-            `node`, `"${route_path}"`,
+            `& node`, `"${route_path}"`,
             "--log_path", `"${log_path}"`,
             "--port", `"${config.exstension_port}"`,
             "--browser_path", `"${config.bin.browser_path}"`

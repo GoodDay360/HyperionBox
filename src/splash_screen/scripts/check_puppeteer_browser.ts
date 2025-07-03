@@ -16,10 +16,10 @@ const check_puppeteer_browser = async ({setFeedback}:any) => {
             command = [
                 `$NODE_DIR = "$env:${node_dir}"`, "\n",
                 `$env:PATH = "$NODE_DIR;$env:PATH"`, "\n",
-                `npx @puppeteer/browsers install firefox@stable`
+                `& npx @puppeteer/browsers install firefox@stable`
             ].join(" ")
         }else{
-            // Require `gstreamer1.0-plugins-bad gstreamer1.0-plugins-good gstreamer1.0-libav`
+            
 
             command = [
                 `export PATH="${node_dir}:$PATH"`, '&&',

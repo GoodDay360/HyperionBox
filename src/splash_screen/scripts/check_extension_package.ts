@@ -59,7 +59,13 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
         setFeedback({text:"Extracting extension_package..."})
         const path_7z = await get_7z_path;
         
-        const extract_command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -aoa -md=32m -mmt=3`
+        let extract_command
+        if (await platform() === "windows") {
+            extract_command = `& "${path_7z}" x "${output_file}" -o"${extract_dir}" -aoa -md=32m -mmt=3`
+        }else{
+            extract_command = `"${path_7z}" x "${output_file}" -o"${extract_dir}" -aoa -md=32m -mmt=3`
+        }
+        
         const result = await execute_command({title:"extract",command:extract_command})
 
 
@@ -76,7 +82,7 @@ const check_extension_package = async ({manifest, setFeedback, setProgress}:any)
             command = [
                 `$NODE_DIR = "$env:${node_dir}"`, "\n",
                 `$env:PATH = "$NODE_DIR;$env:PATH"`, "\n",
-                `npm install --loglevel=error`
+                `& npm install --loglevel=error`
             ].join(" ")
         }else{
             command = [
