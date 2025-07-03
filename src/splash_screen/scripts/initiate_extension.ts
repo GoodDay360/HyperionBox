@@ -70,7 +70,7 @@ const initiate_extension = async () => {
     await execute_command({command:command, title:"initiate_extension",wait:false},{cwd:extension_directory});
 
     // Waiting for extension to load before continous
-    const max_check = 30
+    const max_check = 180
     let current_check = 0;
     const get_port = () => new Promise(async (resolve) => {
         if (current_check >= max_check) {
