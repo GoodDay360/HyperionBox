@@ -36,7 +36,7 @@ const RenderItem = ({item, get_data}:any) => {
     const preview_id = item.preview_id;
     const season_id = item.season_id;
 
-    console.log("PPP", item)
+    
 
     const navigate = useNavigate();
     
@@ -93,7 +93,7 @@ const RenderItem = ({item, get_data}:any) => {
                     const manifest = JSON.parse(await readTextFile(manifest_path))
                     set_title(manifest?.info?.title)
                 }catch(e:any){
-                    console.log(e)
+                    console.error(e)
                 }
             }
         })();

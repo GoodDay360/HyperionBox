@@ -25,6 +25,7 @@ import shutdown_extension from '../../global/scripts/shutdown_extension';
 // Component Import
 import Dependencies from "./dependencies";
 import Storage from "./storage";
+import General from "./general";
 
 let FIRST_RUN_TIMEOUT:any;
 
@@ -51,8 +52,11 @@ const Setting = () => {
         <div className={styles.container}>
             <>{!feedback.state || is_ready
                 ? <>
+                    <General CONFIG_MANIFEST={CONFIG_MANIFEST} SET_CONFIG_MANIFEST={SET_CONFIG_MANIFEST}/>
                     <Dependencies CONFIG_MANIFEST={CONFIG_MANIFEST} SET_CONFIG_MANIFEST={SET_CONFIG_MANIFEST}/>
                     <Storage />
+
+                    
                     <div className={styles.body_box_2}>
                         <Button variant="contained" color="error"
                             onClick={async ()=>{

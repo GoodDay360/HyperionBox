@@ -189,10 +189,12 @@ function Splash_Screen() {
                 
             }
             
-            setFeedback({text:"Cleaning up cache..."});
-            const cache_dir = await path.join(await path.appDataDir(), ".cache");
-            if (await exists(cache_dir, {baseDir:BaseDirectory.AppData})) {
-                await remove(cache_dir, {recursive:true, baseDir:BaseDirectory.AppData}).catch(e=>{console.error(`[Error] At cleaning up cache: ${e}`)});
+            if (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_CLEAN_UP_CACHE === "0"){
+                setFeedback({text:"Cleaning up cache..."});
+                const cache_dir = await path.join(await path.appDataDir(), ".cache");
+                if (await exists(cache_dir, {baseDir:BaseDirectory.AppData})) {
+                    await remove(cache_dir, {recursive:true, baseDir:BaseDirectory.AppData}).catch(e=>{console.error(`[Error] At cleaning up cache: ${e}`)});
+                }
             }
 
             setFeedback({text:"Launching..."});

@@ -27,7 +27,7 @@ import { format_size, clean_up_storage } from '../scripts/storage';
 const Storage = ({}:any) => {
     // const navigate = useNavigate();
 
-    const {set_allow_use_app} = useContext<any>(global_context)
+    const {set_allow_use_app, set_feedback_snackbar} = useContext<any>(global_context)
 
     const [is_cleaning_up, set_is_cleaning_up] = useState<boolean>(false);
 
@@ -69,7 +69,7 @@ const Storage = ({}:any) => {
                                     const size = await invoke<number>('get_folder_size', { path: await path.join(await path.appDataDir(), "data") });
                                     SET_SIZE(format_size(size))
                                 }
-                                
+                                set_feedback_snackbar({state:true, type:"info", text:"Clean up completed."});
                             }}
                         
                         >Clean Up</Button>

@@ -43,7 +43,7 @@ const DownloadTask = () => {
                 ? 1 : -1
             ))
             SET_DOWNLOAD_TASK_DATA(sorted_data)
-            console.log(sorted_data)
+            
             set_feedback({state:false})
         }else{
             SET_DOWNLOAD_TASK_DATA([])
@@ -64,7 +64,7 @@ const DownloadTask = () => {
 
     useEffect(()=>{
         get_data();
-        console.log("Current downlaod info: ", task_info);
+        
     },[task_info])
 
     useEffect(() => {
@@ -84,7 +84,7 @@ const DownloadTask = () => {
             if (need_update) set_task_info(download_task_info.current);
         }, 800);
         return () => {
-            console.log("Clearing interval for download task");
+            
             clearInterval(interval)
         };
     }, [task_info]);

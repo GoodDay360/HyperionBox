@@ -2,7 +2,7 @@
 // Tauri Plugin
 import { path } from '@tauri-apps/api';
 import { BaseDirectory, exists, mkdir, readFile, writeTextFile, readTextFile, remove } from '@tauri-apps/plugin-fs';
-import start_download from './start_download';
+
 // Node Improt
 
 
@@ -13,15 +13,27 @@ import get_download_info from './get_download_info';
 
 import write_crash_log from '../../global/scripts/write_crash_log';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
+import manage_download from './manage_download';
+import { read_config, write_config } from '../../global/scripts/manage_config';
 
+const DEFAULT_MAX_THREAD = 3;
 
 const download_task_worker = async ({pause_download_task,download_task_info,download_task_progress}:any)=>{
+    const config_manifest = await read_config();
+    if (!config_manifest.max_download_thread){
+        config_manifest.max_download_thread = DEFAULT_MAX_THREAD;
+    }
+    await write_config(config_manifest);
+
     const download_cache_dir = await path.join(await path.appDataDir(), ".cache", "download");
-    try{
-        if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true})
-    }catch(e){
-        await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
-        console.error(e)
+    
+    if (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_CLEAN_UP_CACHE === "0"){
+        try{
+            if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true})
+        }catch(e){
+            await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
+            console.error(e)
+        }
     }
     
     while (true){
@@ -147,18 +159,19 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
 
                 download_task_progress.current = {status:"downloading", percent:0, label:"Preparing..."};
 
-                const start_download_result = await start_download({hls_data,main_dir:main_dir, pause_download_task,download_task_progress});
-                if (start_download_result.code === 200){
+                const manage_download_result = await manage_download({hls_data,main_dir:main_dir, pause_download_task,download_task_progress});
+                if (manage_download_result.code === 200){
                     new_local_source.push({
-                        uri: start_download_result.result,
+                        uri: manage_download_result.result,
                         type: prefer_source.type,
                         quality: prefer_source.quality
                     })
                     manifest.media_info.source = new_local_source;
-                }else if (start_download_result.code === 410){
+                }else if (manage_download_result.code === 410){
                     continue;
                 }else{
-                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id}`)
+                    console.error(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id} => ${manage_download_result.message}`);
+                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id} => ${manage_download_result.message}`)
                     await write_crash_log(`[Download Task] Removing from download task->skipping...`)
                     await request_set_error_task({source_id, preview_id, season_id, watch_id: watch_id, error:true});
                     continue;

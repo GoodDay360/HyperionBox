@@ -71,6 +71,7 @@ import { get_local_preview, save_local_preview, remove_local_preview} from "../.
 import { get_watch_state } from "../../global/scripts/manage_watch_state";
 import { request_add_download_task } from "../../global/scripts/manage_download";
 import open_external from '../scripts/open_external';
+import write_crash_log from '../../global/scripts/write_crash_log';
 
 const FETCH_UPDATE_INTERVAL = 3; // In Hours
 let FIRST_RUN_TIMEOUT:any;
@@ -83,7 +84,7 @@ const Preview = () => {
 
     const { source_id, preview_id }:any = useParams();
     
-    const { app_ready } = useContext<any>(global_context);
+    const { app_ready, set_feedback_snackbar } = useContext<any>(global_context);
 
     const [widget, set_widget] = useState<any>({type:"", onSubmit:()=>{}, onClose:()=>{}});
     const [is_ready, set_is_ready] = useState<boolean>(false);
@@ -117,11 +118,14 @@ const Preview = () => {
         (async () => {
             const removed_tag = last_selected_tag.current.filter((item:string) => !selected_tag.includes(item));
             for (const tag of removed_tag) {
-                await request_remove_from_tag({tag_name:tag,source_id,preview_id})
+                await request_remove_from_tag({tag_name:tag,source_id,preview_id});
+                set_feedback_snackbar({state:true, type:"warning", text:`Removed from tag [${tag}] successfully.`});
             }
             const added_tag = selected_tag.filter((item:string) => !last_selected_tag.current.includes(item));
             for (const tag of added_tag) {
-                await request_add_to_tag({tag_name:tag,source_id,preview_id,title:INFO.title})
+                
+                await request_add_to_tag({tag_name:tag,source_id,preview_id,title:INFO.title});
+                set_feedback_snackbar({state:true, type:"info", text:`Added to tag [${tag}] successfully.`});
             }
             const local_preview_result = await get_local_preview({source_id,preview_id})
             if (selected_tag.length && added_tag.length){
@@ -240,7 +244,9 @@ const Preview = () => {
             set_is_error({state:true,message:"Failed to request source."});
             return;
         }else if (mode === "update"){
-            set_is_update({state:false,error:true, message:"Failed to request source." })
+            set_is_update({state:false,error:true, message:"Failed to request preview update." })
+            set_feedback_snackbar({state:true, type:"error", text:"Failed to request preview update. You can report your `crash.log` to admin."});
+            await write_crash_log(`[Failed to request preview update]: ${JSON.stringify(request_preview_result)}`);
         }
 
         set_is_update({state:false,error:false, message:""})

@@ -34,7 +34,7 @@ import { read_config } from "../../global/scripts/manage_config";
 import { global_context, download_task_context } from '../../global/scripts/contexts';
 
 // Worker Imports
-import download_task_worker from "../worker/download_task_worker";
+import download_task_worker from "../../download_task/worker/download_task_worker";
 
 // Components Import
 const Watchlist = lazy(() => import('../../watchlist/components/main'));
@@ -59,7 +59,8 @@ let FIRST_RUN_TIMEOUT:any;
 function App() {
 	const navigate = useNavigate();
 
-	const [fullscreen_snackbar, set_fullscreen_snackbar] = useState<any>({});
+	const [fullscreen_snackbar, set_fullscreen_snackbar] = useState<any>({state:false,text:""});
+	const [feedback_snackbar, set_feedback_snackbar] = useState<any>({});
 	const [menu, set_menu] = useState<any>({state:false,path:""});
 
 	const [app_ready, set_app_ready] = useState<boolean>(false);
@@ -101,6 +102,7 @@ function App() {
 		<global_context.Provider 
 			value={{
 				...{fullscreen_snackbar, set_fullscreen_snackbar},
+				...{feedback_snackbar, set_feedback_snackbar},
 				...{app_ready, set_app_ready},
 				...{allow_use_app, set_allow_use_app},
 				...{menu, set_menu},
@@ -166,26 +168,47 @@ function App() {
 						<Route path="/extension" element={<Extension key={8}/>} />
 						<Route path="/setting" element={<Setting key={9}/>} />
 					</Routes>
-					{/* Fullscreen event listener snackbar */}
-					<Snackbar 
-						open={fullscreen_snackbar.state} 
-						autoHideDuration={6000} 
-						onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
-						anchorOrigin={{ vertical:"bottom", horizontal:"right" }}
-					>
-						<Alert
-							onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
-							severity={fullscreen_snackbar.severity || "info"}
-							variant={fullscreen_snackbar.variant || "filled"}
-							sx={{ width: '100%', color: "white" }}
-						>
-							{fullscreen_snackbar.text}
-						</Alert>
-					</Snackbar>
-					{/* ================ */}
+
+					
 				</div>
 			</download_task_context.Provider>
 		</global_context.Provider>
+		{/* Feedback snackbar  */}
+		<Snackbar 
+			open={feedback_snackbar.state} 
+			
+			autoHideDuration={6000} 
+			onClose={()=>{set_feedback_snackbar({...feedback_snackbar, state: false})}}
+			anchorOrigin={{ vertical:"bottom", horizontal:"right" }}
+		>
+			<Alert
+				onClose={()=>{set_feedback_snackbar({...feedback_snackbar, state: false})}}
+				severity={feedback_snackbar.type || "info"}
+				variant={"filled"}
+				sx={{ width: '100%', color: "white" }}
+			>
+				{feedback_snackbar.text}
+			</Alert>
+		</Snackbar>
+		{/* ================  */}
+
+		{/* Fullscreen event listener snackbar */}
+		<Snackbar 
+			open={fullscreen_snackbar.state} 
+			autoHideDuration={6000} 
+			onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
+			anchorOrigin={{ vertical:"bottom", horizontal:"right" }}
+		>
+			<Alert
+				onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}
+				severity={fullscreen_snackbar.severity || "info"}
+				variant={fullscreen_snackbar.variant || "filled"}
+				sx={{ width: '100%', color: "white" }}
+			>
+				{fullscreen_snackbar.text}
+			</Alert>
+		</Snackbar>
+		{/* ================ */}
 		
 	</ThemeProvider>);
 }

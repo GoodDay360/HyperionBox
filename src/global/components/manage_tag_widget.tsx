@@ -1,5 +1,5 @@
 // React Imports
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 
 // MUI Imports
 import { ButtonBase, IconButton, Tooltip, Button } from '@mui/material';
@@ -17,11 +17,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Custom Imports
 import {request_tag_data, request_create_tag, request_rename_tag, request_delete_tag} from '../scripts/manage_tag';
-
+import {global_context} from '../scripts/contexts';
 // Styles
 import styles from "../styles/manage_tag_widget.module.css";
 
 const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
+    const {set_feedback_snackbar} = useContext<any>(global_context)
+
     const [create_tag, set_create_tag] = useState<any>({tag_name:"",error:false,message:""});
     const [tag_data, set_tag_data] = useState<any>([]);
     const [search, set_search] = useState<string>("");
@@ -239,6 +241,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                                             set_edit_error({state:true, message:result.message});
                                         }
                                     }
+                                    set_feedback_snackbar({state:true, type:"warning", text:`Tag [${tag_name}] deleted successfully.`});
                                 }}
                             ><DeleteRoundedIcon /></Button>
                         </div>
@@ -399,7 +402,7 @@ const ManageTagWidget  = ({onClose=()=>{}, callback=({})=>{}}:any) => {
                                                     }else{
                                                         set_create_tag({...create_tag, error:true, message:result.message})
                                                     }   
-                                                    
+                                                    set_feedback_snackbar({state:true, type:"info", text:`Tag [${create_tag.tag_name}] created successfully.`});
                                                 }}
                                             >Create</Button>
                                         </div>
