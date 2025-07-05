@@ -593,7 +593,7 @@ function Watch() {
                                 }</>
                             </div>
                             <div className={styles.body_box_3}>
-                                <Pagination count={EPISODE_DATA.length} page={current_page} color="primary" showFirstButton showLastButton
+                                <Pagination count={EPISODE_DATA[CURRENT_SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
                                     sx={{
                                         ul: {
                                             "& .MuiPaginationItem-root": {

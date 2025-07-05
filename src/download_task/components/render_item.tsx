@@ -3,7 +3,7 @@ import { useEffect, useState, useContext, Fragment } from "react";
 import { useNavigate } from "react-router";
 
 // Tauri Import
-import {  readTextFile, exists } from "@tauri-apps/plugin-fs"
+import {  readTextFile, exists, remove, BaseDirectory } from "@tauri-apps/plugin-fs"
 import { path } from "@tauri-apps/api"
 import { convertFileSrc } from '@tauri-apps/api/core';
 
@@ -237,7 +237,7 @@ const RenderItem = ({item, get_data}:any) => {
                                         <Tooltip title={"Retry"}
                                             onClick={async ()=>{
                                                 set_allow_manage(false);
-                                                const request_result =await request_set_error_task({
+                                                const request_result = await request_set_error_task({
                                                     source_id:source_id,
                                                     preview_id:preview_id,
                                                     season_id:season_id,
@@ -248,6 +248,8 @@ const RenderItem = ({item, get_data}:any) => {
                                                     const temp = ITEM_DATA;
                                                     temp[index].error = false;
                                                     SET_ITEM_DATA(temp);
+                                                    const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, item_data.watch_id);
+                                                    await remove(cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
                                                 }
 
                                                 set_allow_manage(true);

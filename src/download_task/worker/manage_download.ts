@@ -30,7 +30,7 @@ function split_work<T>(work: T[], max_thread: number): { start_index: number; en
     return result;
 }
 
-const start_download_thread = async ({thread_index, start_index, end_index, main_dir, pause_download_task, thread_progress, segments, max_segment_count}:any)=>{
+const start_download_thread = async ({thread_index, start_index, main_dir, pause_download_task, thread_progress, segments, max_segment_count}:any)=>{
     try {
         const segment_dir = await path.join(main_dir, "segment");
         const download_manifest_path = await path.join(main_dir, `download_manifest_${thread_index}.json`);
@@ -69,7 +69,7 @@ const start_download_thread = async ({thread_index, start_index, end_index, main
                     const download_result = await download_file_in_chunks({url: segment.uri, output_file: segment_path,
                         callback: ({current_size,total_size}:any) => {
                             
-                            thread_progress.current = ((index+(current_size/total_size))/max_segment_count)*100
+                            thread_progress.current = index+(current_size/total_size)
                         }
 
                     });
@@ -139,11 +139,10 @@ const manage_download = async ({hls_data,main_dir, pause_download_task, download
 
         for (let i = 0; i < max_thread; i++) {
 
-            const { start_index, end_index, result, thread_progress } = work_chunks[i];
+            const { start_index, result, thread_progress } = work_chunks[i];
             const task = start_download_thread({
                 thread_index: i,
                 start_index,
-                end_index,
                 main_dir,
                 pause_download_task,
                 thread_progress,
@@ -159,7 +158,7 @@ const manage_download = async ({hls_data,main_dir, pause_download_task, download
             for (let i = 0; i < max_thread; i++) {
                 progress += work_chunks[i].thread_progress.current;
             }
-            download_task_progress.current = {status: "downloading", percent:(progress/max_segment_count)*100, label:`${progress}/${max_segment_count}`};
+            download_task_progress.current = {status: "downloading", percent:(progress/max_segment_count)*100, label:`${Math.round(progress * 100) / 100}/${max_segment_count}`};
         },1000)
 
         const task_result = await Promise.all(tasks);

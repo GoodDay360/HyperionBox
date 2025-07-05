@@ -870,7 +870,7 @@ const Preview = () => {
                                                 onClick={()=>{
                                                     if (download_mode.select_type != "all"){
                                                         const new_data:any = []
-                                                        for (const item of EPISODE_DATA){
+                                                        for (const item of EPISODE_DATA[CURRENT_SEASON_INDEX]){
                                                             new_data.push(...item)
                                                         }
                                                         selected_download_data.current = new_data;
@@ -901,7 +901,7 @@ const Preview = () => {
                                 }</>
                             </div>
                             <div className={styles.body_box_4}>
-                                <Pagination count={EPISODE_DATA.length} page={current_page} color="primary" showFirstButton showLastButton
+                                <Pagination count={EPISODE_DATA[CURRENT_SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
                                     sx={{
                                         ul: {
                                             "& .MuiPaginationItem-root": {
