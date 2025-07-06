@@ -29,7 +29,7 @@ const check_browser = async ({manifest, setFeedback, setProgress}:any) => {
                 setFeedback("Your system doesn't support this app.")
                 return {code:500, message:"System not support."};
             }
-            setFeedback({text:"Downloading Browser..."})
+            setFeedback({text:"Downloading browser..."})
             const bin_dir = await path.join(await path.appDataDir(),"bin")
             if (!await exists(bin_dir, {baseDir:BaseDirectory.AppData})) await mkdir(bin_dir, {baseDir:BaseDirectory.AppData}).catch(e=>{console.error(e)});
             
