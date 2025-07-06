@@ -71,6 +71,7 @@ import { get_local_preview, save_local_preview, remove_local_preview} from "../.
 import { get_watch_state } from "../../global/scripts/manage_watch_state";
 import { request_add_download_task } from "../../global/scripts/manage_download";
 import open_external from '../scripts/open_external';
+import write_crash_log from '../../global/scripts/write_crash_log';
 
 const FETCH_UPDATE_INTERVAL = 3; // In Hours
 let FIRST_RUN_TIMEOUT:any;
@@ -83,7 +84,7 @@ const Preview = () => {
 
     const { source_id, preview_id }:any = useParams();
     
-    const { app_ready } = useContext<any>(global_context);
+    const { app_ready, set_feedback_snackbar } = useContext<any>(global_context);
 
     const [widget, set_widget] = useState<any>({type:"", onSubmit:()=>{}, onClose:()=>{}});
     const [is_ready, set_is_ready] = useState<boolean>(false);
@@ -117,11 +118,14 @@ const Preview = () => {
         (async () => {
             const removed_tag = last_selected_tag.current.filter((item:string) => !selected_tag.includes(item));
             for (const tag of removed_tag) {
-                await request_remove_from_tag({tag_name:tag,source_id,preview_id})
+                await request_remove_from_tag({tag_name:tag,source_id,preview_id});
+                set_feedback_snackbar({state:true, type:"warning", text:`Removed from tag [${tag}] successfully.`});
             }
             const added_tag = selected_tag.filter((item:string) => !last_selected_tag.current.includes(item));
             for (const tag of added_tag) {
-                await request_add_to_tag({tag_name:tag,source_id,preview_id,title:INFO.title})
+                
+                await request_add_to_tag({tag_name:tag,source_id,preview_id,title:INFO.title});
+                set_feedback_snackbar({state:true, type:"info", text:`Added to tag [${tag}] successfully.`});
             }
             const local_preview_result = await get_local_preview({source_id,preview_id})
             if (selected_tag.length && added_tag.length){
@@ -240,7 +244,9 @@ const Preview = () => {
             set_is_error({state:true,message:"Failed to request source."});
             return;
         }else if (mode === "update"){
-            set_is_update({state:false,error:true, message:"Failed to request source." })
+            set_is_update({state:false,error:true, message:"Failed to request preview update." })
+            set_feedback_snackbar({state:true, type:"error", text:"Failed to request preview update. You can report your `crash.log` to admin."});
+            await write_crash_log(`[Failed to request preview update]: ${JSON.stringify(request_preview_result)}`);
         }
 
         set_is_update({state:false,error:false, message:""})
@@ -569,6 +575,9 @@ const Preview = () => {
                                             set_download_mode({...download_mode,state:!download_mode.state,select_type:"manual"});
                                             if (download_mode.state) {
                                                 selected_download_data.current = []
+                                            }else{
+                                                const element = document.getElementById('ep_container');
+                                                element?.scrollIntoView({ behavior: 'smooth' });
                                             }
                                         }}
                                     >
@@ -843,7 +852,7 @@ const Preview = () => {
                                 </div>
 
                             </div>
-                            <div className={styles.body_box_3}>
+                            <div id="ep_container" className={styles.body_box_3}>
                                 <>{download_mode.state &&
                                     <div
                                         style={{
@@ -864,7 +873,7 @@ const Preview = () => {
                                                 onClick={()=>{
                                                     if (download_mode.select_type != "all"){
                                                         const new_data:any = []
-                                                        for (const item of EPISODE_DATA){
+                                                        for (const item of EPISODE_DATA[CURRENT_SEASON_INDEX]){
                                                             new_data.push(...item)
                                                         }
                                                         selected_download_data.current = new_data;
@@ -895,7 +904,7 @@ const Preview = () => {
                                 }</>
                             </div>
                             <div className={styles.body_box_4}>
-                                <Pagination count={EPISODE_DATA.length} page={current_page} color="primary" showFirstButton showLastButton
+                                <Pagination count={EPISODE_DATA[CURRENT_SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
                                     sx={{
                                         ul: {
                                             "& .MuiPaginationItem-root": {
@@ -985,6 +994,11 @@ const Preview = () => {
                         onClose:()=>{set_widget({type:""})},
                         onSubmit:async (options:any)=>{
                             const selected_data = selected_download_data.current
+                            if (selected_data.length === 0){
+                                set_feedback_snackbar({state:true,type:"warning",text:"No episode selected."});
+                                return
+                            }
+                            set_feedback_snackbar({state:true,type:"info",text:"Adding to download task..."});
                             for (const data of selected_data){
                                 console.log({
                                     source_id: source_id??"",
@@ -1010,7 +1024,7 @@ const Preview = () => {
                             set_widget({type:""});
                             set_download_mode({...download_mode,state:false,select_type:"manual"});
                             selected_download_data.current = []
-                            
+                            set_feedback_snackbar({state:true,type:"info",text:"Added to download task successfully."});
                         }
                         
                     }}

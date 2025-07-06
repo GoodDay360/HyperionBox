@@ -2,9 +2,9 @@
 // Tauri Plugin
 import { path } from '@tauri-apps/api';
 import { BaseDirectory, exists, mkdir, readFile, writeTextFile, readTextFile, remove } from '@tauri-apps/plugin-fs';
-import start_download from './start_download';
-// Node Improt
 
+// Node Improt
+import { Parser } from 'm3u8-parser';
 
 // Custom Imports
 
@@ -13,15 +13,58 @@ import get_download_info from './get_download_info';
 
 import write_crash_log from '../../global/scripts/write_crash_log';
 import download_file_in_chunks from '../../global/scripts/download_file_in_chunk';
+import manage_download from './manage_download';
+import { read_config, write_config } from '../../global/scripts/manage_config';
+
+const DEFAULT_MAX_THREAD = 3;
+
+function pickStreamByQuality(
+    data: {
+        attributes: {
+        CODECS: string;
+        "FRAME-RATE": number;
+        RESOLUTION: { width: number; height: number };
+        BANDWIDTH: number;
+        "PROGRAM-ID": number;
+        };
+        uri: string;
+        timeline: number;
+    }[],
+    quality: 1 | 2 | 3 | 4
+    ) {
+    const sorted = [...data].sort((a, b) => {
+        const areaA = a.attributes.RESOLUTION.width * a.attributes.RESOLUTION.height;
+        const areaB = b.attributes.RESOLUTION.width * b.attributes.RESOLUTION.height;
+        return areaA - areaB;
+    });
+
+    const indexMap = {
+        1: 0, // lowest
+        2: Math.floor((sorted.length - 1) / 3),
+        3: Math.floor((2 * (sorted.length - 1)) / 3),
+        4: sorted.length - 1 // highest
+    };
+
+    return sorted[indexMap[quality]];
+}
 
 
 const download_task_worker = async ({pause_download_task,download_task_info,download_task_progress}:any)=>{
+    const config_manifest = await read_config();
+    if (!config_manifest.max_download_thread){
+        config_manifest.max_download_thread = DEFAULT_MAX_THREAD;
+    }
+    await write_config(config_manifest);
+
     const download_cache_dir = await path.join(await path.appDataDir(), ".cache", "download");
-    try{
-        if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true})
-    }catch(e){
-        await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
-        console.error(e)
+    
+    if (!import.meta.env.DEV || import.meta.env.VITE_DEV_SKIP_CLEAN_UP_CACHE === "0"){
+        try{
+            if (await exists(download_cache_dir)) await remove(download_cache_dir, {baseDir:BaseDirectory.AppData, recursive:true})
+        }catch(e){
+            await write_crash_log(`[Download Task] Error remove download cache dir: ${JSON.stringify(e)}`);
+            console.error(e)
+        }
     }
     
     while (true){
@@ -106,31 +149,27 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 manifest.media_info.type = "local";
 
                 
-                const new_local_source:any = []
-
-                
                 let prefer_source:any = null;
 
-                // Extract and sort quality values
-                const qualities = watch_data.media_info.source.map((item:any) => item.quality).sort((a:number, b:number) => a - b);
+                
+                if (watch_data.media_info.type === "master") {
+                    const master_content:string = await readTextFile(watch_data.media_info.source, {baseDir:BaseDirectory.AppData});
+                    const praser = new Parser();
+                    praser.push(master_content);
+                    praser.end();
 
-                const low = qualities[0];  // Lowest available quality
-                const high = qualities[qualities.length - 1];  // Highest available quality
-                const step = Math.floor((high - low) / 3); // Divide range into three sections
+                    const parsedManifest:any = praser.manifest;
+                    
+                    const pick_result = pickStreamByQuality(parsedManifest.playlists, quality);
 
-                // Determine target quality based on user selection
-                let targetQuality = 0;
-                if (quality === 1) targetQuality = low;
-                else if (quality === 2) targetQuality = low + step;
-                else if (quality === 3) targetQuality = low + step * 2;
-                else if (quality === 4) targetQuality = high;
+                    prefer_source = pick_result.uri;
 
-                // Find the closest matching quality
-                for (let i = 0; i < qualities.length; i++) {
-                    if (qualities[i] >= targetQuality) {
-                        prefer_source = watch_data.media_info.source.find((item:any) => item.quality === qualities[i]);
-                    }
+
+                }else{
+                    prefer_source = watch_data.media_info.source;
                 }
+                
+
 
                 if (!prefer_source) {
                     await write_crash_log(`[Download Task] There an issue finding prefer source: ${source_id}->${preview_id}->${season_id}->${watch_id}`)
@@ -143,22 +182,18 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 console.log("MOEW",prefer_source)
 
 
-                const hls_data = await readTextFile(prefer_source.uri, {baseDir:BaseDirectory.AppData});
+                const player_data = await readTextFile(prefer_source, {baseDir:BaseDirectory.AppData});
 
                 download_task_progress.current = {status:"downloading", percent:0, label:"Preparing..."};
 
-                const start_download_result = await start_download({hls_data,main_dir:main_dir, pause_download_task,download_task_progress});
-                if (start_download_result.code === 200){
-                    new_local_source.push({
-                        uri: start_download_result.result,
-                        type: prefer_source.type,
-                        quality: prefer_source.quality
-                    })
-                    manifest.media_info.source = new_local_source;
-                }else if (start_download_result.code === 410){
+                const manage_download_result = await manage_download({player_data,main_dir:main_dir, pause_download_task,download_task_progress});
+                if (manage_download_result.code === 200){
+                    manifest.media_info.source = manage_download_result.result;
+                }else if (manage_download_result.code === 410){
                     continue;
                 }else{
-                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id}`)
+                    console.error(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id} => ${manage_download_result.message}`);
+                    await write_crash_log(`[Download Task] There an issue downloading: ${source_id}->${preview_id}->${season_id}->${watch_id} => ${manage_download_result.message}`)
                     await write_crash_log(`[Download Task] Removing from download task->skipping...`)
                     await request_set_error_task({source_id, preview_id, season_id, watch_id: watch_id, error:true});
                     continue;

@@ -45,7 +45,7 @@ import '@vidstack/react/player/styles/default/layouts/video.css';
 // Custom Imports
 import { global_context } from '../../global/scripts/contexts';
 import get_watch from "../scripts/get_watch";
-import generate_hls_from_playlist from "../../global/scripts/generate_hls_from_playlist";
+import convert_master from "../../global/scripts/convert_master";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { request_item_tags } from "../../global/scripts/manage_tag";
 import { get_watch_state, update_watch_state } from "../../global/scripts/manage_watch_state";
@@ -180,20 +180,25 @@ function Watch() {
                 SET_MEDIA_TRACK(data.media_info.track);
                 SET_MEDIA_TYPE(data.media_info.type);
                 if (data.media_info.type === "local"){
-                    const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source[0].uri})
+                    const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source})
                     if (rephrased_hls_result.code === 200){
                         SET_MEDIA_SRC(rephrased_hls_result.result);
                     }
                     
                 }else{
                     SET_SERVER_INFO(data.server_info);
-                    const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "current_playlist.m3u8")
-                    const generate_hls_result = await generate_hls_from_playlist({
-                        source:data.media_info.source,
-                        output: playlist_path,
-                    })
-                    if (generate_hls_result.code === 200){
-                        SET_MEDIA_SRC(convertFileSrc(playlist_path));
+
+                    if (data.media_info.type === "master"){
+                        const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "master.m3u8")
+                        const generate_hls_result = await convert_master({
+                            source: data.media_info.source,
+                            output: playlist_path,
+                        })
+                        if (generate_hls_result.code === 200){
+                            SET_MEDIA_SRC(convertFileSrc(playlist_path));
+                        }
+                    }else{
+                        SET_MEDIA_SRC(convertFileSrc(data.media_info.source));
                     }
                 }
             }else{
@@ -428,6 +433,7 @@ function Watch() {
                                                         src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
                                                         srcLang={track.label} 
                                                         label={track.label}
+                                                        default={track.default}
                                                         
                                                     />
                                                 );
@@ -593,7 +599,7 @@ function Watch() {
                                 }</>
                             </div>
                             <div className={styles.body_box_3}>
-                                <Pagination count={EPISODE_DATA.length} page={current_page} color="primary" showFirstButton showLastButton
+                                <Pagination count={EPISODE_DATA[CURRENT_SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
                                     sx={{
                                         ul: {
                                             "& .MuiPaginationItem-root": {

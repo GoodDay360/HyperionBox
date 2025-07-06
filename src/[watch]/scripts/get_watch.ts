@@ -57,8 +57,8 @@ const get_watch = async ({source_id,preview_id,season_id="0",watch_id,server_typ
             }
             const port = sessionStorage.getItem("extension_port");
             const body = {
-                "cache_dir": await path.join(await path.appDataDir(), ".cache"),
-                "method": "get_watch",
+                cache_dir: await path.join(await path.appDataDir(), ".cache"),
+                method: "get_watch",
                 source_id,
                 preview_id,
                 season_id,
@@ -66,6 +66,7 @@ const get_watch = async ({source_id,preview_id,season_id="0",watch_id,server_typ
                 server_type,
                 server_id
             }
+            console.log(body);
             axios({
                 method: 'POST',
                 url: `http://localhost:${port}/request_extension`,
@@ -80,6 +81,7 @@ const get_watch = async ({source_id,preview_id,season_id="0",watch_id,server_typ
                 await writeTextFile(manifest_path, JSON.stringify(res.data.result), {baseDir:BaseDirectory.AppData, create:true}).catch((e)=>{console.error(e)});
                 resolve(res.data);
             }).catch((e: any) => {
+                console.error(e);
                 resolve({ code: 500, message: e });
             });    
             // =======================    

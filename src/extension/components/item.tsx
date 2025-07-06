@@ -30,6 +30,7 @@ import install_source from "../scripts/install_source";
 
 const Item = ({id,data,installed,installed_version}:{id:string,data:any,installed:boolean,installed_version:string})=>{
     console.log(installed_version)
+    const [INSTALLED_VERSION, SET_INSTALLED_VERSION] = useState<string>(installed_version);
     const [is_installed, set_is_installed] = useState<boolean>(installed);
     const [is_updating, set_is_updating] = useState<boolean>(false);
 
@@ -95,7 +96,7 @@ const Item = ({id,data,installed,installed_version}:{id:string,data:any,installe
                     <br />
                     - Current Version: {data.version}
                     
-                    {installed_version ? <span><br />- Installed Version: {installed_version}</span> : ""}
+                    {INSTALLED_VERSION ? <span><br />- Installed Version: {INSTALLED_VERSION}</span> : ""}
                     
                 
                 </span>} 
@@ -133,6 +134,7 @@ const Item = ({id,data,installed,installed_version}:{id:string,data:any,installe
                                 const source_dir = await path.join(await path.appDataDir(), "extension", "sources", id);
                                 await remove(source_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
                                 await remove_source({id});
+                                SET_INSTALLED_VERSION("");
                                 set_is_installed(false);
                                 set_is_managing(false);
                             }else{
@@ -148,6 +150,8 @@ const Item = ({id,data,installed,installed_version}:{id:string,data:any,installe
                                 });
                                 if (install_source_result.code === 200){
                                     set_is_installed(true);
+                                    SET_INSTALLED_VERSION(data.version);
+                                    set_update_available(false);
                                 }
                                 set_is_managing(false);
                             }
