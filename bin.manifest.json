@@ -45,7 +45,7 @@
     },
     "extension-package":{
         "url": "https://github.com/GoodDay360/HyperionBox-Extensions/releases/download/Package/Package-Latest.zip",
-        "version": "1.1.2"
+        "version": "1.1.3"
     },
     "browser":{
         "windows": {
