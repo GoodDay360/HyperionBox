@@ -98,8 +98,7 @@ const start_download_thread = async ({thread_index, start_index, main_dir, pause
             thread_progress.current = index+1;
         }
 
-        await remove(download_manifest_path, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
-
+        
         return {code:200, message:"Success", segments:result_segments}
     }catch(e:any){
         work_status.code = 500;
@@ -167,7 +166,11 @@ const manage_download = async ({player_data,main_dir, pause_download_task, downl
         clearInterval(update_task_progress_interval);
 
         const result_segments:string[] = [];
+        let count = 0;
         for (const result of task_result) {
+            const download_manifest_path = await path.join(main_dir, `download_manifest_${count}.json`);
+            if (await exists(download_manifest_path)) await remove(download_manifest_path, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
+            count++;
             if (result.code !== 200) {
                 console.error(result.message);
                 return result
