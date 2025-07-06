@@ -575,6 +575,9 @@ const Preview = () => {
                                             set_download_mode({...download_mode,state:!download_mode.state,select_type:"manual"});
                                             if (download_mode.state) {
                                                 selected_download_data.current = []
+                                            }else{
+                                                const element = document.getElementById('ep_container');
+                                                element?.scrollIntoView({ behavior: 'smooth' });
                                             }
                                         }}
                                     >
@@ -849,7 +852,7 @@ const Preview = () => {
                                 </div>
 
                             </div>
-                            <div className={styles.body_box_3}>
+                            <div id="ep_container" className={styles.body_box_3}>
                                 <>{download_mode.state &&
                                     <div
                                         style={{
@@ -991,6 +994,11 @@ const Preview = () => {
                         onClose:()=>{set_widget({type:""})},
                         onSubmit:async (options:any)=>{
                             const selected_data = selected_download_data.current
+                            if (selected_data.length === 0){
+                                set_feedback_snackbar({state:true,type:"warning",text:"No episode selected."});
+                                return
+                            }
+                            set_feedback_snackbar({state:true,type:"info",text:"Adding to download task..."});
                             for (const data of selected_data){
                                 console.log({
                                     source_id: source_id??"",
@@ -1016,7 +1024,7 @@ const Preview = () => {
                             set_widget({type:""});
                             set_download_mode({...download_mode,state:false,select_type:"manual"});
                             selected_download_data.current = []
-                            
+                            set_feedback_snackbar({state:true,type:"info",text:"Added to download task successfully."});
                         }
                         
                     }}

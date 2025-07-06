@@ -20,7 +20,7 @@ import { global_context } from "../../global/scripts/contexts";
 import styles from "../styles/main.module.css";
 
 // Custom Import
-import { format_size, clean_up_storage } from '../scripts/storage';
+import { format_size, clean_up_cache, clean_up_download } from '../scripts/storage';
 
 
 
@@ -53,27 +53,49 @@ const Storage = ({}:any) => {
                 <div className={styles.item_box}>
                     <>{is_cleaning_up
                         ? <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.035/2)"/>
-                        : <Button variant="contained" color="secondary"
-                            onClick={async ()=>{
+                        : <div style={{display:"flex", flexDirection:"row", gap:"8px"}}>
+                            <Button variant="contained" color="secondary"
+                                onClick={async ()=>{
+                                    set_feedback_snackbar({state:true, type:"info", text:"Cleaning up cache..."});
+                                    set_allow_use_app(false);
+                                    set_is_cleaning_up(true);
+                                    try{
+                                        await clean_up_cache();
+                                    }catch(e){
+                                        console.error(e);
+                                        
+                                    }finally{
+                                        set_is_cleaning_up(false);
+                                        set_allow_use_app(true);
+                                        const size = await invoke<number>('get_folder_size', { path: await path.join(await path.appDataDir(), "data") });
+                                        SET_SIZE(format_size(size))
+                                    }
+                                    set_feedback_snackbar({state:true, type:"info", text:"Clean up completed."});
+                                }}
+                            
+                            >Clean Up Cache</Button>
 
-                                set_allow_use_app(false);
-                                set_is_cleaning_up(true);
-                                try{
-                                    await clean_up_storage();
-                                }catch(e){
-                                    console.error(e);
-                                    
-                                }finally{
-                                    set_is_cleaning_up(false);
-                                    set_allow_use_app(true);
-                                    const size = await invoke<number>('get_folder_size', { path: await path.join(await path.appDataDir(), "data") });
-                                    SET_SIZE(format_size(size))
-                                }
-                                set_feedback_snackbar({state:true, type:"info", text:"Clean up completed."});
-                            }}
-                        
-                        >Clean Up</Button>
-                    
+                            <Button variant="contained" color="error"
+                                onClick={async ()=>{
+                                    set_feedback_snackbar({state:true, type:"info", text:"Cleaning up download..."});
+                                    set_allow_use_app(false);
+                                    set_is_cleaning_up(true);
+                                    try{
+                                        await clean_up_download();
+                                    }catch(e){
+                                        console.error(e);
+                                        
+                                    }finally{
+                                        set_is_cleaning_up(false);
+                                        set_allow_use_app(true);
+                                        const size = await invoke<number>('get_folder_size', { path: await path.join(await path.appDataDir(), "data") });
+                                        SET_SIZE(format_size(size))
+                                    }
+                                    set_feedback_snackbar({state:true, type:"info", text:"Clean up completed."});
+                                }}
+                            
+                            >Clean Up Download</Button>
+                        </div>
                     }</>
                 </div>
 

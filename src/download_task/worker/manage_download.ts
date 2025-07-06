@@ -30,7 +30,7 @@ function split_work<T>(work: T[], max_thread: number): { start_index: number; en
     return result;
 }
 
-const start_download_thread = async ({thread_index, start_index, main_dir, pause_download_task, thread_progress, segments, max_segment_count}:any)=>{
+const start_download_thread = async ({thread_index, start_index, main_dir, pause_download_task, thread_progress, segments}:any)=>{
     try {
         const segment_dir = await path.join(main_dir, "segment");
         const download_manifest_path = await path.join(main_dir, `download_manifest_${thread_index}.json`);
@@ -114,7 +114,7 @@ const start_download_thread = async ({thread_index, start_index, main_dir, pause
 }
 
 
-const manage_download = async ({hls_data,main_dir, pause_download_task, download_task_progress}:{hls_data:string,main_dir:string, pause_download_task:any, download_task_progress:any})=>{
+const manage_download = async ({player_data,main_dir, pause_download_task, download_task_progress}:{player_data:string,main_dir:string, pause_download_task:any, download_task_progress:any})=>{
     // Parse the M3U8 content
     try{
         const config_manifest = await read_config();
@@ -124,7 +124,7 @@ const manage_download = async ({hls_data,main_dir, pause_download_task, download
 
         const segment_dir = await path.join(main_dir, "segment");
         const parser = new Parser();
-        parser.push(hls_data);
+        parser.push(player_data);
         parser.end();
         const parsedManifest = parser.manifest;
 
@@ -162,7 +162,7 @@ const manage_download = async ({hls_data,main_dir, pause_download_task, download
         },1000)
 
         const task_result = await Promise.all(tasks);
-        console.log("IT DONNEEE FAST SO FAST????")
+        
 
         clearInterval(update_task_progress_interval);
 
@@ -181,7 +181,7 @@ const manage_download = async ({hls_data,main_dir, pause_download_task, download
 
         // Collect headers until the first #EXTINF tag
         const headerLines = [];
-        const splited = hls_data.split("\n");
+        const splited = player_data.split("\n");
         for (const line of splited) {
         if (line.includes("#EXTINF")) break;
             headerLines.push(line);
