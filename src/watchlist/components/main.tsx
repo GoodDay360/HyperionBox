@@ -97,7 +97,7 @@ function Watchlist() {
         return (<div>
             <ButtonBase className={styles.cover_box}          
                 onClick={()=>{
-                    navigate(`/preview/${item.source_id}/${item.preview_id}`);
+                    navigate(encodeURI(`/preview/${item.source_id}/${item.preview_id}`));
                 }}
             >
                 <div className={styles.cover}>                

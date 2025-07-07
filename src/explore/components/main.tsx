@@ -176,7 +176,7 @@ const Explore = () => {
                 }}
                 onClick={()=>{
                     console.log(_item);
-                    navigate(`/preview/${source_id}/${_item.id}`);
+                    navigate(encodeURI(`/preview/${source_id}/${_item.id}`));
                 }}
             >
                 <div
@@ -226,7 +226,7 @@ const Explore = () => {
             }}>
                 <ButtonBase
                     onClick={() => {
-                        navigate(`/explore/${source_id}/${SEARCH_REF}`)
+                        navigate(encodeURI(`/explore/${source_id}/${SEARCH_REF}`))
                     }}
                     sx={{
                         borderBottom:"2px solid var(--color)",

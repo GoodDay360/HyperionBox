@@ -83,6 +83,7 @@ const Preview = () => {
     const source_random_color = useRef(randomColor({luminosity:"bright",format: 'rgba',alpha:0.8}));
 
     const { source_id, preview_id }:any = useParams();
+    console.log(source_id, preview_id);
     
     const { app_ready, set_feedback_snackbar } = useContext<any>(global_context);
 
@@ -94,8 +95,9 @@ const Preview = () => {
     const selected_download_data = useRef<any>([])
     
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
-    const [CURRENT_SEASON_ID, _] = useState<string>("0");
-    const [CURRENT_SEASON_INDEX, __] = useState<number>(0);
+    const [SEASON_INFO, _] = useState<{id:string}[]>([]);
+    const [CURRENT_SEASON_ID, SET_CURRENT_SEASON_ID] = useState<string>("0");
+    const [CURRENT_SEASON_INDEX, SET_CURRENT_SEASON_INDEX] = useState<number>(0);
     const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
     const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
     const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
@@ -328,6 +330,31 @@ const Preview = () => {
         )
     },[STATS])
 
+    const SEASON_COMPONENT = useCallback(({index}:any)=>{
+
+        return (<>
+            <ButtonBase 
+                sx={{
+                    padding:"25px",
+                    color: "var(--color)",
+                    background: "var(--background-color-layer-1)",
+                    borderRadius: "8px",
+                    border: `2px solid ${CURRENT_SEASON_INDEX == index ? "var(--color-2)" :"var(--background-color)"}`,
+                    whiteSpace: 'nowrap'
+                }}
+                
+                onClick={()=>{
+
+                    SET_CURRENT_SEASON_INDEX(index);
+                    SET_CURRENT_SEASON_ID(SEASON_INFO?.[index]?.id || index+1);
+                }}
+            >
+                Season {index+1}
+            </ButtonBase>
+            
+        </>)
+    },[CURRENT_SEASON_INDEX, SEASON_INFO])
+
     const EPISODE_COMPONENT = useCallback(({item}:any)=>{
         const [is_checked_for_download, set_is_checked_for_download] = useState<boolean>(false);
         const [available_local, set_available_local] = useState<boolean>(false);
@@ -419,7 +446,7 @@ const Preview = () => {
                             },
                         });
                     }
-                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`);
+                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`));
                 }}
             >
                 <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
@@ -736,7 +763,7 @@ const Preview = () => {
                                             }}
                                             onClick={async ()=>{
                                                 if (CURRENT_WATCH_INDEX > 0) {
-                                                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${CURRENT_WATCH_ID}`);
+                                                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${CURRENT_WATCH_ID}`));
                                                 }else{
                                                     const watch_id = EPISODE_DATA?.[0]?.[0]?.[0]?.id;
                                                     const watch_index = EPISODE_DATA?.[0]?.[0]?.[0]?.index;
@@ -754,7 +781,7 @@ const Preview = () => {
                                                                 },
                                                             });
                                                         }
-                                                        navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}`);
+                                                        navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}`));
                                                     }
                                                 }
                                                 
@@ -851,6 +878,15 @@ const Preview = () => {
                                     }</>
                                 </div>
 
+                            </div>
+                            <div className={styles.season_box}>
+                                <>{TYPE_SCHEMA === 2 &&
+                                    <>{[...Array(EPISODE_DATA.length)].map((_, index) => (
+                                        <SEASON_COMPONENT key={index} index={index}/>
+
+                                    ))}</>
+
+                                }</>
                             </div>
                             <div id="ep_container" className={styles.body_box_3}>
                                 <>{download_mode.state &&

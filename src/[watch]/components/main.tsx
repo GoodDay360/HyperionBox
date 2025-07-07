@@ -303,7 +303,7 @@ function Watch() {
                 
                 onClick={async ()=>{
                     set_is_ready(false);
-                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`, {replace: true});
+                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`), {replace: true});
                     const local_preview_result = await get_local_preview({source_id,preview_id});
                     if (local_preview_result.code === 200){
                         const data = local_preview_result.result
@@ -507,7 +507,7 @@ function Watch() {
                                                             }}
                                                             onClick={async ()=>{
                                                                 if (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) return;
-                                                                navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
+                                                                navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`), { replace: true });
                                                                 await get_data({
                                                                     watch_id,
                                                                     server_type,
@@ -575,7 +575,7 @@ function Watch() {
                                                             paddingRight:"calc((100vw + 100vh)*0.0575/2)",
                                                         }}
                                                         onClick={async ()=>{
-                                                            navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/`, { replace: true });
+                                                            navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/`), { replace: true });
                                                             await get_data({
                                                                 watch_id,
                                                                 check_local:false,

@@ -156,17 +156,17 @@ function App() {
 					}</>
 					
 					<Routes>
-						<Route path="/" element={<Splash_Screen key={1}/>}/>
-						<Route path="/watchlist/*" element={<Watchlist key={2}/>} />
-						<Route path="/explore/*" element={<Explore/>} key={3}/>
-						<Route path="/explore/:source_id/:search" element={<BrowseSource key={4}/>} />
+						<Route path="/" element={<Splash_Screen/>}/>
+						<Route path="/watchlist/*" element={<Watchlist/>} />
+						<Route path="/explore/*" element={<Explore/>}/>
+						<Route path="/explore/:source_id/:search" element={<BrowseSource/>} />
 						
-						<Route path="/download_task/*" element={<DownloadTask key={5}/>} />
+						<Route path="/download_task/*" element={<DownloadTask/>} />
 						
-						<Route path="/preview/:source_id/:preview_id" element={<Preview key={6}/>} />
-						<Route path="/watch/:source_id/:preview_id/:season_id/:watch_id" element={<Watch key={7}/>} />
-						<Route path="/extension" element={<Extension key={8}/>} />
-						<Route path="/setting" element={<Setting key={9}/>} />
+						<Route path="/preview/:source_id/:preview_id" element={<Preview />} />
+						<Route path="/watch/:source_id/:preview_id/:season_id/:watch_id" element={<Watch />} />
+						<Route path="/extension" element={<Extension />} />
+						<Route path="/setting" element={<Setting />} />
 					</Routes>
 
 					

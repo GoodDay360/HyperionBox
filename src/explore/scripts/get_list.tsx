@@ -25,6 +25,7 @@ const get_list = async ({source_id, search, page=1}:{source_id:string,search:str
         }).then((res: any) => {
             resolve(res.data);
         }).catch((e: any) => {
+            console.error(e);
             resolve({ code: 500, message: e?.message });
         });
     })
