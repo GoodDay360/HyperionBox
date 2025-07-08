@@ -164,7 +164,7 @@ function Splash_Screen() {
                 if (get_installed_sources_result.code === 200) {
                     const installed_sources = get_installed_sources_result.data;
                     if (installed_sources.length > 0) {
-                        setFeedback({text:`Updating installed source...`});
+                        setFeedback({text:`Checking installed source for update...`});
                         const get_source_result = await get_source();
                     
                         const source_data = get_source_result.data;

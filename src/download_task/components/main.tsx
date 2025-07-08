@@ -31,10 +31,12 @@ const DownloadTask = () => {
     const [feedback, set_feedback] = useState<any>({state:false,text:""})
     const [DOWNLOAD_TASK_DATA, SET_DOWNLOAD_TASK_DATA] = useState<any>([])
     const [pause_task, set_pause_task] = useState<boolean>(pause_download_task.current)
+    
 
     const get_data = async ()=>{
         const request_download_task_result = await request_download_task()
         if (request_download_task_result.code === 200 && request_download_task_result.data.length > 0){
+            
             const sorted_data = [...request_download_task_result.data];
             sorted_data.sort((_: any, b: any) => (
                 (task_info?.source_id === b?.source_id && 

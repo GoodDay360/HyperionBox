@@ -42,7 +42,7 @@ const get_watch = async ({source_id,preview_id,season_id="0",watch_id,server_typ
 
 
             // Load from server
-            const cache_dir = await path.join(await path.appDataDir(), ".cache", "watch", source_id, preview_id, watch_id);
+            const cache_dir = await path.join(await path.appDataDir(), ".cache", "watch", source_id, preview_id,season_id, watch_id);
             const manifest_path = await path.join(cache_dir, "manifest.json")
             if (!force_update && await exists(manifest_path)) {
                 try {

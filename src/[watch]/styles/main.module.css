@@ -78,3 +78,14 @@
     width: 100%;
     height: auto;
 }
+
+.season_box{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 12px;
+}

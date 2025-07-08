@@ -103,14 +103,17 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 }
             }
 
-            download_task_info.current = {source_id,preview_id,season_id,watch_id,watch_index,watch_title};
+            download_task_info.current = {source_id,preview_id,season_id,watch_id,watch_index,watch_title,type_schema};
             let retry = 0;
             let info_result:any;
 
             while (true){
                 const get_download_info_result = await get_download_info({
-                    source_id,preview_id,watch_id:watch_id,
-                    server_type:server_type,
+                    source_id,
+                    preview_id,
+                    season_id,
+                    watch_id,
+                    server_type,
                     force_update:false
                 });
                 if (get_download_info_result.code === 200){

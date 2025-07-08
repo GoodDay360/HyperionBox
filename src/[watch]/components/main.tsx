@@ -63,6 +63,7 @@ function Watch() {
     const {app_ready} = useContext<any>(global_context);
     
     const { source_id, preview_id, season_id, watch_id }:any = useParams();
+    console.log(season_id, watch_id);
     const [searchParams] = useSearchParams();
 
     const [is_online, set_is_online] = useState<boolean>(false);
@@ -75,10 +76,16 @@ function Watch() {
     const [current_page, set_current_page] = useState<number>(1);
 
     const [_, SET_SOURCE_INFO] = useState<any>({});
-    const [CURRENT_SEASON_ID, __] = useState<string>(season_id);
-    const [CURRENT_SEASON_INDEX, ___] = useState<number>(0);
+    const [SEASON_INFO, __] = useState<{id:string}[]>([]);
+    const [SEASON_ID, SET_SEASON_ID] = useState<string>(season_id);
+    const [SEASON_INDEX, SET_SEASON_INDEX] = useState<number>(0);
     const [SERVER_INFO, SET_SERVER_INFO] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
+    const [TYPE_SCHEMA, SET_TYPE_SCHEMA] = useState<number>(0);
+
+    const [CURRENT_SEASON_INDEX, SET_CURRENT_SEASON_INDEX] = useState<number>(0);
+
+
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");
     const [MEDIA_TRACK, SET_MEDIA_TRACK] = useState<any>([]);
     const [MEDIA_TYPE, SET_MEDIA_TYPE] = useState<string>("");
@@ -117,7 +124,7 @@ function Watch() {
                     is_updating_state = true
                     const player_state = media_player_ref.current;
 
-                    await update_watch_state({source_id,preview_id,watch_id,
+                    await update_watch_state({source_id,preview_id,season_id,watch_id,
                         state:{
                             current_time: player_state.currentTime,
                             server_id: SERVER_INFO.current_server_id,
@@ -146,7 +153,7 @@ function Watch() {
             const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
             if (request_item_tags_result?.code === 200) {
                 if (request_item_tags_result?.data?.length > 0) {
-                    const get_watch_state_result = await get_watch_state({source_id,preview_id,watch_id});
+                    const get_watch_state_result = await get_watch_state({source_id,preview_id,season_id,watch_id});
                     if (get_watch_state_result.code === 200) {
                         media_player_state_ref.current = get_watch_state_result.data;
                     }else{
@@ -159,7 +166,7 @@ function Watch() {
             let get_watch_result;
             if (request_item_tags_result?.data?.length > 0){
                 get_watch_result = await get_watch({
-                    source_id,preview_id,watch_id,
+                    source_id,preview_id,season_id,watch_id,
                     server_type: server_type || media_player_state_ref.current.server_type, 
                     server_id: server_id || media_player_state_ref.current.server_id,
                     check_local,force_update,
@@ -167,7 +174,7 @@ function Watch() {
 
             }else{
                 get_watch_result = await get_watch({
-                    source_id,preview_id,watch_id,
+                    source_id,preview_id,season_id,watch_id,
                     server_type,server_id,
                     force_update,
                 });
@@ -187,6 +194,7 @@ function Watch() {
                     
                 }else{
                     SET_SERVER_INFO(data.server_info);
+                    SET_TYPE_SCHEMA(data.type_schema??1)
 
                     if (data.media_info.type === "master"){
                         const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "master.m3u8")
@@ -218,6 +226,11 @@ function Watch() {
         set_is_ready(false);
         clearTimeout(FIRST_RUN_TIMEOUT);
         FIRST_RUN_TIMEOUT = setTimeout(async ()=>{
+            const local_preview_result = await get_local_preview({source_id,preview_id});
+            if (local_preview_result.code === 200) {
+                SET_SEASON_INDEX(local_preview_result.result.season_index??0);
+                SET_CURRENT_SEASON_INDEX(local_preview_result.result.season_index??0);
+            }
             const get_source_info_result = await get_source_info({id:source_id});
             if (get_source_info_result.code === 200) {
                 SET_SOURCE_INFO(get_source_info_result.data);
@@ -239,14 +252,40 @@ function Watch() {
         }
     }
 
-    const RenderItem = useCallback(({item}:any)=>{
+    const SEASON_COMPONENT = useCallback(({index}:any)=>{
+    
+        return (<>
+            <ButtonBase 
+                sx={{
+                    padding:"25px",
+                    color: "var(--color)",
+                    background: "var(--background-color-layer-1)",
+                    borderRadius: "8px",
+                    border: `2px solid ${SEASON_INDEX == index ? "var(--color-2)" :"var(--background-color)"}`,
+                    whiteSpace: 'nowrap'
+                }}
+                
+                onClick={()=>{
+
+                    SET_SEASON_INDEX(index);
+                    SET_SEASON_ID(TYPE_SCHEMA === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[index]?.id : (index+1).toString());
+                }}
+            >
+                Season {index+1}
+            </ButtonBase>
+            
+        </>)
+    },[SEASON_INDEX, SEASON_INFO])
+
+    const EPISODE_COMPONENT = useCallback(({item}:any)=>{
+        
         const [available_local, set_available_local] = useState<boolean>(false);
         const [watch_state, set_watch_state] = useState<boolean>(false);
 
 
         useEffect(()=>{
             ;(async ()=>{
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id);
+                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, SEASON_ID);
 
                 const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
 
@@ -290,7 +329,7 @@ function Watch() {
                 style={{
                     flex:1,
                     borderRadius:"12px",
-                    background:item.id === watch_id ? "var(--selected-menu-background-color)" : watch_state ? "var(--background-color-layer-1)" : "var(--background-color)",
+                    background:((item.id === watch_id) && (SEASON_INDEX === CURRENT_SEASON_INDEX)) ? "var(--selected-menu-background-color)" : watch_state ? "var(--background-color-layer-1)" : "var(--background-color)",
                     color:"var(--color)",
                     display:"flex",
                     alignItems:"center",
@@ -303,7 +342,7 @@ function Watch() {
                 
                 onClick={async ()=>{
                     set_is_ready(false);
-                    navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`, {replace: true});
+                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${item.id}`), {replace: true});
                     const local_preview_result = await get_local_preview({source_id,preview_id});
                     if (local_preview_result.code === 200){
                         const data = local_preview_result.result
@@ -311,6 +350,7 @@ function Watch() {
                             source_id,preview_id,
                             data:{
                                 ...data,
+                                season_index:SEASON_INDEX,
                                 watch_index:parseInt(item.index,10),
                                 watch_id:item.id
                             },
@@ -319,7 +359,7 @@ function Watch() {
                     await get_data({watch_id:item.id,force_update:false});
                 }}
             >
-                <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
+                <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {parseInt(item.index,10)+1}: </span>{item.title}</span>
             </ButtonBase>
             <>{available_local &&
                 <Tooltip title="Available in storage">
@@ -327,7 +367,7 @@ function Watch() {
                 </Tooltip>
             }</>
         </div>)
-    },[watch_id]);
+    },[watch_id, ,SEASON_ID, SEASON_INDEX, CURRENT_SEASON_INDEX]);
     
     return (<>
         <div className={styles.container}>
@@ -413,7 +453,7 @@ function Watch() {
                                         style={{
                                             boxSizing:"border-box",
                                         }}
-                                        title={`Watching: ${preview_id}-${watch_id}`}
+                                        title={`Watching: ${preview_id}-${TYPE_SCHEMA=== 2 ? `Season ${SEASON_INDEX+1}-` : ""}Episode ${watch_id}`}
                                         onProviderChange={onProviderChange}
                                         src={MEDIA_SRC}
                                         onLoadedData={()=>{
@@ -507,7 +547,7 @@ function Watch() {
                                                             }}
                                                             onClick={async ()=>{
                                                                 if (SERVER_INFO.current_server_type === server_type && SERVER_INFO.current_server_id === item_2.server_id) return;
-                                                                navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`, { replace: true });
+                                                                navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${watch_id}/?server_type=${server_type}&server_id=${item_2.server_id}`), { replace: true });
                                                                 await get_data({
                                                                     watch_id,
                                                                     server_type,
@@ -575,7 +615,7 @@ function Watch() {
                                                             paddingRight:"calc((100vw + 100vh)*0.0575/2)",
                                                         }}
                                                         onClick={async ()=>{
-                                                            navigate(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}/`, { replace: true });
+                                                            navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${watch_id}/`), { replace: true });
                                                             await get_data({
                                                                 watch_id,
                                                                 check_local:false,
@@ -590,16 +630,26 @@ function Watch() {
                                     }</>
                                 </div>
                             </div>
+                            
+                            <>{TYPE_SCHEMA === 2 &&
+                                <div className={styles.season_box}>
+                                    <>{[...Array(EPISODE_DATA.length)].map((_, index) => (
+                                        <SEASON_COMPONENT key={index} index={index}/>
+
+                                    ))}</>
+                                </div>
+                            }</>
+                            
                             <div className={styles.body_box_2}>
                                 <>{EPISODE_DATA?.length > 0
-                                    ? <>{EPISODE_DATA[CURRENT_SEASON_INDEX][current_page-1].map((item:any,index:number)=>(
-                                        <RenderItem key={index} item={item}/>
+                                    ? <>{EPISODE_DATA[SEASON_INDEX][current_page-1].map((item:any,index:number)=>(
+                                        <EPISODE_COMPONENT key={index} item={item}/>
                                     ))}</>
                                     : <></>
                                 }</>
                             </div>
                             <div className={styles.body_box_3}>
-                                <Pagination count={EPISODE_DATA[CURRENT_SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
+                                <Pagination count={EPISODE_DATA[SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
                                     sx={{
                                         ul: {
                                             "& .MuiPaginationItem-root": {
