@@ -35,7 +35,8 @@ const RenderItem = ({item, get_data}:any) => {
     const source_id = item.source_id;
     const preview_id = item.preview_id;
     const season_id = item.season_id;
-
+    const type_schema = item.type_schema;
+    
     
 
     const navigate = useNavigate();
@@ -119,14 +120,14 @@ const RenderItem = ({item, get_data}:any) => {
                 <div className={styles.info_container}>
                     <div className={styles.info_box_1}>
                         
-                        <span className={styles.title}>{title??"?"}</span>
+                        <span className={styles.title}>{type_schema === 2 ? `Season ${season_id} | ` : ""}{title??"?"}</span>
                         <>{(
                             task_info.source_id === source_id && 
                             task_info.preview_id === preview_id) &&
                             task_info.season_id === season_id &&
                             !pause_task
                             && <>
-                                <span className={styles.title}>Episode {task_info?.watch_index}: {task_info.watch_title}</span>
+                                <span className={styles.title}>Episode {task_info?.watch_index+1}: {task_info.watch_title}</span>
                                 <div className={styles.progress_box}>
                                     <>{(!progress_info.status || progress_info.status === "finished")
                                         ? <div style={{flex:1, color:"grey"}}>
@@ -231,7 +232,7 @@ const RenderItem = ({item, get_data}:any) => {
                                         </Tooltip>
                                     }</>
 
-                                    <span  className={styles.item_data_title}>Episode {item_data.watch_index}: {item_data.title}</span>
+                                    <span  className={styles.item_data_title}>Episode {item_data.watch_index+1}: {item_data.title}</span>
                                     
                                     <>{item_data.error && <>
                                         <Tooltip title={"Retry"}
@@ -248,7 +249,7 @@ const RenderItem = ({item, get_data}:any) => {
                                                     const temp = ITEM_DATA;
                                                     temp[index].error = false;
                                                     SET_ITEM_DATA(temp);
-                                                    const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, item_data.watch_id);
+                                                    const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, season_id, item_data.watch_id);
                                                     await remove(cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
                                                 }
 

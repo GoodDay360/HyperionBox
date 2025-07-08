@@ -93,18 +93,21 @@ const Preview = () => {
     const [is_online, set_is_online] = useState<boolean>(false);
     const [download_mode, set_download_mode] = useState<any>({state:false,select_type:"manual"});
     const selected_download_data = useRef<any>([])
+    const selected_download_season_id = useRef<string>("")
     
     const [TAG_DATA, SET_TAG_DATA] = useState<any>([])
     const [SEASON_INFO, _] = useState<{id:string}[]>([]);
-    const [CURRENT_SEASON_ID, SET_CURRENT_SEASON_ID] = useState<string>("0");
-    const [CURRENT_SEASON_INDEX, SET_CURRENT_SEASON_INDEX] = useState<number>(0);
-    const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
-    const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
-    const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
-    const [TYPE_SCHEMA, SET_TYPE_SCHEMA] = useState<number>(0);
+    const [SEASON_ID, SET_SEASON_ID] = useState<string>("0");
+    const [SEASON_INDEX, SET_SEASON_INDEX] = useState<number>(0);
     const [INFO, SET_INFO] = useState<any>({});
     const [STATS, SET_STATS] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
+    const [TYPE_SCHEMA, SET_TYPE_SCHEMA] = useState<number>(0);
+
+    const [CURRENT_SEASON_INDEX, SET_CURRENT_SEASON_INDEX] = useState<number>(0);
+    const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
+    const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(0);
+    const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
     
 
     const [selected_tag, set_selected_tag] = useState<any>([]);
@@ -188,7 +191,7 @@ const Preview = () => {
 
         const request_item_tags_result:any = await request_item_tags({source_id,preview_id});
         if (request_item_tags_result.code === 200){
-            console.log("HAHA", request_item_tags_result)
+            
             last_selected_tag.current = request_item_tags_result.data;
             set_selected_tag(request_item_tags_result.data);
         }else{
@@ -208,6 +211,8 @@ const Preview = () => {
 
         const request_preview_result = await get_preview({source_id,preview_id});
         if (request_preview_result.code === 200) {
+            SET_SEASON_ID((request_preview_result.result.type_schema||1) === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[CURRENT_SEASON_INDEX]?.id : (CURRENT_SEASON_INDEX+1).toString());
+            selected_download_season_id.current = (request_preview_result.result.type_schema||1) === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[CURRENT_SEASON_INDEX]?.id : (CURRENT_SEASON_INDEX+1).toString();
             SET_TYPE_SCHEMA(request_preview_result.result.type_schema||1)
             SET_INFO(request_preview_result.result.info);
             SET_STATS(request_preview_result.result.stats);
@@ -253,7 +258,7 @@ const Preview = () => {
 
         set_is_update({state:false,error:false, message:""})
         set_is_ready(true);
-    },[])
+    },[CURRENT_SEASON_INDEX, TYPE_SCHEMA])
 
     // Main Running event
     useEffect(()=>{
@@ -272,16 +277,24 @@ const Preview = () => {
             const local_preview_result = await get_local_preview({source_id,preview_id})
             if (load_tag_result.data.length > 0 && local_preview_result.code === 200){
                 console.log("LL IT GO HERE", load_tag_result.data.length)
-                const data = local_preview_result.result
-                SET_CURRENT_WATCH_ID(data.watch_id??"");
-                SET_CURRENT_WATCH_INDEX(data.watch_index??-1);
+                const data = local_preview_result.result;
+                SET_SEASON_INDEX(data.season_index ?? 0);
+                SET_SEASON_ID((data.type_schema||1) === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[data.season_index??0]?.id : ((data.season_index??0)+1).toString());
+                selected_download_season_id.current = (data.type_schema||1) === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[data.season_index??0]?.id : ((data.season_index??0)+1).toString();
+                SET_CURRENT_SEASON_INDEX(data.season_index ?? 0);
+                SET_CURRENT_WATCH_ID(data.watch_id ?? "");
+                SET_CURRENT_WATCH_INDEX(data.watch_index ?? -1);
                 SET_TYPE_SCHEMA(data.type_schema||1)
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
                 try{
                     if (data.watch_id){
-                        const watch_state_result = await get_watch_state({source_id,preview_id,watch_id:data.watch_id});
+                        const watch_state_result = await get_watch_state({
+                            source_id,
+                            preview_id,
+                            season_id:(data.type_schema||1) === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[data.season_index??0]?.id : ((data.season_index??0)+1).toString(),
+                            watch_id:data.watch_id});
                         if (watch_state_result.code === 200){
                             SET_CURRENT_WATCH_TIME(watch_state_result.data.current_time??0);
                         }
@@ -339,21 +352,22 @@ const Preview = () => {
                     color: "var(--color)",
                     background: "var(--background-color-layer-1)",
                     borderRadius: "8px",
-                    border: `2px solid ${CURRENT_SEASON_INDEX == index ? "var(--color-2)" :"var(--background-color)"}`,
+                    border: `2px solid ${SEASON_INDEX == index ? "var(--color-2)" :"var(--background-color)"}`,
                     whiteSpace: 'nowrap'
                 }}
                 
                 onClick={()=>{
 
-                    SET_CURRENT_SEASON_INDEX(index);
-                    SET_CURRENT_SEASON_ID(SEASON_INFO?.[index]?.id || index+1);
+                    SET_SEASON_INDEX(index);
+                    SET_SEASON_ID(TYPE_SCHEMA === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[index]?.id : (index+1).toString());
+                    selected_download_season_id.current = TYPE_SCHEMA === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[index]?.id : (index+1).toString();
                 }}
             >
                 Season {index+1}
             </ButtonBase>
             
         </>)
-    },[CURRENT_SEASON_INDEX, SEASON_INFO])
+    },[SEASON_INDEX, SEASON_INFO, TYPE_SCHEMA])
 
     const EPISODE_COMPONENT = useCallback(({item}:any)=>{
         const [is_checked_for_download, set_is_checked_for_download] = useState<boolean>(false);
@@ -375,7 +389,7 @@ const Preview = () => {
 
         useEffect(()=>{
             ;(async ()=>{
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, CURRENT_SEASON_ID);
+                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, SEASON_ID);
 
                 const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
 
@@ -420,7 +434,7 @@ const Preview = () => {
                 style={{
                     flex:1,
                     borderRadius:"12px",
-                    background: parseInt(item.index,10) === CURRENT_WATCH_INDEX ? "var(--selected-menu-background-color)" : watch_state ? "var(--background-color-layer-1)" : "var(--background-color)",
+                    background: ((parseInt(item.index,10) === CURRENT_WATCH_INDEX) && (SEASON_INDEX === CURRENT_SEASON_INDEX)) ? "var(--selected-menu-background-color)" : watch_state ? "var(--background-color-layer-1)" : "var(--background-color)",
                     color:"var(--color)",
                     display:"flex",
                     alignItems:"center",
@@ -441,15 +455,16 @@ const Preview = () => {
                             source_id,preview_id,
                             data:{
                                 ...data,
+                                season_index:SEASON_INDEX,
                                 watch_index:parseInt(item.index,10),
                                 watch_id:item.id
                             },
                         });
                     }
-                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${item.id}`));
+                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${item.id}`));
                 }}
             >
-                <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index}: </span>{item.title}</span>
+                <span><span style={{fontFamily: "var(--font-family-bold)"}}>Episode {item.index+1}: </span>{item.title}</span>
             </ButtonBase>
             <>{available_local && !download_mode.state &&
                 <Tooltip title="Available in storage">
@@ -479,7 +494,7 @@ const Preview = () => {
                     <IconButton 
                         onClick={()=>{
                             set_widget({type:"remove_download", onSubmit: async ()=>{
-                                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, CURRENT_SEASON_ID, "download", item.id);
+                                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, SEASON_ID, "download", item.id);
                                 await remove(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
                                 set_available_local(false);
                             }});
@@ -491,7 +506,7 @@ const Preview = () => {
                 </Tooltip>
             }</>
         </div>
-    },[download_mode,CURRENT_WATCH_INDEX])
+    },[download_mode,CURRENT_WATCH_INDEX, SEASON_INDEX, CURRENT_SEASON_INDEX, TYPE_SCHEMA])
 
 
     return (
@@ -599,6 +614,7 @@ const Preview = () => {
                                 <>{selected_tag.length > 0 &&
                                     <IconButton color="primary" size="large"
                                         onClick={()=>{
+                                            
                                             set_download_mode({...download_mode,state:!download_mode.state,select_type:"manual"});
                                             if (download_mode.state) {
                                                 selected_download_data.current = []
@@ -762,8 +778,8 @@ const Preview = () => {
                                                 fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
                                             }}
                                             onClick={async ()=>{
-                                                if (CURRENT_WATCH_INDEX > 0) {
-                                                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${CURRENT_WATCH_ID}`));
+                                                if (CURRENT_WATCH_INDEX > -1) {
+                                                    navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${CURRENT_WATCH_ID}`));
                                                 }else{
                                                     const watch_id = EPISODE_DATA?.[0]?.[0]?.[0]?.id;
                                                     const watch_index = EPISODE_DATA?.[0]?.[0]?.[0]?.index;
@@ -776,25 +792,26 @@ const Preview = () => {
                                                                 source_id,preview_id,
                                                                 data:{
                                                                     ...data,
+                                                                    season_index: SEASON_INDEX,
                                                                     watch_index: watch_index,
                                                                     watch_id:watch_id
                                                                 },
                                                             });
                                                         }
-                                                        navigate(encodeURI(`/watch/${source_id}/${preview_id}/${CURRENT_SEASON_ID}/${watch_id}`));
+                                                        navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${watch_id}`));
                                                     }
                                                 }
                                                 
                                             }}
                                         >
-                                            <>{CURRENT_WATCH_INDEX > 0
+                                            <>{CURRENT_WATCH_INDEX > -1
                                                 ? <>
                                                     <span style={{fontFamily: "var(--font-family-bold)"}}>Continues</span>
-                                                    <span style={{fontFamily: "var(--font-family-light)"}}>Episode: {CURRENT_WATCH_INDEX}</span>
+                                                    <span style={{fontFamily: "var(--font-family-light)"}}>{TYPE_SCHEMA===2 ? `Season ${CURRENT_SEASON_INDEX+1} | `:""}Episode: {CURRENT_WATCH_INDEX+1}</span>
                                                 </>
                                                 : <>
                                                     <span style={{fontFamily: "var(--font-family-bold)"}}>Watch now</span>
-                                                    <span style={{fontFamily: "var(--font-family-light)"}}>Episode: 1</span>
+                                                    <span style={{fontFamily: "var(--font-family-light)"}}>{TYPE_SCHEMA===2 ? "Season 1 | ":""}Episode: 1</span>
                                                 </>
                                             }</>
                                             
@@ -879,15 +896,16 @@ const Preview = () => {
                                 </div>
 
                             </div>
-                            <div className={styles.season_box}>
-                                <>{TYPE_SCHEMA === 2 &&
+                        
+                            <>{TYPE_SCHEMA === 2 && !download_mode.state &&
+                                <div className={styles.season_box}>
                                     <>{[...Array(EPISODE_DATA.length)].map((_, index) => (
                                         <SEASON_COMPONENT key={index} index={index}/>
 
                                     ))}</>
-
-                                }</>
-                            </div>
+                                </div>
+                            }</>
+                            
                             <div id="ep_container" className={styles.body_box_3}>
                                 <>{download_mode.state &&
                                     <div
@@ -909,7 +927,7 @@ const Preview = () => {
                                                 onClick={()=>{
                                                     if (download_mode.select_type != "all"){
                                                         const new_data:any = []
-                                                        for (const item of EPISODE_DATA[CURRENT_SEASON_INDEX]){
+                                                        for (const item of EPISODE_DATA[SEASON_INDEX]){
                                                             new_data.push(...item)
                                                         }
                                                         selected_download_data.current = new_data;
@@ -933,14 +951,14 @@ const Preview = () => {
                                 }</>
                                 
                                 <>{EPISODE_DATA?.length > 0
-                                    ? <>{EPISODE_DATA[CURRENT_SEASON_INDEX][current_page-1].map((item:any,index:number)=>(
+                                    ? <>{EPISODE_DATA[SEASON_INDEX][current_page-1].map((item:any,index:number)=>(
                                         <EPISODE_COMPONENT key={index} item={item}/>
                                     ))}</>
                                     : <></>
                                 }</>
                             </div>
                             <div className={styles.body_box_4}>
-                                <Pagination count={EPISODE_DATA[CURRENT_SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
+                                <Pagination count={EPISODE_DATA[SEASON_INDEX].length} page={current_page} color="primary" showFirstButton showLastButton
                                     sx={{
                                         ul: {
                                             "& .MuiPaginationItem-root": {
@@ -1026,7 +1044,7 @@ const Preview = () => {
             <AnimatePresence>
                 <>{widget.type === "manage_download" && <ManageDownloadWidget
                     {...{
-
+                        type_schema:TYPE_SCHEMA,
                         onClose:()=>{set_widget({type:""})},
                         onSubmit:async (options:any)=>{
                             const selected_data = selected_download_data.current
@@ -1036,9 +1054,10 @@ const Preview = () => {
                             }
                             set_feedback_snackbar({state:true,type:"info",text:"Adding to download task..."});
                             for (const data of selected_data){
-                                console.log({
+                                console.log("ADD to downlaod task",{
                                     source_id: source_id??"",
                                     preview_id: preview_id??"",
+                                    season_id: selected_download_season_id.current,
                                     title:data.title,
                                     watch_index: data.index,
                                     watch_id: data.id,
@@ -1049,6 +1068,7 @@ const Preview = () => {
                                 await request_add_download_task({
                                     source_id: source_id??"",
                                     preview_id: preview_id??"",
+                                    season_id: selected_download_season_id.current,
                                     title:data.title,
                                     watch_index: data.index,
                                     watch_id: data.id,

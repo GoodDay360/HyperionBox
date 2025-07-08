@@ -15,14 +15,14 @@ dayjs.extend(utc);
 
 const FETCH_UPDATE_INTERVAL = 1; // In hours
 
-const get_download_info = async ({source_id,preview_id,watch_id,server_type,server_id,force_update=false}:{
-    source_id:string,preview_id:string,watch_id:string,
+const get_download_info = async ({source_id,preview_id,season_id="0",watch_id,server_type,server_id,force_update=false}:{
+    source_id:string,preview_id:string,season_id?:string,watch_id:string,
     server_type?:string|null,server_id?:string|null,
     force_update?:boolean
 }) => {
     return await new Promise<any>(async (resolve, _) => {
         try{
-            const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, watch_id);
+            const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, season_id, watch_id);
             const manifest_path = await path.join(cache_dir, "manifest.json")
             if (!force_update && await exists(manifest_path)) {
                 try {
@@ -39,11 +39,12 @@ const get_download_info = async ({source_id,preview_id,watch_id,server_type,serv
             const port = sessionStorage.getItem("extension_port");
             const body = {
                 "cache_dir": await path.join(await path.appDataDir(), ".cache"),
-                "source_id": source_id,
-                "preview_id": preview_id,
-                "watch_id": watch_id,
-                "server_type": server_type,
-                "server_id": server_id
+                source_id,
+                preview_id,
+                season_id,
+                watch_id,
+                server_type,
+                server_id
             }
             console.log(body)
             axios({

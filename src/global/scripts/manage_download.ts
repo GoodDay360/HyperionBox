@@ -103,17 +103,17 @@ export async function request_add_download_task({
     server_type: string,
     type_schema: number
 }) {
-    if (type_schema === 2 && season_id!=="0"){
-        return { code: 422, message: "type_schema:2 require season_id!"};
+    if (type_schema === 1 && season_id!=="0"){
+        return { code: 422, message: `type_schema:1 require season_id = "0"!`};
     }
     await setup_table();
     const db = await Database.load(DATABASE_PATH);
     const existsQuery = `
         SELECT 1
         FROM download_task
-        WHERE source_id = $1 AND preview_id = $2 AND watch_id = $3
+        WHERE source_id = $1 AND preview_id = $2 AND season_id = $3 AND watch_id = $4
     `;
-    const existsResult:any = await db.select(existsQuery, [source_id, preview_id, watch_id]);
+    const existsResult:any = await db.select(existsQuery, [source_id, season_id, preview_id, watch_id]);
     if (existsResult.length > 0) {
         return { code: 403, message: "Already Exist" };
     }
