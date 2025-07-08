@@ -103,6 +103,7 @@ const Preview = () => {
     const [STATS, SET_STATS] = useState<any>({});
     const [EPISODE_DATA, SET_EPISODE_DATA] = useState<any>([]);
     const [TYPE_SCHEMA, SET_TYPE_SCHEMA] = useState<number>(0);
+    const [SERVER_TYPE_SCHEMA, SET_SERVER_TYPE_SCHEMA] = useState<number>(0);
 
     const [CURRENT_SEASON_INDEX, SET_CURRENT_SEASON_INDEX] = useState<number>(0);
     const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
@@ -214,6 +215,7 @@ const Preview = () => {
             SET_SEASON_ID((request_preview_result.result.type_schema||1) === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[CURRENT_SEASON_INDEX]?.id : (CURRENT_SEASON_INDEX+1).toString());
             selected_download_season_id.current = (request_preview_result.result.type_schema||1) === 1 ? "0" : SEASON_INFO.length > 0 ? SEASON_INFO?.[CURRENT_SEASON_INDEX]?.id : (CURRENT_SEASON_INDEX+1).toString();
             SET_TYPE_SCHEMA(request_preview_result.result.type_schema||1)
+            SET_SERVER_TYPE_SCHEMA(request_preview_result.result.server_type_schema||1)
             SET_INFO(request_preview_result.result.info);
             SET_STATS(request_preview_result.result.stats);
             SET_EPISODE_DATA(request_preview_result.result.episodes);
@@ -285,6 +287,7 @@ const Preview = () => {
                 SET_CURRENT_WATCH_ID(data.watch_id ?? "");
                 SET_CURRENT_WATCH_INDEX(data.watch_index ?? -1);
                 SET_TYPE_SCHEMA(data.type_schema||1)
+                SET_SERVER_TYPE_SCHEMA(data.server_type_schema||1)
                 SET_INFO(data.info)
                 SET_STATS(data.stats)
                 SET_EPISODE_DATA(data.episodes)
@@ -1046,7 +1049,7 @@ const Preview = () => {
             <AnimatePresence>
                 <>{widget.type === "manage_download" && <ManageDownloadWidget
                     {...{
-                        type_schema:TYPE_SCHEMA,
+                        server_type_schema:SERVER_TYPE_SCHEMA,
                         onClose:()=>{set_widget({type:""})},
                         onSubmit:async (options:any)=>{
                             const selected_data = selected_download_data.current
