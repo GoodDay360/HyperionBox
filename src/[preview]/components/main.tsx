@@ -106,7 +106,7 @@ const Preview = () => {
 
     const [CURRENT_SEASON_INDEX, SET_CURRENT_SEASON_INDEX] = useState<number>(0);
     const [CURRENT_WATCH_ID, SET_CURRENT_WATCH_ID] = useState<string>("");
-    const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(0);
+    const [CURRENT_WATCH_INDEX, SET_CURRENT_WATCH_INDEX] = useState<number>(-1);
     const [CURRENT_WATCH_TIME, SET_CURRENT_WATCH_TIME] = useState<number>(0);
     
 
@@ -778,12 +778,12 @@ const Preview = () => {
                                                 fontSize: "calc((100vw + 100vh) * 0.02 / 2)",
                                             }}
                                             onClick={async ()=>{
-                                                if (CURRENT_WATCH_INDEX > -1) {
+                                                if (CURRENT_WATCH_INDEX > -1 && selected_tag.length > 0) {
                                                     navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${CURRENT_WATCH_ID}`));
                                                 }else{
-                                                    const watch_id = EPISODE_DATA?.[0]?.[0]?.[0]?.id;
-                                                    const watch_index = EPISODE_DATA?.[0]?.[0]?.[0]?.index;
-                                                    if (watch_id && watch_index) {
+                                                    const watch_id = EPISODE_DATA?.[0]?.[0]?.[0]?.id??null;
+                                                    const watch_index = EPISODE_DATA?.[0]?.[0]?.[0]?.index??null;
+                                                    if ((watch_id !== null) && (watch_index !== null)) {
                                                         set_is_ready(false);
                                                         const local_preview_result = await get_local_preview({source_id,preview_id});
                                                         if (local_preview_result.code === 200){
@@ -799,12 +799,14 @@ const Preview = () => {
                                                             });
                                                         }
                                                         navigate(encodeURI(`/watch/${source_id}/${preview_id}/${SEASON_ID}/${watch_id}`));
+                                                    }else{
+                                                        console.error("Unable to navigate. Episode data not found.");
                                                     }
                                                 }
                                                 
                                             }}
                                         >
-                                            <>{CURRENT_WATCH_INDEX > -1
+                                            <>{CURRENT_WATCH_INDEX > -1 && selected_tag.length > 0
                                                 ? <>
                                                     <span style={{fontFamily: "var(--font-family-bold)"}}>Continues</span>
                                                     <span style={{fontFamily: "var(--font-family-light)"}}>{TYPE_SCHEMA===2 ? `Season ${CURRENT_SEASON_INDEX+1} | `:""}Episode: {CURRENT_WATCH_INDEX+1}</span>
