@@ -23,10 +23,10 @@ import { motion } from 'framer-motion';
 // Styles
 import styles from "../styles/manage_download_widget.module.css";
 
-const ManageDownloadWidget  = ({type_schema=1, onClose=()=>{}, onSubmit=({})=>{}}:any) => {
+const ManageDownloadWidget  = ({server_type_schema=1, onClose=()=>{}, onSubmit=({})=>{}}:any) => {
 
     const [quality, set_quality] = useState<number>(4);
-    const [server_type, set_server_type] = useState<string>(type_schema === 1 ? "sub" : "server");
+    const [server_type, set_server_type] = useState<string>(server_type_schema === 1 ? "sub" : "server");
 
     useEffect(()=>{
         
@@ -102,7 +102,7 @@ const ManageDownloadWidget  = ({type_schema=1, onClose=()=>{}, onSubmit=({})=>{}
                             </FormControl>
                         </Tooltip>
 
-                        <>{type_schema === 1 &&
+                        <>{server_type_schema === 1 &&
                             <Tooltip placement='top' title={"Select server type. This apply for all content."} >
                                 <FormControl sx={{ minWidth: "200px", width:"calc((100vw + 100vh) * 0.5 / 2)"}}>
                                     <InputLabel sx={{color:"var(--color)"}}>Server Type</InputLabel>
