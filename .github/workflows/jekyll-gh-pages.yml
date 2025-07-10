@@ -24,17 +24,26 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Remove index.html and convert README.md to styled index.md
+      - name: Remove index.html and convert README.md to styled index.html
         run: |
           rm -f index.html
-          echo "---" > index.md
-          echo "layout: default" >> index.md
-          echo "title: Home" >> index.md
-          echo "---" >> index.md
-          echo "<link rel='stylesheet' href='style.css'>" >> index.md
-          echo "<article class='markdown-body'>" >> index.md
-          cat README.md >> index.md
-          echo "</article>" >> index.md
+          {
+            echo "<!DOCTYPE html>"
+            echo "<html lang='en'>"
+            echo "<head>"
+            echo "  <meta charset='UTF-8'>"
+            echo "  <meta name='viewport' content='width=device-width, initial-scale=1.0'>"
+            echo "  <title>HyperionBox</title>"
+            echo "  <meta name='description' content='HyperionBox – open-source anime and movie streaming desktop app with extensions, watchlist, and offline support'>"
+            echo "  <link rel='stylesheet' href='style.css'>"
+            echo "</head>"
+            echo "<body>"
+            echo "  <article class='markdown-body'>"
+            cat README.md
+            echo "  </article>"
+            echo "</body>"
+            echo "</html>"
+          } > index.html
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
