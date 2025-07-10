@@ -1,9 +1,9 @@
-name: Deploy README to GitHub Pages
+name: Deploy README.md to GitHub Pages
 
 on:
   push:
     branches:
-      - main  # change this to match your default branch
+      - main  # change if your default branch is different
 
 permissions:
   contents: read
@@ -25,9 +25,8 @@ jobs:
           touch public/.nojekyll
 
       - name: 📦 Upload Pages artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: github-pages
           path: public
 
       - name: 🚀 Deploy to GitHub Pages
