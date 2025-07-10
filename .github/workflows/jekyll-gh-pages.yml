@@ -29,11 +29,14 @@ jobs:
 
       - name: Convert README.md to index.html with dark mode
         run: |
-          pandoc README.md -o index.html --metadata title="HyperionBox" --standalone --css <(cat <<EOF
+          rm -f index.html
+
+          # Create temporary dark-mode-aware CSS file
+          cat <<EOF > dark.css
           body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: #fff;
+            background-color: #ffffff;
             color: #24292f;
             padding: 2em;
           }
@@ -49,8 +52,10 @@ jobs:
             max-width: 100%;
             height: auto;
           }
-EOF
-          )
+          EOF
+
+          # Generate styled index.html from README.md
+          pandoc README.md -o index.html --metadata title="HyperionBox" --standalone --css=dark.css
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
@@ -71,5 +76,3 @@ EOF
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-
