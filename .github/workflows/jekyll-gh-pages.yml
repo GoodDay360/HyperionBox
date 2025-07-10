@@ -1,4 +1,4 @@
-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+name: Deploy HyperionBox homepage from README
 
 on:
   push:
@@ -24,26 +24,33 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Remove index.html and convert README.md to styled index.html
+      - name: Install Pandoc
+        run: sudo apt-get install -y pandoc
+
+      - name: Convert README.md to index.html with dark mode
         run: |
-          rm -f index.html
-          {
-            echo "<!DOCTYPE html>"
-            echo "<html lang='en'>"
-            echo "<head>"
-            echo "  <meta charset='UTF-8'>"
-            echo "  <meta name='viewport' content='width=device-width, initial-scale=1.0'>"
-            echo "  <title>HyperionBox</title>"
-            echo "  <meta name='description' content='HyperionBox – open-source anime and movie streaming desktop app with extensions, watchlist, and offline support'>"
-            echo "  <link rel='stylesheet' href='style.css'>"
-            echo "</head>"
-            echo "<body>"
-            echo "  <article class='markdown-body'>"
-            cat README.md
-            echo "  </article>"
-            echo "</body>"
-            echo "</html>"
-          } > index.html
+          pandoc README.md -o index.html --metadata title="HyperionBox" --standalone --css <(cat <<EOF
+          body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: #fff;
+            color: #24292f;
+            padding: 2em;
+          }
+          @media (prefers-color-scheme: dark) {
+            body {
+              background-color: #0d1117;
+              color: #c9d1d9;
+            }
+            a { color: #58a6ff; }
+            code { background-color: #161b22; color: #c9d1d9; }
+          }
+          img {
+            max-width: 100%;
+            height: auto;
+          }
+EOF
+          )
 
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
