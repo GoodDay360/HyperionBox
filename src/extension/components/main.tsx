@@ -76,7 +76,7 @@ const Extension = () => {
 
     const RenderItem = useCallback(({id,data}:any)=>{
         return (<Item id={id} data={data} installed={!!INSTALLED_SOURCE.some((source:any)=>source.id === id)} installed_version={INSTALLED_SOURCE.find((source:any)=>source.id === id)?.version} />)
-    },[INSTALLED_SOURCE])
+    },[INSTALLED_SOURCE, SEARCH]);
 
     return (<>
         <div className={styles.container}>
