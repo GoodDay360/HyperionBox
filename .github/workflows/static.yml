@@ -3,7 +3,7 @@ name: Deploy README to GitHub Pages
 on:
   push:
     branches:
-      - main  # change if your default branch is different
+      - main  # change this to match your default branch
 
 permissions:
   contents: read
@@ -20,11 +20,11 @@ jobs:
 
       - name: 🛠️ Prepare README as index
         run: |
-          mkdir public
+          mkdir -p public
           cp README.md public/index.md
-          touch public/.nojekyll  # optional, disables Jekyll for pure Markdown
+          touch public/.nojekyll
 
-      - name: 📦 Upload artifact
+      - name: 📦 Upload Pages artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
