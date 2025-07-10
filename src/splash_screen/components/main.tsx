@@ -214,7 +214,6 @@ function Splash_Screen() {
                 // =====
             }else{
                 for (const item of check_bin){
-                    console.log(item, config.bin?.[Object.keys(item)[0]]?.state)
                     if (!config.bin?.[Object.keys(item)[0]]?.state) {
                         setFeedback({text:"Missing dependancies, Internet connection required.",color:"red",type:"error"});
                         return;

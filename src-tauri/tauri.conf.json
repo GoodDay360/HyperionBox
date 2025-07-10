@@ -19,12 +19,13 @@
     ],
     "security": {
       "csp": {
-        "default-src": "* customprotocol: asset:",
+        "default-src": "* customprotocol: asset: https://*.disqus.com https://disqus.com",
         "script-src": "* 'unsafe-inline' 'unsafe-eval';",
         "style-src": "* 'unsafe-inline' 'unsafe-eval';",
         "script-src-elem": "* 'unsafe-inline' 'unsafe-eval';",
         "connect-src": "* blob: data: asset: asset://localhost",
         "frame-src": "* blob: data: asset: asset://localhost",
+        "frame-ancestors": "'self'",
         "img-src": "* blob: data: asset: asset://localhost",
         "media-src": "* blob: data: asset: asset://localhost",
         "object-src": "* blob: data: asset: asset://localhost"
