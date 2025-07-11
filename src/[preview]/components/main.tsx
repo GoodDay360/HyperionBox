@@ -613,26 +613,27 @@ const Preview = () => {
                                     }</>                         
                                 }</>
                                 
-                                
-                                <>{selected_tag.length > 0 &&
-                                    <IconButton color="primary" size="large"
-                                        onClick={()=>{
-                                            
-                                            set_download_mode({...download_mode,state:!download_mode.state,select_type:"manual"});
-                                            if (download_mode.state) {
-                                                selected_download_data.current = []
-                                            }else{
-                                                const element = document.getElementById('ep_container');
-                                                element?.scrollIntoView({ behavior: 'smooth' });
-                                            }
-                                        }}
-                                    >
-                                        {download_mode.state
-                                            ? <CloseRoundedIcon sx={{color:"red"}} fontSize="large"/>
-                                            : <DownloadRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                                <IconButton color="primary" size="large"
+                                    onClick={()=>{
+                                        if (selected_tag.length === 0) {
+                                            set_feedback_snackbar({state:true,type:"warning",text:"Required to add this content to Watchlist before download."});
+                                            return;
                                         }
-                                    </IconButton>
-                                }</>
+                                        set_download_mode({...download_mode,state:!download_mode.state,select_type:"manual"});
+                                        if (download_mode.state) {
+                                            selected_download_data.current = []
+                                        }else{
+                                            const element = document.getElementById('ep_container');
+                                            element?.scrollIntoView({ behavior: 'smooth' });
+                                        }
+                                    }}
+                                >
+                                    {download_mode.state
+                                        ? <CloseRoundedIcon sx={{color:"red"}} fontSize="large"/>
+                                        : <DownloadRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                                    }
+                                </IconButton>
+                                
                             </div>
                         </div>
                         <div className={styles.body}>

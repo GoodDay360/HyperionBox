@@ -117,7 +117,7 @@ function App() {
 					<>{menu.state &&
 						<div className={styles.menu_container}>
 							<div className={styles.menu}>
-								{menu_button_top.map((item:any, index:number) => (
+								{menu_button_top.map((item:any, index:number) => 
 									<Tooltip title={item.title} placement="right" key={index}>
 										<IconButton disabled={menu.path === item.path}
 											sx={{
@@ -132,10 +132,10 @@ function App() {
 											<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
 										</IconButton>
 									</Tooltip>
-								))}
+								)}
 							</div>
 							<div className={styles.menu} style={{alignSelf: "flex-end"}}>
-								{menu_button_bottom.map((item:any, index:number) => (
+								{menu_button_bottom.map((item:any, index:number) => 
 									<Tooltip title={item.title} placement="right" key={index}>
 										<IconButton  disabled={menu.path === item.path}
 											sx={{
@@ -150,7 +150,7 @@ function App() {
 											<item.icon sx={{color: "var(--color)", fontSize: "1.5rem"}}/>
 										</IconButton>
 									</Tooltip>
-								))}
+								)}
 							</div>
 						</div>
 					}</>

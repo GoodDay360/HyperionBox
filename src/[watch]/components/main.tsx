@@ -2,7 +2,7 @@
 
 // Tauri Plugins
 import { path } from "@tauri-apps/api";
-import { getCurrentWindow } from "@tauri-apps/api/window"
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { BaseDirectory, exists, readTextFile } from "@tauri-apps/plugin-fs";
 
 // React Imports
@@ -54,13 +54,14 @@ import check_internet_connection from "../../global/scripts/check_internet_conne
 import rephrase_local_hls from "../scripts/rephrase_local_hls";
 import open_external from "../scripts/open_external";
 import { get_source_info } from "../../global/scripts/manage_extension";
+import { read_config } from "../../global/scripts/manage_config";
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 let FIRST_RUN_TIMEOUT:any;
 
 function Watch() {
     const navigate = useNavigate();
-    const {app_ready} = useContext<any>(global_context);
+    const {app_ready, set_feedback_snackbar} = useContext<any>(global_context);
     
     const { source_id, preview_id, season_id, watch_id }:any = useParams();
     console.log(season_id, watch_id);
@@ -97,15 +98,19 @@ function Watch() {
     useEffect(()=>{
         (async ()=>{
             if (isFullscreen){
-                await getCurrentWindow().setFullscreen(true)
-                sessionStorage.setItem("fullscreen", "yes")
+                sessionStorage.setItem("allow_auto_config_screen", "0");
             }else{
-                await getCurrentWindow().setFullscreen(false)
-                sessionStorage.setItem("fullscreen", "no")
+                sessionStorage.setItem("allow_auto_config_screen", "1");
+                const config = await read_config();
+                if (config.options.fullscreen){
+                    await getCurrentWindow().setFullscreen(true);
+                }
+                
             }
         })();
         return;
     },[isFullscreen])
+
 
     let update_state_interval:any = null;
     let is_updating_state = false
@@ -441,50 +446,46 @@ function Watch() {
                         </div>
                         <div className={styles.body}>
                             <div className={styles.body_box_1}>
-                                <div
+                                
+                                <MediaPlayer ref={media_player_ref} 
                                     style={{
+                                        boxSizing:"border-box",
                                         flex:1,
                                         minWidth:"200px",
                                         display:"flex",
-                                        boxSizing:"border-box",
                                     }}
+                                    title={`Watching: ${preview_id}-${TYPE_SCHEMA=== 2 ? `Season ${SEASON_INDEX+1}-` : ""}Episode ${watch_id}`}
+                                    onProviderChange={onProviderChange}
+                                    src={MEDIA_SRC}
+                                    onLoadedData={()=>{
+                                        set_is_media_ready(true);
+                                    }}
+                                    storage="vidstack"
+                                    streamType='on-demand'
+                                    viewType='video'
+                                    playsInline crossOrigin
                                 >
-                                    <MediaPlayer ref={media_player_ref} 
-                                        style={{
-                                            boxSizing:"border-box",
-                                        }}
-                                        title={`Watching: ${preview_id}-${TYPE_SCHEMA=== 2 ? `Season ${SEASON_INDEX+1}-` : ""}Episode ${watch_id}`}
-                                        onProviderChange={onProviderChange}
-                                        src={MEDIA_SRC}
-                                        onLoadedData={()=>{
-                                            set_is_media_ready(true);
-                                        }}
-                                        storage="vidstack"
-                                        streamType='on-demand'
-                                        viewType='video'
-                                        playsInline crossOrigin
-                                    >
-                                        <MediaProvider>
-                                            {MEDIA_TRACK.map((track:any, index:any) => {
-                                                return (
-                                                    <track
-                                                        key={index}
-                                                        kind={track.kind}
-                                                        src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
-                                                        srcLang={track.label} 
-                                                        label={track.label}
-                                                        default={track.default}
-                                                        
-                                                    />
-                                                );
-                                            })}
-                                        </MediaProvider>
-                                        <DefaultVideoLayout
-                                            colorScheme="dark"
-                                            icons={defaultLayoutIcons}
-                                        />
-                                    </MediaPlayer>
-                                </div>
+                                    <MediaProvider>
+                                        {MEDIA_TRACK.map((track:any, index:any) => {
+                                            return (
+                                                <track
+                                                    key={index}
+                                                    kind={track.kind}
+                                                    src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
+                                                    srcLang={track.label} 
+                                                    label={track.label}
+                                                    default={track.default}
+                                                    
+                                                />
+                                            );
+                                        })}
+                                    </MediaProvider>
+                                    <DefaultVideoLayout
+                                        colorScheme="dark"
+                                        icons={defaultLayoutIcons}
+                                    />
+                                </MediaPlayer>
+                                
                                 <div
                                     style={{
                                         width:"auto",
