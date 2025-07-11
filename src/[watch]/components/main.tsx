@@ -60,7 +60,7 @@ let FIRST_RUN_TIMEOUT:any;
 
 function Watch() {
     const navigate = useNavigate();
-    const {app_ready} = useContext<any>(global_context);
+    const {app_ready, set_feedback_snackbar} = useContext<any>(global_context);
     
     const { source_id, preview_id, season_id, watch_id }:any = useParams();
     console.log(season_id, watch_id);
@@ -96,13 +96,7 @@ function Watch() {
 
     useEffect(()=>{
         (async ()=>{
-            if (isFullscreen){
-                await getCurrentWindow().setFullscreen(true)
-                sessionStorage.setItem("fullscreen", "yes")
-            }else{
-                await getCurrentWindow().setFullscreen(false)
-                sessionStorage.setItem("fullscreen", "no")
-            }
+            
         })();
         return;
     },[isFullscreen])
