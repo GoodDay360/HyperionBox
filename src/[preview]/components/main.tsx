@@ -141,6 +141,7 @@ const Preview = () => {
                         source_id,preview_id,
                         data:{
                             ...data,
+                            server_type_schema:SERVER_TYPE_SCHEMA,
                             type_schema:TYPE_SCHEMA,
                             info:INFO,
                             stats:STATS,
@@ -152,6 +153,7 @@ const Preview = () => {
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
+                            server_type_schema:SERVER_TYPE_SCHEMA,
                             type_schema:TYPE_SCHEMA,
                             info:INFO,
                             stats:STATS,
@@ -165,6 +167,7 @@ const Preview = () => {
                 await save_local_preview({
                     source_id,preview_id,
                     data:{
+                        server_type_schema:SERVER_TYPE_SCHEMA,
                         type_schema:TYPE_SCHEMA,
                         info:INFO,
                         stats:STATS,
@@ -227,6 +230,7 @@ const Preview = () => {
                         source_id,preview_id,
                         data:{
                             ...data,
+                            server_type_schema: request_preview_result.result.server_type_schema,
                             type_schema: request_preview_result.result.type_schema,
                             info:request_preview_result.result.info,
                             stats:request_preview_result.result.stats,
@@ -238,6 +242,7 @@ const Preview = () => {
                     await save_local_preview({
                         source_id,preview_id,
                         data:{
+                            server_type_schema: request_preview_result.result.server_type_schema,
                             type_schema: request_preview_result.result.type_schema,
                             info:request_preview_result.result.info,
                             stats:request_preview_result.result.stats,
