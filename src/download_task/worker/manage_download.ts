@@ -16,7 +16,7 @@ function split_work<T>(work: T[], max_thread: number): { start_index: number; en
     let start = 0;
 
     for (let i = 0; i < max_thread; i++) {
-        const size = i === max_thread - 1 ? baseSize + remainder : baseSize;
+        const size = (i === max_thread - 1) ? baseSize + remainder : baseSize;
         const chunk = work.slice(start, start + size);
         result.push({
             start_index: start,
@@ -157,7 +157,7 @@ const manage_download = async ({player_data,main_dir, pause_download_task, downl
             for (let i = 0; i < max_thread; i++) {
                 progress += work_chunks[i].thread_progress.current;
             }
-            download_task_progress.current = {status: "downloading", percent:(progress/max_segment_count)*100, label:`${Math.round(progress * 100) / 100}/${max_segment_count}`};
+            download_task_progress.current = {status: "downloading", percent:Math.round(((progress/max_segment_count)*100)*100)/100, label:`${Math.round(((progress/max_segment_count)*100)*100)/100}%`};
         },1000)
 
         const task_result = await Promise.all(tasks);
@@ -180,7 +180,7 @@ const manage_download = async ({player_data,main_dir, pause_download_task, downl
         }
 
         
-        download_task_progress.current = {status: "finished", percent:100, label:`${max_segment_count}/${max_segment_count}`};
+        download_task_progress.current = {status: "finished", percent:100, label:`100%`};
 
         // Collect headers until the first #EXTINF tag
         const headerLines = [];

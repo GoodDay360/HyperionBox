@@ -672,12 +672,14 @@ const Preview = () => {
                                                 <div
                                                     style={{
                                                         width:"auto",
+                                                        minWidth:"50%",
                                                         height:"auto",
-                                                        background:"var(--icon-color-2)",
+                                                        background:"purple",
                                                         padding: "4px",
                                                         borderRadius:"6px",
                                                         display:"flex",
                                                         alignItems:'center',
+                                                        justifyContent:"center",
                                                         boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px"
                                                     }}
                                                 >
@@ -687,7 +689,7 @@ const Preview = () => {
                                                             color:"var(--color)",
                                                             fontSize:"calc((100vw + 100vh) * 0.0225 / 2)",
                                                         }}
-                                                    >{dayjs.duration(CURRENT_WATCH_TIME, "seconds").format("HH:mm:ss")}</span>
+                                                    >{dayjs.duration(CURRENT_WATCH_TIME, "seconds").format("H[h] m[m] s[s]").replace(/\b0[hms]\s?/g, "").trim()}</span>
                                                 </div>
                                             </div>
                                         }</>

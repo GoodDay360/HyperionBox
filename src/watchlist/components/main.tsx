@@ -115,13 +115,16 @@ function Watchlist() {
                             <div
                                 style={{
                                     width:"auto",
+                                    minWidth:"50%",
                                     height:"auto",
-                                    background:"var(--icon-color-2)",
+                                    background:"purple",
                                     padding: "4px",
                                     borderRadius:"6px",
                                     display:"flex",
                                     alignItems:'center',
-                                    boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px"
+                                    justifyContent:"center",
+                                    boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px",
+                                    
                                 }}
                             >
                                 <span
@@ -130,7 +133,7 @@ function Watchlist() {
                                         color:"var(--color)",
                                         fontSize:"calc((100vw + 100vh) * 0.0165 / 2)",
                                     }}
-                                >{dayjs.duration(item.current_time, "seconds").format("HH:mm:ss")}</span>
+                                >{dayjs.duration(item.current_time, "seconds").format("H[h] m[m] s[s]").replace(/\b0[hms]\s?/g, "").trim()}</span>
                             </div>
                         </div>
                     }</>

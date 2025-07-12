@@ -191,6 +191,8 @@ function Watch() {
                 SET_EPISODE_DATA(data.episodes);
                 SET_MEDIA_TRACK(data.media_info.track);
                 SET_MEDIA_TYPE(data.media_info.type);
+                SET_SERVER_INFO(data.server_info);
+                SET_TYPE_SCHEMA(data.type_schema??1);
                 if (data.media_info.type === "local"){
                     const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source})
                     if (rephrased_hls_result.code === 200){
@@ -198,8 +200,7 @@ function Watch() {
                     }
                     
                 }else{
-                    SET_SERVER_INFO(data.server_info);
-                    SET_TYPE_SCHEMA(data.type_schema??1)
+                    
 
                     if (data.media_info.type === "master"){
                         const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "master.m3u8")
