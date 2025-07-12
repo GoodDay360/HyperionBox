@@ -1,0 +1,4 @@
+exclude:
+  - SNAP_USER_DATA/.local/share/com.hyperionbox.app/bin/*
+  - SNAP_USER_DATA/.local/share/com.hyperionbox.app/extension/*
+  - SNAP_USER_DATA/.local/share/com.hyperionbox.app/executor/*
