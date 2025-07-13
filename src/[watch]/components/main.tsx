@@ -167,6 +167,7 @@ function Watch() {
         set_is_ready(false);
         set_is_media_ready(false);
         set_is_update({state:true,error:false,message:""});
+        await get_custom_track();
         media_player_state_ref.current = {};
         try{
             const is_online_result = await check_internet_connection();
@@ -238,8 +239,6 @@ function Watch() {
             set_is_update({state:false,error:true,message:"Failed to request data. Check your crash log and report to developer."});
             console.error(e);
         }
-
-        await get_custom_track();
 
         set_is_update({state:false,error:false,message:""});
         set_is_ready(true);

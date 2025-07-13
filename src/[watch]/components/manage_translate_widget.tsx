@@ -113,6 +113,7 @@ const ManageTranslateWidget  = ({
                                 set_feedback_snackbar({state:true, text:"Translation complete successfully!", type:"success"});
                             }
                             await get_track();
+                            await onSubmit();
                             set_is_translating(false);
                         }}
                     >
@@ -220,6 +221,7 @@ const ManageTranslateWidget  = ({
                                             await writeTextFile(track_manifest_path, "{}", {baseDir:BaseDirectory.AppData, create:true});
                                             console.error(e);
                                         }
+                                        onSubmit();
                                         set_feedback_snackbar({state:true, text:"Removed caption successfully!", type:"warning"});
                                     }}
                                 
