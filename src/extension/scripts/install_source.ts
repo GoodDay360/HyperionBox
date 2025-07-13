@@ -51,13 +51,13 @@ const install_source = async ({id,url,domain,icon,title,description,version}
         command = `"${path_7z}" x "${zip_file}" -o"${sources_dir}" -aoa -md=32m -mmt=3`
     }
 
-    const result = await execute_command({title:"extract_source",command:command})
+    const result = await execute_command({title:`extract_source_${id}`,command:command})
     if (result.stderr) {
-        await remove(temp_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
+        await remove(zip_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
         await write_crash_log(`[Error] install_source -> ${id} -> extract\n${result.stderr}\n`);
         return {code:500, message:result.stderr, at:`install_source -> ${id} -> extract`}
     };
-    await remove(temp_dir, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
+    await remove(zip_file, {baseDir:BaseDirectory.Temp, recursive:true}).catch(e=>{console.error(e)});
 
 
     const add_source_result = await add_source({id,domain,icon,title,description,version});

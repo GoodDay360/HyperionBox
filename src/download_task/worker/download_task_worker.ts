@@ -83,6 +83,7 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
             const preview_id = data.preview_id;
             const season_id = data.season_id;
             const server_type = data.server_type;
+            const server_id = data.server_id;
             const quality = data.quality;
             const watch_id = data.watch_id;
             const watch_index = data.watch_index;
@@ -114,6 +115,7 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                     season_id,
                     watch_id,
                     server_type,
+                    server_id,
                     force_update:false
                 });
                 if (get_download_info_result.code === 200){
@@ -222,7 +224,8 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                     new_local_track_list.push({
                         url:track_path,
                         label:track.label,
-                        type:"captions",
+                        kind:"captions",
+                        default:track.default??false
                     });
                 }
                 

@@ -126,7 +126,7 @@ const Item = ({id,data,installed,installed_version}:{id:string,data:any,installe
                             if (is_managing) return;
                             if (import.meta.env.DEV && import.meta.env.VITE_DEV_USE_CUSTOM_EXTENSIONS_DIRECTORY === "1") {
                                 const message = "Unable to install. To prevent source code modification, this action is canceled because you're using custom extension directory."
-                                console.log(message);
+                                console.error(message);
                                 return;
                             }
                             if (is_installed){

@@ -6,7 +6,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { BaseDirectory, exists, readTextFile } from "@tauri-apps/plugin-fs";
 
 // React Imports
-import { useEffect, useState, useRef, useContext, useCallback, } from 'react';
+import { useEffect, useState, useRef, useContext, useCallback, Fragment, } from 'react';
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 // Lazy Images Imports
@@ -29,6 +29,7 @@ import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import PublishedWithChangesRoundedIcon from '@mui/icons-material/PublishedWithChangesRounded';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded';
+import TranslateRoundedIcon from '@mui/icons-material/TranslateRounded';
 
 // Disqus Imports
 import { DiscussionEmbed } from 'disqus-react';
@@ -55,6 +56,7 @@ import rephrase_local_hls from "../scripts/rephrase_local_hls";
 import open_external from "../scripts/open_external";
 import { get_source_info } from "../../global/scripts/manage_extension";
 import { read_config } from "../../global/scripts/manage_config";
+import ManageTranslateWidget from "./manage_translate_widget";
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 let FIRST_RUN_TIMEOUT:any;
@@ -67,6 +69,7 @@ function Watch() {
     console.log(season_id, watch_id);
     const [searchParams] = useSearchParams();
 
+    const [widget, set_widget] = useState<any>({type:"", onSubmit:()=>{}, onClose:()=>{}});
     const [is_online, set_is_online] = useState<boolean>(false);
     const [is_ready, set_is_ready] = useState<boolean>(false);
     const [is_error, set_is_error] = useState<any>({state:false,message:""});
@@ -89,6 +92,7 @@ function Watch() {
 
     const [MEDIA_SRC, SET_MEDIA_SRC] = useState<string>("");
     const [MEDIA_TRACK, SET_MEDIA_TRACK] = useState<any>([]);
+    const [CUSTOM_MEDIA_TRACK, SET_CUSTOM_MEDIA_TRACK] = useState<any>([]);
     const [MEDIA_TYPE, SET_MEDIA_TYPE] = useState<string>("");
 
     const media_player_ref:any = useRef<MediaPlayerInstance>(null);
@@ -128,7 +132,7 @@ function Watch() {
                     if (is_updating_state) return;
                     is_updating_state = true
                     const player_state = media_player_ref.current;
-
+                    
                     await update_watch_state({source_id,preview_id,season_id,watch_id,
                         state:{
                             current_time: player_state.currentTime,
@@ -147,10 +151,23 @@ function Watch() {
         }
     }, [is_media_ready,is_in_watchlist, is_ready, is_error]);
 
+    const get_custom_track = useCallback(async () => {
+        const track_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "translated_track", "manifest.json");
+        if (await exists(track_manifest_path)) {
+            try {
+                const manifest_data = JSON.parse(await readTextFile(track_manifest_path, {baseDir:BaseDirectory.AppData}));
+                SET_CUSTOM_MEDIA_TRACK(manifest_data);
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    },[]);
+
     const get_data = async ({watch_id,server_type=null,server_id=null,check_local=true,force_update=false}:{watch_id:string,server_type?:string|null,server_id?:string|null,check_local?:boolean,force_update?:boolean}) =>{
         set_is_ready(false);
         set_is_media_ready(false);
         set_is_update({state:true,error:false,message:""});
+        await get_custom_track();
         media_player_state_ref.current = {};
         try{
             const is_online_result = await check_internet_connection();
@@ -191,6 +208,8 @@ function Watch() {
                 SET_EPISODE_DATA(data.episodes);
                 SET_MEDIA_TRACK(data.media_info.track);
                 SET_MEDIA_TYPE(data.media_info.type);
+                SET_SERVER_INFO(data.server_info);
+                SET_TYPE_SCHEMA(data.type_schema??1);
                 if (data.media_info.type === "local"){
                     const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source})
                     if (rephrased_hls_result.code === 200){
@@ -198,8 +217,7 @@ function Watch() {
                     }
                     
                 }else{
-                    SET_SERVER_INFO(data.server_info);
-                    SET_TYPE_SCHEMA(data.type_schema??1)
+                    
 
                     if (data.media_info.type === "master"){
                         const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "master.m3u8")
@@ -215,16 +233,18 @@ function Watch() {
                     }
                 }
             }else{
-                console.log("WAH", get_watch_result);
                 set_is_error({state:true,message:get_watch_result.message});
             }
         }catch(e){
             set_is_update({state:false,error:true,message:"Failed to request data. Check your crash log and report to developer."});
             console.error(e);
         }
+
         set_is_update({state:false,error:false,message:""});
         set_is_ready(true);
     }
+
+    
 
     useEffect(()=>{
         if (!app_ready) return;
@@ -418,7 +438,7 @@ function Watch() {
                                     </>
                                     : <>{is_update.state
                                         ? <Tooltip title="Fetching update...">
-                                            <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.05/2)"/>
+                                            <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.035/2)"/>
                                         </Tooltip>
                                         : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} hours`}>
                                             <IconButton color="primary" size="large"
@@ -431,7 +451,7 @@ function Watch() {
                                                     });
                                                 }}
                                             >
-                                                <PublishedWithChangesRoundedIcon color="success" fontSize="large"/>
+                                                <PublishedWithChangesRoundedIcon color="success" fontSize="medium"/>
                                             </IconButton>
                                             
                                         </Tooltip>
@@ -439,6 +459,15 @@ function Watch() {
                                     }</>                         
                                 }</>
                                 
+                                <Tooltip title={"Translate Captions"}>
+                                    <IconButton color="primary" size="large"
+                                        onClick={async ()=>{
+                                            set_widget({type:"manage_translate",onClose:()=>{},onSubmit:()=>{}});
+                                        }}
+                                    >
+                                        <TranslateRoundedIcon sx={{color:"var(--icon-color-2)"}} fontSize="medium"/>
+                                    </IconButton>
+                                </Tooltip>
                                 
                                 
                                 
@@ -466,19 +495,33 @@ function Watch() {
                                     playsInline crossOrigin
                                 >
                                     <MediaProvider>
-                                        {MEDIA_TRACK.map((track:any, index:any) => {
-                                            return (
-                                                <track
-                                                    key={index}
-                                                    kind={track.kind}
-                                                    src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
-                                                    srcLang={track.label} 
-                                                    label={track.label}
-                                                    default={track.default}
-                                                    
-                                                />
-                                            );
-                                        })}
+                                        <>{CUSTOM_MEDIA_TRACK.map((track:any, index:any) => 
+                                            <track
+                                                key={index}
+                                                kind={track.kind}
+                                                src={convertFileSrc(track.url)}
+                                                srcLang={track.label} 
+                                                label={track.label}
+                                                default={track.default}
+                                                
+                                            />
+                                        )}</>
+                                        <>{MEDIA_TRACK.map((track:any, index:any) => 
+                                            <Fragment key={index}>
+                                                {track.label &&
+                                                    <track
+                                                        key={index}
+                                                        kind={track.kind}
+                                                        src={MEDIA_TYPE === "local" ? convertFileSrc(track.url) : track.url}
+                                                        srcLang={track.label} 
+                                                        label={track.label}
+                                                        default={track.default}
+                                                        
+                                                    />
+                                                }
+                                            </Fragment>
+                                            
+                                        )}</>
                                     </MediaProvider>
                                     <DefaultVideoLayout
                                         colorScheme="dark"
@@ -768,6 +811,15 @@ function Watch() {
                 </div>
             }</>
         </div>
+        <>{widget.type === "manage_translate" && <ManageTranslateWidget
+            {...{
+                source_id,preview_id,season_id,watch_id,
+                MEDIA_TRACK,
+                onClose:()=>{set_widget({type:""})},
+                onSubmit: ()=>{get_custom_track()},
+                
+            }}
+        />}</>
     </>);
 }
 

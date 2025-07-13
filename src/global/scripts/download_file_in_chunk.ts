@@ -21,7 +21,11 @@ async function download_file_in_chunks({
         const controller = new AbortController();
         const signal = controller.signal;
         
-        if (timeout > 0) setTimeout(() => controller.abort(), timeout);
+        let set_timeout
+
+        if (timeout > 0) {
+            set_timeout = setTimeout(() => controller.abort(), timeout)
+        };
         
         const response = await fetch(url, {
             headers: start_size > 0 ? { Range: `bytes=${start_size}-` } : undefined,
@@ -31,6 +35,7 @@ async function download_file_in_chunks({
         if (!response.ok) {
             return { code: 500, message: `HTTP error! Status: ${response.status}` };
         }
+        clearTimeout(set_timeout)
 
         const totalSize = parseInt(response.headers.get("content-length") as string, 10) + start_size;
         let receivedSize = start_size;

@@ -128,7 +128,7 @@ function BrowseSource() {
                         >
                             <>{is_ready
                                 ? <SearchRoundedIcon sx={{color:"var(--icon-color-1)"}} />
-                                : <CircularProgress color="primary" size="20px"/>
+                                : <CircularProgress color="primary" size="calc((100vw + 100vh)*0.035/2)"/>
                             }</>
                             
                         </IconButton>
