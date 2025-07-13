@@ -169,7 +169,7 @@ const translate_caption = async ({
             BATCHED_TEXT.push([text.trim()]);
         }
     }
-    console.log(BATCHED_TEXT)
+    
     const TRANSLATED_RESULT:string[] = [];
 
     for (const batch of BATCHED_TEXT){

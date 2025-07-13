@@ -83,7 +83,7 @@ const Preview = () => {
     const source_random_color = useRef(randomColor({luminosity:"bright",format: 'rgba',alpha:0.8}));
 
     const { source_id, preview_id }:any = useParams();
-    console.log(source_id, preview_id);
+    
     
     const { app_ready, set_feedback_snackbar } = useContext<any>(global_context);
 
@@ -1057,7 +1057,10 @@ const Preview = () => {
             <AnimatePresence>
                 <>{widget.type === "manage_download" && <ManageDownloadWidget
                     {...{
+                        source_id, preview_id,
+                        season_id: selected_download_season_id.current,
                         server_type_schema:SERVER_TYPE_SCHEMA,
+                        selected_data:selected_download_data.current,
                         onClose:()=>{set_widget({type:""})},
                         onSubmit:async (options:any)=>{
                             const selected_data = selected_download_data.current
@@ -1067,17 +1070,6 @@ const Preview = () => {
                             }
                             set_feedback_snackbar({state:true,type:"info",text:"Adding to download task..."});
                             for (const data of selected_data){
-                                console.log("ADD to downlaod task",{
-                                    source_id: source_id??"",
-                                    preview_id: preview_id??"",
-                                    season_id: selected_download_season_id.current,
-                                    title:data.title,
-                                    watch_index: data.index,
-                                    watch_id: data.id,
-                                    quality: options.quality,
-                                    server_type: options.server_type,
-                                    type_schema:TYPE_SCHEMA,
-                                })
                                 await request_add_download_task({
                                     source_id: source_id??"",
                                     preview_id: preview_id??"",
@@ -1087,6 +1079,7 @@ const Preview = () => {
                                     watch_id: data.id,
                                     quality: options.quality,
                                     server_type: options.server_type,
+                                    server_id: options.server_id||"",
                                     type_schema:TYPE_SCHEMA,
                                 })
                             }

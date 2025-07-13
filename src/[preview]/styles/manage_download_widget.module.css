@@ -67,7 +67,7 @@
 
 .body_box_2{
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
     flex-direction: row;
 }
