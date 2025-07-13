@@ -10,6 +10,7 @@ An open-source anime and movie streaming desktop app that supports many sources 
 ## ✨ Features
 - 🎬 **Stream anime and movies** seamlessly from various sources.
 - 📌 **Track watch progress** across multiple sessions.
+- 📖 **Translate subtitles** into other languages.
 - ⬇️ **Download videos** for offline viewing.
 - 🎨 **Modern UI** for a smooth and intuitive experience.
 - 🔍 **Advanced search** for quick content discovery.
