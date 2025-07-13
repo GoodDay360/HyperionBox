@@ -175,6 +175,9 @@ function App() {
 		</global_context.Provider>
 		{/* Feedback snackbar  */}
 		<Snackbar 
+			sx={{
+				zIndex: 999,
+			}}
 			open={feedback_snackbar.state} 
 			
 			autoHideDuration={6000} 
@@ -194,6 +197,9 @@ function App() {
 
 		{/* Fullscreen event listener snackbar */}
 		<Snackbar 
+			sx={{
+				zIndex: 999,
+			}}
 			open={fullscreen_snackbar.state} 
 			autoHideDuration={6000} 
 			onClose={()=>{set_fullscreen_snackbar({...fullscreen_snackbar, state: false})}}

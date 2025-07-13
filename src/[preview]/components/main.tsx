@@ -577,7 +577,7 @@ const Preview = () => {
                                     }
                                 }}
                             >
-                                <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                                <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="medium"/>
                             </IconButton>
                             <div
                                 style={{
@@ -602,7 +602,7 @@ const Preview = () => {
                                     </>
                                     : <>{is_update.state
                                         ? <Tooltip title="Fetching update...">
-                                            <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.05/2)"/>
+                                            <CircularProgress color="secondary" size="calc((100vw + 100vh)*0.035/2)"/>
                                         </Tooltip>
                                         : <Tooltip title={`Fetch update: Auto every ${FETCH_UPDATE_INTERVAL} hours`}>
                                             <IconButton color="primary" size="large"
@@ -610,7 +610,7 @@ const Preview = () => {
                                                     await get_data({mode:"update"});
                                                 }}
                                             >
-                                                <PublishedWithChangesRoundedIcon color="success" fontSize="large"/>
+                                                <PublishedWithChangesRoundedIcon color="success" fontSize="medium"/>
                                             </IconButton>
                                             
                                         </Tooltip>
@@ -634,8 +634,8 @@ const Preview = () => {
                                     }}
                                 >
                                     {download_mode.state
-                                        ? <CloseRoundedIcon sx={{color:"red"}} fontSize="large"/>
-                                        : <DownloadRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                                        ? <CloseRoundedIcon sx={{color:"red"}} fontSize="medium"/>
+                                        : <DownloadRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="medium"/>
                                     }
                                 </IconButton>
                                 

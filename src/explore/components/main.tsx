@@ -345,7 +345,7 @@ const Explore = () => {
                                     >
                                         {is_searching_hover 
                                             ? <CloseRoundedIcon sx={{color:"red"}} />
-                                            : <CircularProgress color="primary" size="20px"/>
+                                            : <CircularProgress color="primary" size="calc((100vw + 100vh)*0.035/2)"/>
                                         }
                                     </IconButton>
                                 </>

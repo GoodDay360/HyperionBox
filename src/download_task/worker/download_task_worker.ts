@@ -222,7 +222,8 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                     new_local_track_list.push({
                         url:track_path,
                         label:track.label,
-                        type:"captions",
+                        kind:"captions",
+                        default:track.default??false
                     });
                 }
                 
