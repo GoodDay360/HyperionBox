@@ -173,7 +173,7 @@ const ManageDownloadWidget  = ({source_id, preview_id, season_id, server_type_sc
                         <>{is_managing
                             ? <CircularProgress color='secondary' size="calc((100vw + 100vh)*0.035/2)" />
                             : <>
-                                <Tooltip title={"Request more precise preferable informations."}>
+                                <Tooltip title={"Request more precise preferable information."}>
                                     <IconButton
                                         onClick={async ()=>{
                                             if (selected_data.length === 0) {
@@ -192,12 +192,12 @@ const ManageDownloadWidget  = ({source_id, preview_id, season_id, server_type_sc
                                                 if (Object.keys(get_watch_result?.result?.server_info?.server_list)?.length > 0){
                                                     SET_PREFER_SERVER_LIST(get_watch_result.result.server_info.server_list);
                                                 }else{
-                                                    set_feedback_snackbar({state:true,type:"error",text:"Unable to request precise informations."});
+                                                    set_feedback_snackbar({state:true,type:"error",text:"Unable to request precise information."});
                                                 }
                                                 
                                                 set_precise_mode(true);
                                             }else{
-                                                set_feedback_snackbar({state:true,type:"error",text:"Unable to request precise informations."});
+                                                set_feedback_snackbar({state:true,type:"error",text:"Unable to request precise information."});
                                             }
                                             set_is_managing(false);
 
