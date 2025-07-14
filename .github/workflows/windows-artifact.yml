@@ -21,6 +21,12 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Delete package-lock.json
+        run: |
+          if (Test-Path package-lock.json) {
+            Remove-Item package-lock.json
+          }
+
       - name: Install frontend dependencies
         run: npm install
 
