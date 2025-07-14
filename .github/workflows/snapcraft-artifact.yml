@@ -1,0 +1,46 @@
+name: Build Snapcraft Artifact
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-snapcraft:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y snapcraft lxd
+          sudo lxd init --auto
+          sudo apt install -y libwebkit2gtk-4.1-dev \
+                              build-essential \
+                              libssl-dev \
+                              libappindicator3-dev \
+                              librsvg2-dev \
+                              patchelf \
+                              curl \
+                              wget \
+                              ca-certificates
+
+      - name: Clean Frontend Environment
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+          npm install
+
+      - name: Build Snap Packages
+        run: |
+          sudo snapcraft clean build-app
+          sudo snapcraft
+
+      - name: Upload .snap Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Snap Installers
+          path: "*.snap"
