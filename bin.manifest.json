@@ -29,7 +29,7 @@
     },
     "extension-package":{
         "url": "https://github.com/GoodDay360/HyperionBox-Extensions/releases/download/Package/package-latest.zip",
-        "version": "1.1.7"
+        "version": "1.1.8"
     },
     "browser":{
         "windows": {
