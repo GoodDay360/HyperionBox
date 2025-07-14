@@ -35,8 +35,8 @@ jobs:
 
       - name: Build Snap Package
         run: |
-          sudo snapcraft clean build-app
-          sudo snapcraft
+          snapcraft clean build-app
+          snapcraft
 
       - name: Upload .snap Artifacts
         uses: actions/upload-artifact@v4
