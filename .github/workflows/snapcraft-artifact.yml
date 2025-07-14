@@ -18,6 +18,7 @@ jobs:
           sudo apt update
           sudo apt install -y snapcraft
           sudo snap install lxd
+          sudo lxd init --minimal
           sudo apt install -y libwebkit2gtk-4.1-dev \
                               build-essential \
                               libssl-dev \
@@ -41,5 +42,5 @@ jobs:
       - name: Upload .snap Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Snap Installers
+          name: HyperionBox-Snap-Installers
           path: "*.snap"
