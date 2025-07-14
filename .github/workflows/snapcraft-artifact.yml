@@ -30,11 +30,15 @@ jobs:
                               wget \
                               ca-certificates
 
+      - name: Add runner to lxd group
+        run: |
+          sudo usermod -aG lxd $USER
+          newgrp lxd
+
       - name: Install Snapcraft with LXD
         uses: samuelmeuli/action-snapcraft@v3
-        
       - name: Build snap
-        run: snapcraft --use-lxd
+        run: sg lxd -c 'snapcraft --use-lxd'
 
       - name: Upload .snap Artifacts
         uses: actions/upload-artifact@v4
