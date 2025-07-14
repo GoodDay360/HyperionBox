@@ -136,8 +136,8 @@ function Watch() {
                     await update_watch_state({source_id,preview_id,season_id,watch_id,
                         state:{
                             current_time: player_state.currentTime,
-                            server_id: SERVER_INFO.current_server_id,
-                            server_type: SERVER_INFO.current_server_type
+                            server_id: MEDIA_TYPE === "local" ? "local" : SERVER_INFO.current_server_id,
+                            server_type: MEDIA_TYPE === "local" ? "local" : SERVER_INFO.current_server_type
                         }
                     });
 
@@ -149,7 +149,7 @@ function Watch() {
         return () => {
             clearInterval(update_state_interval);
         }
-    }, [is_media_ready,is_in_watchlist, is_ready, is_error]);
+    }, [is_media_ready,is_in_watchlist, is_ready, is_error, MEDIA_TYPE, SERVER_INFO]);
 
     const get_custom_track = useCallback(async () => {
         const track_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "translated_track", "manifest.json");
@@ -205,19 +205,33 @@ function Watch() {
             if (get_watch_result.code === 200) {
                 const data = get_watch_result.result;
                 console.log("REQUEST RESULT", data);
-                SET_EPISODE_DATA(data.episodes);
+                
                 SET_MEDIA_TRACK(data.media_info.track);
                 SET_MEDIA_TYPE(data.media_info.type);
                 SET_SERVER_INFO(data.server_info);
                 SET_TYPE_SCHEMA(data.type_schema??1);
                 if (data.media_info.type === "local"){
+                    const preivew_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, "manifest.json");
+                    if (await exists(preivew_manifest_path)) {
+                        try{
+                            const preview_manifest_data = JSON.parse(await readTextFile(preivew_manifest_path, {baseDir:BaseDirectory.AppData}));
+                            if (preview_manifest_data?.episodes?.length > 0){
+                                SET_EPISODE_DATA(preview_manifest_data.episodes);
+                            }else{
+                                SET_EPISODE_DATA(data.episodes);
+                            }
+                        }catch(e){
+                            SET_EPISODE_DATA(data.episodes);
+                            console.error(e);
+                        }
+                    }
                     const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source})
                     if (rephrased_hls_result.code === 200){
                         SET_MEDIA_SRC(rephrased_hls_result.result);
                     }
                     
                 }else{
-                    
+                    SET_EPISODE_DATA(data.episodes);
 
                     if (data.media_info.type === "master"){
                         const playlist_path = await path.join(await path.appDataDir(), ".cache", "watch", "master.m3u8")
@@ -409,7 +423,7 @@ function Watch() {
                                     }
                                 }}
                             >
-                                <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                                <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="medium"/>
                             </IconButton>
                             <div
                                 style={{

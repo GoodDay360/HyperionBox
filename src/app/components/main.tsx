@@ -91,7 +91,7 @@ function App() {
 			pause_download_task.current = config.pause_download_task ? true : false;
 			download_task_worker({pause_download_task,download_task_info,download_task_progress});
 			set_menu({state:true,path:"watchlist"});
-			// navigate("/preview/hianime/solo-leveling-season-2-arise-from-the-shadow-19413")
+			
 
 		}, import.meta.env.DEV ? 1500 : 0);
 		return ()=>clearTimeout(FIRST_RUN_TIMEOUT)
@@ -119,13 +119,10 @@ function App() {
 							<div className={styles.menu}>
 								{menu_button_top.map((item:any, index:number) => 
 									<Tooltip title={item.title} placement="right" key={index}>
-										<IconButton disabled={menu.path === item.path}
+										<IconButton
 											sx={{
 												background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
 												borderRadius: 12.5,
-												"&:disabled": {
-													backgroundColor: "var(--selected-menu-background-color)",
-												},
 											}}
 											onClick={() => {set_menu({...menu,path:item.path})}}
 										>
@@ -137,13 +134,10 @@ function App() {
 							<div className={styles.menu} style={{alignSelf: "flex-end"}}>
 								{menu_button_bottom.map((item:any, index:number) => 
 									<Tooltip title={item.title} placement="right" key={index}>
-										<IconButton  disabled={menu.path === item.path}
+										<IconButton
 											sx={{
 												background: menu.path === item.path ? "var(--selected-menu-background-color)": "var(--background-color-layer-1)",
 												borderRadius: 12.5,
-												"&:disabled": {
-													backgroundColor: "var(--selected-menu-background-color)",
-												},
 											}}
 											onClick={() => {set_menu({...menu,path:item.path})}}
 										>

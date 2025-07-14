@@ -85,7 +85,7 @@ const ManageTranslateWidget  = ({
             >
                 <div className={styles.header}>
                     <h3 className={styles.title}>Captions Translation</h3>
-                    <IconButton 
+                    <IconButton disabled={is_translating}
                         sx={{
                             background:"red", color:"var(--icon-color-1)",
                             '&:hover': {

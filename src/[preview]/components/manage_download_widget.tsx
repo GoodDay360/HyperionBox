@@ -65,7 +65,7 @@ const ManageDownloadWidget  = ({source_id, preview_id, season_id, server_type_sc
             >
                 <div className={styles.header}>
                     <h3 className={styles.title}>Manage Download</h3>
-                    <IconButton 
+                    <IconButton disabled={is_managing}
                         sx={{
                             background:"red", color:"var(--icon-color-1)",
                             '&:hover': {
@@ -200,7 +200,7 @@ const ManageDownloadWidget  = ({source_id, preview_id, season_id, server_type_sc
                                                 set_feedback_snackbar({state:true,type:"error",text:"Unable to request precise information."});
                                             }
                                             set_is_managing(false);
-
+                                            set_feedback_snackbar({state:true, type:"success" ,text:"Preferable information request successfully."});
                                         }}
                                     >
                                         <InputRoundedIcon fontSize='medium' sx={{color:'var(--color)'}}/>

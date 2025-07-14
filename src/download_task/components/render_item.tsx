@@ -1,5 +1,5 @@
 // React Import
-import { useEffect, useState, useContext, Fragment } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router";
 
 // Tauri Import
@@ -51,7 +51,7 @@ const RenderItem = ({item, get_data}:any) => {
     const [progress_info, set_progress_info] = useState<any>({percent:0});
     const [pause_task, set_pause_task] = useState<boolean>(pause_download_task.current);
 
-    const [show_content, set_show_content] = useState<boolean>(false);
+    const [show_content, set_show_content] = useState<boolean>(true);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -61,22 +61,13 @@ const RenderItem = ({item, get_data}:any) => {
             // console.log("cute", download_task_progress.current)
             set_progress_info(download_task_progress.current);
 
-        }, 800);
+        }, 1000);
 
         return () => clearInterval(interval);
     }, []);
 
     useEffect(()=>{
-        // if (item.data.filter((item_data:any)=>!(
-        //     task_info?.source_id === source_id && 
-        //     task_info?.season_id === season_id && 
-        //     task_info?.preview_id === preview_id && 
-        //     task_info?.watch_id == item_data.watch_id
-        // )).length > 0){
-        //     set_show_content(true);
-        // }else{
-        //     set_show_content(false);
-        // }
+        
     },[task_info])
 
     useEffect(()=>{
@@ -185,10 +176,10 @@ const RenderItem = ({item, get_data}:any) => {
                         </div>
                     }</>
                     <>{((ITEM_DATA.length > 0 && pause_task) || (ITEM_DATA.filter((item_data:any)=>!(
-                        task_info?.source_id === source_id && 
-                        task_info?.preview_id === preview_id && 
-                        task_info?.season_id === season_id && 
-                        task_info?.watch_id == item_data.watch_id
+                        (task_info?.source_id === source_id) && 
+                        (task_info?.preview_id === preview_id) && 
+                        (task_info?.season_id === season_id) && 
+                        (task_info?.watch_id === item_data.watch_id)
                     )).length > 0)) &&
                         <ButtonBase 
                             sx={{
@@ -215,80 +206,83 @@ const RenderItem = ({item, get_data}:any) => {
                     
                 </div>
             </div>
-            <>{show_content &&
+            <>{show_content && (ITEM_DATA.filter((item_data:any) => 
+                (pause_task || !(
+                    task_info?.source_id === source_id && 
+                    task_info?.preview_id === preview_id && 
+                    task_info?.season_id === season_id && 
+                    task_info?.watch_id === item_data.watch_id
+                ))
+            ).length > 0) &&
                 <div className={styles.box_2}>
-                    <>{ITEM_DATA.map((item_data:any,index:number)=>(
-                        <Fragment key={index}>
-                            {(pause_task || !(
-                                task_info?.source_id === source_id && 
-                                task_info?.preview_id === preview_id && 
-                                task_info?.season_id === season_id && 
-                                task_info?.watch_id == item_data.watch_id
-                            )) &&
-                                <div className={styles.item_data_box}>
-                                    <>{item_data.error && 
-                                        <Tooltip title={"There is an error in downloading this item."}>
-                                            <ErrorOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"orange"}}/>
-                                        </Tooltip>
-                                    }</>
+                    <>{ITEM_DATA.filter((item_data:any) => 
+                        (pause_task || !(
+                            task_info?.source_id === source_id && 
+                            task_info?.preview_id === preview_id && 
+                            task_info?.season_id === season_id && 
+                            task_info?.watch_id === item_data.watch_id
+                        ))
+                    ).map((item_data:any,index:number)=>(
+                        <div className={styles.item_data_box} key={index}>
+                            <>{item_data.error && 
+                                <Tooltip title={"There is an error in downloading this item."}>
+                                    <ErrorOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"orange"}}/>
+                                </Tooltip>
+                            }</>
 
-                                    <span  className={styles.item_data_title}>Episode {item_data.watch_index+1}: {item_data.title}</span>
-                                    
-                                    <>{item_data.error && <>
-                                        <Tooltip title={"Retry"}
-                                            onClick={async ()=>{
-                                                set_allow_manage(false);
-                                                const request_result = await request_set_error_task({
-                                                    source_id:source_id,
-                                                    preview_id:preview_id,
-                                                    season_id:season_id,
-                                                    watch_id:item_data.watch_id,
-                                                    error:false,
-                                                })
-                                                if (request_result.code === 200){
-                                                    const temp = ITEM_DATA;
-                                                    temp[index].error = false;
-                                                    SET_ITEM_DATA(temp);
-                                                    const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, season_id, item_data.watch_id);
-                                                    await remove(cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
-                                                }
-
-                                                set_allow_manage(true);
-                                            }}
-                                        >
-                                            <ReplayRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"aqua",cursor:"pointer"}}/>
-                                        </Tooltip>
-                                    </>}</>
-                                    <Tooltip title={"Remove"}
-                                        onClick={async ()=>{
-                                            set_allow_manage(false);
-                                            const request_result = await request_remove_download_task({
-                                                source_id:source_id,
-                                                preview_id:preview_id,
-                                                season_id:season_id,
-                                                watch_id:item_data.watch_id,
-                                                clean:true
-                                            })
-
-                                            if (request_result.code === 200) {
-                                                const temp = ITEM_DATA;
-                                                temp.splice(index, 1);
-                                                if (temp.length === 0){
-                                                    await get_data();
-                                                }
-                                                SET_ITEM_DATA(temp);
-                                            }
-                                            
-                                            set_allow_manage(true);
-                                        }}
-                                    >
-                                        <RemoveCircleOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"red",cursor:"pointer"}}/>
-                                    </Tooltip>
-                                </div>
-                            }
+                            <span  className={styles.item_data_title}>Episode {item_data.watch_index+1}: {item_data.title}</span>
                             
-                        </Fragment>
-                        
+                            <>{item_data.error && <>
+                                <Tooltip title={"Retry"}
+                                    onClick={async ()=>{
+                                        set_allow_manage(false);
+                                        const request_result = await request_set_error_task({
+                                            source_id:source_id,
+                                            preview_id:preview_id,
+                                            season_id:season_id,
+                                            watch_id:item_data.watch_id,
+                                            error:false,
+                                        })
+                                        if (request_result.code === 200){
+                                            const temp = ITEM_DATA;
+                                            temp[index].error = false;
+                                            SET_ITEM_DATA(temp);
+                                            const cache_dir = await path.join(await path.appDataDir(), ".cache", "download", source_id, preview_id, season_id, item_data.watch_id);
+                                            await remove(cache_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
+                                        }
+
+                                        set_allow_manage(true);
+                                    }}
+                                >
+                                    <ReplayRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"aqua",cursor:"pointer"}}/>
+                                </Tooltip>
+                            </>}</>
+                            <Tooltip title={"Remove"}
+                                onClick={async ()=>{
+                                    set_allow_manage(false);
+                                    const request_result = await request_remove_download_task({
+                                        source_id:source_id,
+                                        preview_id:preview_id,
+                                        season_id:season_id,
+                                        watch_id:item_data.watch_id,
+                                        clean:true
+                                    })
+
+                                    if (request_result.code === 200) {
+                                        const temp = ITEM_DATA;
+                                        temp.splice(index, 1);
+                                        if (temp.length === 0){
+                                            await get_data();
+                                        }
+                                        SET_ITEM_DATA(temp);
+                                    }
+                                    
+                                    set_allow_manage(true);
+                                }}
+                            >
+                                <RemoveCircleOutlineRoundedIcon sx={{fontSize:"calc((100vw + 100vh)*0.035/2)", color:"red",cursor:"pointer"}}/>
+                            </Tooltip>
+                        </div>
                     ))}</>
                 </div>
             }</>
