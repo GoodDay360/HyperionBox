@@ -18,13 +18,11 @@ jobs:
         with:
           node-version: lts/*
 
-      - name: Install Rust toolchain
+      - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Clean install frontend
-        run: |
-          Remove-Item -Recurse -Force node_modules, package-lock.json
-          npm install
+      - name: Install frontend dependencies
+        run: npm install
 
       - name: Build Tauri App
         run: npm run tauri build
