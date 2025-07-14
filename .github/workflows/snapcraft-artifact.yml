@@ -32,8 +32,9 @@ jobs:
 
       - name: Install Snapcraft with LXD
         uses: samuelmeuli/action-snapcraft@v3
+        
       - name: Build snap
-        run: sg lxd -c 'snapcraft --use-lxd'
+        run: snapcraft --use-lxd
 
       - name: Upload .snap Artifacts
         uses: actions/upload-artifact@v4
