@@ -65,7 +65,7 @@ const ManageDownloadWidget  = ({source_id, preview_id, season_id, server_type_sc
             >
                 <div className={styles.header}>
                     <h3 className={styles.title}>Manage Download</h3>
-                    <IconButton 
+                    <IconButton disabled={is_managing}
                         sx={{
                             background:"red", color:"var(--icon-color-1)",
                             '&:hover': {

@@ -136,8 +136,8 @@ function Watch() {
                     await update_watch_state({source_id,preview_id,season_id,watch_id,
                         state:{
                             current_time: player_state.currentTime,
-                            server_id: SERVER_INFO.current_server_id,
-                            server_type: SERVER_INFO.current_server_type
+                            server_id: MEDIA_TYPE === "local" ? "local" : SERVER_INFO.current_server_id,
+                            server_type: MEDIA_TYPE === "local" ? "local" : SERVER_INFO.current_server_type
                         }
                     });
 
@@ -149,7 +149,7 @@ function Watch() {
         return () => {
             clearInterval(update_state_interval);
         }
-    }, [is_media_ready,is_in_watchlist, is_ready, is_error]);
+    }, [is_media_ready,is_in_watchlist, is_ready, is_error, MEDIA_TYPE, SERVER_INFO]);
 
     const get_custom_track = useCallback(async () => {
         const track_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "translated_track", "manifest.json");
