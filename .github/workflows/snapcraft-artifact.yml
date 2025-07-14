@@ -16,7 +16,8 @@ jobs:
       - name: Install System Dependencies
         run: |
           sudo apt update
-          sudo apt install -y snapcraft lxd
+          sudo apt install -y snapcraft
+          sudo snap install lxd
           sudo lxd init --auto
           sudo apt install -y libwebkit2gtk-4.1-dev \
                               build-essential \
@@ -30,10 +31,11 @@ jobs:
 
       - name: Clean Frontend Environment
         run: |
+          rm -rf node_modules
           rm -f package-lock.json
           npm install
 
-      - name: Build Snap Packages
+      - name: Build Snap Package
         run: |
           sudo snapcraft clean build-app
           sudo snapcraft
