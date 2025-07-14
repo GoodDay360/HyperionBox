@@ -409,7 +409,7 @@ function Watch() {
                                     }
                                 }}
                             >
-                                <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="large"/>
+                                <ArrowBackRoundedIcon sx={{color:"var(--icon-color-1)"}} fontSize="medium"/>
                             </IconButton>
                             <div
                                 style={{
