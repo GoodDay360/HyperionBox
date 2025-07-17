@@ -40,7 +40,7 @@ const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
                     <div className={styles.check_box_frame}>
                         
                         <Checkbox  sx={{color: 'var(--color)'}}
-                            onClick={()=>{set_repair_dependencies({...repair_dependencies, "7z":true})}}
+                            onClick={(event:any)=>{set_repair_dependencies({...repair_dependencies, "7z":event.target.checked})}}
                         />
                         <Tooltip title="Repair" arrow>
                             <span className={styles.fieldset_text}><HandymanRoundedIcon sx={{color: 'var(--color)'}} fontSize="inherit"/></span>
@@ -53,7 +53,7 @@ const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
                     <div className={styles.check_box_frame}>
                         
                         <Checkbox  sx={{color: 'var(--color)'}}
-                            onClick={()=>{set_repair_dependencies({...repair_dependencies, "node":true})}}
+                            onClick={(event:any)=>{set_repair_dependencies({...repair_dependencies, "node":event.target.checked})}}
                         />
                         <Tooltip title="Repair" arrow>
                             <span className={styles.fieldset_text}><HandymanRoundedIcon sx={{color: 'var(--color)'}} fontSize="inherit"/></span>
@@ -65,7 +65,7 @@ const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
                     <div className={styles.check_box_frame}>
                         
                         <Checkbox  sx={{color: 'var(--color)'}}
-                            onClick={()=>{set_repair_dependencies({...repair_dependencies, "extension-package":true})}}
+                            onClick={(event:any)=>{set_repair_dependencies({...repair_dependencies, "extension-package":event.target.checked})}}
                         />
                         <Tooltip title="Repair" arrow>
                             <span className={styles.fieldset_text}><HandymanRoundedIcon sx={{color: 'var(--color)'}} fontSize="inherit"/></span>
@@ -91,7 +91,7 @@ const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
                         
                         
                         <Checkbox  sx={{color: 'var(--color)'}}
-                            onClick={()=>{set_repair_dependencies({...repair_dependencies, browser_path:true})}}
+                            onClick={(event:any)=>{set_repair_dependencies({...repair_dependencies, browser:event.target.checked})}}
                         />
                         <Tooltip title="Repair" arrow>
                             <span className={styles.fieldset_text}><HandymanRoundedIcon sx={{color: 'var(--color)'}} fontSize="inherit"/></span>
