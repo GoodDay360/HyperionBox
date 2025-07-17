@@ -57,6 +57,7 @@ import open_external from "../scripts/open_external";
 import { get_source_info } from "../../global/scripts/manage_extension";
 import { read_config } from "../../global/scripts/manage_config";
 import ManageTranslateWidget from "./manage_translate_widget";
+import { get_data_storage_dir } from "../../global/scripts/manage_data_storage_dir";
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 let FIRST_RUN_TIMEOUT:any;
@@ -152,7 +153,7 @@ function Watch() {
     }, [is_media_ready,is_in_watchlist, is_ready, is_error, MEDIA_TYPE, SERVER_INFO]);
 
     const get_custom_track = useCallback(async () => {
-        const track_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "translated_track", "manifest.json");
+        const track_manifest_path = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "download", watch_id, "translated_track", "manifest.json");
         if (await exists(track_manifest_path)) {
             try {
                 const manifest_data = JSON.parse(await readTextFile(track_manifest_path, {baseDir:BaseDirectory.AppData}));
@@ -211,7 +212,7 @@ function Watch() {
                 SET_SERVER_INFO(data.server_info);
                 SET_TYPE_SCHEMA(data.type_schema??1);
                 if (data.media_info.type === "local"){
-                    const preivew_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, "manifest.json");
+                    const preivew_manifest_path = await path.join(await get_data_storage_dir(), source_id, preview_id, "manifest.json");
                     if (await exists(preivew_manifest_path)) {
                         try{
                             const preview_manifest_data = JSON.parse(await readTextFile(preivew_manifest_path, {baseDir:BaseDirectory.AppData}));
@@ -324,7 +325,7 @@ function Watch() {
 
         useEffect(()=>{
             ;(async ()=>{
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, SEASON_ID);
+                const main_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, SEASON_ID);
 
                 const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
 

@@ -2,6 +2,9 @@ import Database from '@tauri-apps/plugin-sql';
 import { exists, BaseDirectory, remove } from "@tauri-apps/plugin-fs"
 import { path } from "@tauri-apps/api"
 
+// Custom Imports
+import { get_data_storage_dir } from './manage_data_storage_dir';
+
 const DATABASE_PATH:string = 'sqlite:download_task.db'
 
 async function setup_table() {
@@ -165,7 +168,7 @@ export async function request_remove_download_task({
     await db.execute(deleteQuery, [source_id, preview_id, season_id, watch_id]);
 
     if (clean){
-        const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id);
+        const main_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "download", watch_id);
         if (await exists(main_dir)) await remove(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
     }
     

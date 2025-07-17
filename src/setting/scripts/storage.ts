@@ -2,7 +2,9 @@
 import { path } from '@tauri-apps/api';
 import { readDir, remove, BaseDirectory, exists } from '@tauri-apps/plugin-fs';
 
+// Custom Imports
 import { request_item_tags } from '../../global/scripts/manage_tag';
+import { get_data_storage_dir } from '../../global/scripts/manage_data_storage_dir';
 
 export function format_size(bytes: number): { unit: string; value: number } {
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -22,7 +24,7 @@ export function format_size(bytes: number): { unit: string; value: number } {
 
 export const clean_up_cache = async () => {
     
-    const local_data_dir = await path.join(await path.appDataDir(), "data");
+    const local_data_dir = await get_data_storage_dir();
     const local_data_entries = await readDir(local_data_dir);
     
 
@@ -66,7 +68,7 @@ export const clean_up_cache = async () => {
 
 export const clean_up_download = async () => {
     
-    const local_data_dir = await path.join(await path.appDataDir(), "data");
+    const local_data_dir = await get_data_storage_dir();
     const local_data_entries = await readDir(local_data_dir);
     
 

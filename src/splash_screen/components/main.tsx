@@ -8,6 +8,7 @@ import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/w
 import { platform, arch } from '@tauri-apps/plugin-os';
 import { path } from '@tauri-apps/api';
 import { exists, BaseDirectory, remove } from '@tauri-apps/plugin-fs';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 // Material UI 
 import LinearProgress from '@mui/material/LinearProgress';
@@ -291,7 +292,7 @@ function Splash_Screen() {
                             }}
                         >Setting</Button>
                         <Button variant='contained' color='secondary'
-                            onClick={async ()=>{await start_setup()}}
+                            onClick={async ()=>{await relaunch();}}
                         >Retry</Button>
                     </div>
                 }</>

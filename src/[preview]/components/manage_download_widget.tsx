@@ -191,16 +191,15 @@ const ManageDownloadWidget  = ({source_id, preview_id, season_id, server_type_sc
                                             if (get_watch_result.code === 200){
                                                 if (Object.keys(get_watch_result?.result?.server_info?.server_list)?.length > 0){
                                                     SET_PREFER_SERVER_LIST(get_watch_result.result.server_info.server_list);
+                                                    set_feedback_snackbar({state:true, type:"success" ,text:"Preferable information request successfully."});
+                                                    set_precise_mode(true);
                                                 }else{
                                                     set_feedback_snackbar({state:true,type:"error",text:"Unable to request precise information."});
                                                 }
-                                                
-                                                set_precise_mode(true);
                                             }else{
                                                 set_feedback_snackbar({state:true,type:"error",text:"Unable to request precise information."});
                                             }
                                             set_is_managing(false);
-                                            set_feedback_snackbar({state:true, type:"success" ,text:"Preferable information request successfully."});
                                         }}
                                     >
                                         <InputRoundedIcon fontSize='medium' sx={{color:'var(--color)'}}/>

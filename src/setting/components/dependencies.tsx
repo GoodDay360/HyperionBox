@@ -1,8 +1,8 @@
 // Tauri Plugins
-
+import { relaunch } from '@tauri-apps/plugin-process';
 
 // React Import
-import { useState, useContext } from "react";
+import { useState } from "react";
 
 
 // MUI Imports
@@ -17,7 +17,6 @@ import HandymanRoundedIcon from '@mui/icons-material/HandymanRounded';
 import styles from "../styles/main.module.css";
 
 // Custom Import
-import {  global_context } from "../../global/scripts/contexts";
 import { read_config, write_config } from "../../global/scripts/manage_config";
 import shutdown_extension from '../../global/scripts/shutdown_extension';
 
@@ -26,7 +25,6 @@ import shutdown_extension from '../../global/scripts/shutdown_extension';
 const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
     // const navigate = useNavigate();
 
-    const {set_menu} = useContext<any>(global_context)
         
 
     const [repair_dependencies, set_repair_dependencies] = useState<any>({})
@@ -126,7 +124,7 @@ const Dependencies = ({CONFIG_MANIFEST, SET_CONFIG_MANIFEST}:any) => {
                             }
                             await write_config(config);
                             await shutdown_extension();
-                            set_menu({state:false,path:""});
+                            await relaunch();
                         }}
                     
                     >Apply</Button>

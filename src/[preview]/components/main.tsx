@@ -72,6 +72,7 @@ import { get_watch_state } from "../../global/scripts/manage_watch_state";
 import { request_add_download_task } from "../../global/scripts/manage_download";
 import open_external from '../scripts/open_external';
 import write_crash_log from '../../global/scripts/write_crash_log';
+import { get_data_storage_dir } from '../../global/scripts/manage_data_storage_dir';
 
 const FETCH_UPDATE_INTERVAL = 3; // In Hours
 let FIRST_RUN_TIMEOUT:any;
@@ -397,7 +398,7 @@ const Preview = () => {
 
         useEffect(()=>{
             ;(async ()=>{
-                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, SEASON_ID);
+                const main_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, SEASON_ID);
 
                 const download_manifest_path = await path.join(main_dir, "download", item.id, "manifest.json");
 
@@ -502,7 +503,7 @@ const Preview = () => {
                     <IconButton 
                         onClick={()=>{
                             set_widget({type:"remove_download", onSubmit: async ()=>{
-                                const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, SEASON_ID, "download", item.id);
+                                const main_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, SEASON_ID, "download", item.id);
                                 await remove(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch(e=>{console.error(e)});
                                 set_available_local(false);
                             }});
