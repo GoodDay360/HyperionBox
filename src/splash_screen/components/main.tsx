@@ -8,6 +8,7 @@ import { getCurrentWindow, LogicalSize, currentMonitor } from "@tauri-apps/api/w
 import { platform, arch } from '@tauri-apps/plugin-os';
 import { path } from '@tauri-apps/api';
 import { exists, BaseDirectory, remove } from '@tauri-apps/plugin-fs';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 // Material UI 
 import LinearProgress from '@mui/material/LinearProgress';
@@ -63,14 +64,15 @@ function Splash_Screen() {
         const window = await getCurrentWindow();
         const is_online = await check_internet_connection();
 
-        window.setMaximizable(false);
-        window.setResizable(false);
-        window.setAlwaysOnTop(true);
+        await window.setMaximizable(false);
+        await window.setResizable(false);
+        await window.setAlwaysOnTop(true);
         const monitor_size:any = (await currentMonitor())?.size;
         const new_height = monitor_size.height*0.5;
         const new_width = monitor_size.width*0.25;
-        window.setSize(new LogicalSize(new_width, new_height));
-        
+        await window.setSize(new LogicalSize(new_width, new_height));
+        await window.center();
+
         try{
             let config = await read_config();
             
@@ -250,10 +252,10 @@ function Splash_Screen() {
 
 
             setFeedback({text:"Launching..."});
-            window.setMaximizable(true);
-            window.setResizable(true);
-            window.setAlwaysOnTop(false);
-
+            await window.setMaximizable(true);
+            await window.setResizable(true);
+            await window.setAlwaysOnTop(false);
+            await window.center();
             set_app_ready(true);
         }catch(e:any){
             console.error(e)
@@ -291,7 +293,7 @@ function Splash_Screen() {
                             }}
                         >Setting</Button>
                         <Button variant='contained' color='secondary'
-                            onClick={async ()=>{await start_setup()}}
+                            onClick={async ()=>{await relaunch();}}
                         >Retry</Button>
                     </div>
                 }</>

@@ -24,6 +24,7 @@ import { motion } from 'framer-motion';
 import { translate_from, translate_to } from '../scripts/translate_array';
 import translate_caption from '../scripts/translate_caption';
 import { global_context } from '../../global/scripts/contexts';
+import { get_data_storage_dir } from '../../global/scripts/manage_data_storage_dir';
 
 // Styles
 import styles from "../styles/manage_translate_widget.module.css";
@@ -44,7 +45,7 @@ const ManageTranslateWidget  = ({
     const [is_translating, set_is_translating] = useState<boolean>(false);
 
     const get_track = useCallback(async ()=>{
-        const track_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "translated_track", "manifest.json");
+        const track_manifest_path = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "download", watch_id, "translated_track", "manifest.json");
         if (await exists(track_manifest_path)) {
             try {
                 const manifest_data = JSON.parse(await readTextFile(track_manifest_path, {baseDir:BaseDirectory.AppData}));
@@ -209,7 +210,7 @@ const ManageTranslateWidget  = ({
                                 <span className={styles.fieldset_text}>{item.label}</span>
                                 <IconButton
                                     onClick={async ()=>{
-                                        const track_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "translated_track")
+                                        const track_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "download", watch_id, "translated_track")
                                         if (await exists(item.url)) await remove(item.url, {baseDir:BaseDirectory.AppData, recursive:true});
                                         const track_manifest_path = await path.join(track_dir, "manifest.json");
                                         try {

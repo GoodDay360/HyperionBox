@@ -4,6 +4,9 @@ import webvtt from 'node-webvtt';
 import { Translator } from 'google-translate-api-x';
 import { path } from "@tauri-apps/api";
 
+// Custom Import
+import { get_data_storage_dir } from "../../global/scripts/manage_data_storage_dir";
+
 function isURL(str: string) {
     try {
         const url = new URL(str);
@@ -102,7 +105,7 @@ const translate_caption = async ({
     source_id,preview_id,season_id,watch_id,
     selected_translate_from,selected_translate_to,selected_installed_source
 }:any) => {
-    const translated_track_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "translated_track");
+    const translated_track_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "download", watch_id, "translated_track");
     if (!await exists(translated_track_dir)) await mkdir(translated_track_dir, {baseDir:BaseDirectory.AppData, recursive:true});
     const translated_track_manifest_path  = await path.join(translated_track_dir, "manifest.json")
 

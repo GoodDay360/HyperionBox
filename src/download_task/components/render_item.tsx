@@ -27,6 +27,7 @@ import { download_task_context } from "../../global/scripts/contexts";
 
 // Custom Import
 import {  request_remove_download_task, request_set_error_task } from "../../global/scripts/manage_download";
+import { get_data_storage_dir } from "../../global/scripts/manage_data_storage_dir";
 
 // styles Import
 import styles from "../styles/render_item.module.css";
@@ -72,7 +73,7 @@ const RenderItem = ({item, get_data}:any) => {
 
     useEffect(()=>{
         ;(async ()=>{
-            const DATA_DIR = await path.join(await path.appDataDir(), "data")
+            const DATA_DIR = await get_data_storage_dir();
             const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
             const cover_path = await path.join(preview_dir,"cover.jpg")
             if (await exists(cover_path)){

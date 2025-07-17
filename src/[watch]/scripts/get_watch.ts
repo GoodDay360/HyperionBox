@@ -13,7 +13,7 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 
 // Custom Imports
-
+import { get_data_storage_dir } from '../../global/scripts/manage_data_storage_dir';
 
 const FETCH_UPDATE_INTERVAL = 6; // In hours
 
@@ -26,7 +26,7 @@ const get_watch = async ({source_id,preview_id,season_id="0",watch_id,server_typ
         try{
             // Load from local first
             if (check_local) {
-                const local_manifest_path = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id, "manifest.json")
+                const local_manifest_path = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "download", watch_id, "manifest.json")
                 if (await exists(local_manifest_path)) {
                     try {
                         const manifest_data = JSON.parse(await readTextFile(local_manifest_path, {baseDir:BaseDirectory.AppData}));

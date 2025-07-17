@@ -7,6 +7,7 @@ import { BaseDirectory, exists, mkdir, readFile, writeTextFile, readTextFile, re
 import { Parser } from 'm3u8-parser';
 
 // Custom Imports
+import { get_data_storage_dir } from '../../global/scripts/manage_data_storage_dir';
 
 import { request_current_task, request_remove_download_task, request_set_error_task } from "../../global/scripts/manage_download";
 import get_download_info from './get_download_info';
@@ -89,7 +90,7 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
             const watch_index = data.watch_index;
             const watch_title = data.title;
             
-            const main_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "download", watch_id)
+            const main_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "download", watch_id)
             const manifest_path = await path.join(main_dir, "manifest.json");
 
             if (await exists(manifest_path)) {

@@ -1,11 +1,14 @@
 import { writeTextFile, exists, mkdir, BaseDirectory, readTextFile } from "@tauri-apps/plugin-fs";
 import { path } from "@tauri-apps/api";
 
+// Custom Imports
+import { get_data_storage_dir } from "./manage_data_storage_dir";
+
 export const update_watch_state = async (
     {source_id,preview_id,season_id="0",watch_id,state}
     :{source_id:string,preview_id:string,season_id?:string,watch_id:string,state:any}
 ) => {
-    const watch_state_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "watch_state");
+    const watch_state_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "watch_state");
     if (!await exists(watch_state_dir)) await mkdir(watch_state_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
 
     const watch_state_manifest = await path.join(watch_state_dir, `${watch_id}.json`);
@@ -19,7 +22,7 @@ export const get_watch_state = async (
     :{source_id:string,preview_id:string,season_id?:string,watch_id:string}
 ) => {
     try{
-        const watch_state_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id, season_id, "watch_state");
+        const watch_state_dir = await path.join(await get_data_storage_dir(), source_id, preview_id, season_id, "watch_state");
         if (!await exists(watch_state_dir)) await mkdir(watch_state_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
 
         const watch_state_manifest = await path.join(watch_state_dir, `${watch_id}.json`);

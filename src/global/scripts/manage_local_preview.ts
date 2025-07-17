@@ -2,9 +2,10 @@ import { writeTextFile, readTextFile, exists, mkdir, BaseDirectory, remove } fro
 import { path } from "@tauri-apps/api"
 import download_file_in_chunks from "./download_file_in_chunk"
 import { convertFileSrc } from '@tauri-apps/api/core';
+import { get_data_storage_dir } from "./manage_data_storage_dir";
 
 export const get_local_preview = async ({source_id,preview_id}:{source_id:string,preview_id:string}) => {
-    const DATA_DIR = await path.join(await path.appDataDir(), "data")
+    const DATA_DIR = await get_data_storage_dir();
     const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
     if (!(await exists(preview_dir))) return {code:404,message:"Not exist"}
     const manifest_path = await path.join(preview_dir,"manifest.json")
@@ -37,7 +38,7 @@ export const save_local_preview = async (
 
     } = options || {};
 
-    const DATA_DIR = await path.join(await path.appDataDir(), "data")
+    const DATA_DIR = await get_data_storage_dir();
     const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
     if (!(await exists(preview_dir))) await mkdir(preview_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)})
     const manifest_path = await path.join(preview_dir,"manifest.json")
@@ -53,7 +54,7 @@ export const save_local_preview = async (
 }
 
 export const remove_local_preview = async ({source_id,preview_id}:{source_id:string,preview_id:string}) => {
-    const DATA_DIR = await path.join(await path.appDataDir(), "data")
+    const DATA_DIR = await get_data_storage_dir();
     const preview_dir = await path.join(DATA_DIR, source_id, preview_id)
     if (await exists(preview_dir)) {
         await remove(preview_dir,{baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)})

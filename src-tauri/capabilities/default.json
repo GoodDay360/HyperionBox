@@ -37,8 +37,12 @@
           "name": "windows-shell",
           "cmd": "powershell.exe",
           "args": [
-            "-ExecutionPolicy", "Bypass", " -File",
-            {"validator": "^.*$"}
+            "-ExecutionPolicy",
+            "Bypass",
+            " -File",
+            {
+              "validator": "^.*$"
+            }
           ]
         },
         {
@@ -46,7 +50,9 @@
           "cmd": "sh",
           "args": [
             "-c",
-            { "validator": "^.*$" }
+            {
+              "validator": "^.*$"
+            }
           ]
         }
       ]
@@ -58,8 +64,12 @@
           "name": "windows-shell",
           "cmd": "powershell.exe",
           "args": [
-            "-ExecutionPolicy", "Bypass", " -File",
-            {"validator": "^.*$"}
+            "-ExecutionPolicy",
+            "Bypass",
+            " -File",
+            {
+              "validator": "^.*$"
+            }
           ]
         },
         {
@@ -67,7 +77,9 @@
           "cmd": "sh",
           "args": [
             "-c",
-            { "validator": "^.*$" }
+            {
+              "validator": "^.*$"
+            }
           ]
         }
       ]
@@ -91,15 +103,33 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        {"path": "**"},
-        {"path": "$APPDATA/**"},
-        {"path": "$APPDATA/*"},
-        {"path": "$APPDATA/"},
-        {"path": "$APPDATA/.cache"},
-        {"path": "$APPDATA/.cache/**"},
-        {"path": "$TEMP/**"},
-        {"path": "$TEMP/*"},
-        {"path": "$TEMP/"}
+        {
+          "path": "**"
+        },
+        {
+          "path": "$APPDATA/**"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPDATA/"
+        },
+        {
+          "path": "$APPDATA/.cache"
+        },
+        {
+          "path": "$APPDATA/.cache/**"
+        },
+        {
+          "path": "$TEMP/**"
+        },
+        {
+          "path": "$TEMP/*"
+        },
+        {
+          "path": "$TEMP/"
+        }
       ]
     },
     "os:default",
@@ -126,6 +156,7 @@
     "http:default",
     "process:default",
     "process:allow-restart",
-    "dialog:default"
+    "dialog:default",
+    "opener:default"
   ]
 }

@@ -4,6 +4,7 @@ import { path } from '@tauri-apps/api';
 import { exists, remove, BaseDirectory, readTextFile, } from '@tauri-apps/plugin-fs';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { get_watch_state } from './manage_watch_state';
+import { get_data_storage_dir } from './manage_data_storage_dir';
 
 const DATABASE_PATH:string = 'sqlite:watchlist.db'
 const REQUEST_LIMIT = 15;
@@ -109,7 +110,7 @@ export const request_delete_tag = async ({
                 if (request_item_tags_result.code === 200) {
                     const remain_tags = request_item_tags_result.data.filter((item:string) => item !== tag_name);
                     if (!remain_tags.length) {
-                        const preview_dir = await path.join(await path.appDataDir(), "data", source_id, preview_id)
+                        const preview_dir = await path.join(await get_data_storage_dir(), source_id, preview_id)
                         if (await exists(preview_dir)) {
                             await remove(preview_dir,{baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
                             console.log("Local save removed: ",preview_dir)
@@ -336,7 +337,7 @@ export const request_content_from_tag = async ({ tag_name, page, search }: { tag
     const dataResult:any = [];
     console.log(queryResult)
     for (const item of queryResult) {
-        const preview_dir = await path.join(await path.appDataDir(), "data", item.source_id, item.preview_id);
+        const preview_dir = await path.join(await get_data_storage_dir(), item.source_id, item.preview_id);
         const manifest_path = await path.join(preview_dir, "manifest.json");
         if (await exists(manifest_path)) {
             try{

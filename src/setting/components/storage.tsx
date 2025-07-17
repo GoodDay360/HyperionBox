@@ -1,17 +1,17 @@
 // Tauri Plugins
 import { invoke } from '@tauri-apps/api/core';
-import { path } from '@tauri-apps/api';
+import { openPath } from '@tauri-apps/plugin-opener';
 
 // React Import
 import { useEffect, useState, useContext } from "react";
 
 
 // MUI Imports
-import { Button } from '@mui/material';
+import { Button, Tooltip, IconButton } from '@mui/material';
 
 // MUI Icon Imports
 import CircularProgress from '@mui/material/CircularProgress';
-
+import FolderOpenRoundedIcon from '@mui/icons-material/FolderOpenRounded';
 
 // Context Import
 import { global_context } from "../../global/scripts/contexts";
@@ -21,7 +21,7 @@ import styles from "../styles/main.module.css";
 
 // Custom Import
 import { format_size, clean_up_cache, clean_up_download } from '../scripts/storage';
-
+import { get_data_storage_dir } from '../../global/scripts/manage_data_storage_dir';
 
 
 const Storage = ({}:any) => {
@@ -35,7 +35,7 @@ const Storage = ({}:any) => {
         
     useEffect(()=>{
         ;(async () => {
-            const size = await invoke<number>('get_folder_size', { path: await path.join(await path.appDataDir(), "data") });
+            const size = await invoke<number>('get_folder_size', { path: await get_data_storage_dir() });
             SET_SIZE(format_size(size))
         })()
 
@@ -48,6 +48,13 @@ const Storage = ({}:any) => {
                 <legend className={`float-none w-auto ${styles.legend_box}`}>Storage</legend>
                 <div className={styles.item_box}>
                     <span className={styles.fieldset_text}><span style={{fontFamily:"var(--font-family-bold)"}}>Local Data: </span>{SIZE.value} {SIZE.unit}</span>
+                    <Tooltip title="Show Data Storage Directory">
+                        <IconButton
+                            onClick={async ()=>{
+                                openPath(await get_data_storage_dir());
+                            }}
+                        ><FolderOpenRoundedIcon sx={{color: 'var(--color)'}} fontSize="medium"/></IconButton>
+                    </Tooltip>
                 </div>
 
                 <div className={styles.item_box}>
@@ -67,7 +74,7 @@ const Storage = ({}:any) => {
                                     }finally{
                                         set_is_cleaning_up(false);
                                         set_allow_use_app(true);
-                                        const size = await invoke<number>('get_folder_size', { path: await path.join(await path.appDataDir(), "data") });
+                                        const size = await invoke<number>('get_folder_size', { path: await get_data_storage_dir() });
                                         SET_SIZE(format_size(size))
                                     }
                                     set_feedback_snackbar({state:true, type:"info", text:"Clean up completed."});
@@ -88,7 +95,7 @@ const Storage = ({}:any) => {
                                     }finally{
                                         set_is_cleaning_up(false);
                                         set_allow_use_app(true);
-                                        const size = await invoke<number>('get_folder_size', { path: await path.join(await path.appDataDir(), "data") });
+                                        const size = await invoke<number>('get_folder_size', { path: await get_data_storage_dir() });
                                         SET_SIZE(format_size(size))
                                     }
                                     set_feedback_snackbar({state:true, type:"info", text:"Clean up completed."});
