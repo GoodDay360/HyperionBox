@@ -22,7 +22,7 @@
     "@tauri-apps/plugin-opener": "^2.4.0",
     "@tauri-apps/plugin-os": "2.2.1",
     "@tauri-apps/plugin-process": "^2.3.0",
-    "@tauri-apps/plugin-shell": "2.2.0",
+    "@tauri-apps/plugin-shell": "2.2.1",
     "@tauri-apps/plugin-sql": "2.2.0",
     "@types/randomcolor": "0.5.9",
     "@types/react-lazy-load-image-component": "1.6.4",
