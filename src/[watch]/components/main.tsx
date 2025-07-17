@@ -391,6 +391,7 @@ function Watch() {
                             data:{
                                 ...data,
                                 season_index:SEASON_INDEX,
+                                season_id:SEASON_ID,
                                 watch_index:parseInt(item.index,10),
                                 watch_id:item.id
                             },
