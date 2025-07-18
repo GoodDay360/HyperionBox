@@ -1,11 +1,11 @@
 {
     "windows": {
         "x86_64": {
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/hyperionbox-1.1.8/HyperionBox_1.1.8_x64_en-US.msi",
-            "version":"1.1.8"
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/hyperionbox-1.1.9/HyperionBox_1.1.9_x64_en-US.msi",
+            "version":"1.1.9"
         }
     },
     "linux": {
-        "version":"1.1.8"
+        "version":"1.1.9"
     }
 }

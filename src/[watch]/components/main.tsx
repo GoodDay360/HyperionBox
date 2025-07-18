@@ -52,7 +52,7 @@ import { request_item_tags } from "../../global/scripts/manage_tag";
 import { get_watch_state, update_watch_state } from "../../global/scripts/manage_watch_state";
 import { get_local_preview,save_local_preview } from "../../global/scripts/manage_local_preview";
 import check_internet_connection from "../../global/scripts/check_internet_connection";
-import rephrase_local_hls from "../scripts/rephrase_local_hls";
+import reparse_local_hls from "../scripts/reparse_local_hls";
 import open_external from "../scripts/open_external";
 import { get_source_info } from "../../global/scripts/manage_extension";
 import { read_config } from "../../global/scripts/manage_config";
@@ -226,7 +226,7 @@ function Watch() {
                             console.error(e);
                         }
                     }
-                    const rephrased_hls_result:any = await rephrase_local_hls({input_file_path: data.media_info.source})
+                    const rephrased_hls_result:any = await reparse_local_hls({input_file_path: data.media_info.source})
                     if (rephrased_hls_result.code === 200){
                         SET_MEDIA_SRC(rephrased_hls_result.result);
                     }
