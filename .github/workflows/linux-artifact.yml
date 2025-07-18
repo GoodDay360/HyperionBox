@@ -1,0 +1,33 @@
+name: Build Snap (amd64 & arm64)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, window]
+
+jobs:
+  build-snap:
+    name: Build Snap for ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Snapcraft
+        uses: snapcore/action-build@v1
+        with:
+          use-lxd: true
+
+      - name: Build Snap
+        run: |
+          snapcraft --target-arch=${{ matrix.arch }} --destructive-mode
+
+      - name: Upload Snap Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: hyperionbox-${{ matrix.arch }}.snap
+          path: ./*.snap
