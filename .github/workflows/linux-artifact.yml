@@ -17,7 +17,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Build Snap with Snapcraft
+        id: snapcraft
         uses: snapcore/action-build@v1
+        with:
+          snapcraft-args: ${{ matrix.arch != 'amd64' && format('--target-arch={0}', matrix.arch) }}
 
       - name: Find built snap file
         id: find_snap
@@ -28,5 +31,5 @@ jobs:
       - name: Upload Snap artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.find_snap.outputs.snap_file }}
+          name: ${{ steps.find_snap.outputs.snap_file }}-${{ matrix.arch }}-${{ github.run_id }}
           path: ${{ steps.find_snap.outputs.snap_file }}
