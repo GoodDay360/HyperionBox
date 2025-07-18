@@ -7,11 +7,11 @@ on:
 
 jobs:
   build-snap:
-    name: Build Snap for ${{ matrix.arch }}
+    name: Build Snap
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        arch: [amd64]
 
     steps:
       - uses: actions/checkout@v3
@@ -19,17 +19,21 @@ jobs:
       - name: Build Snap with Snapcraft
         id: snapcraft
         uses: snapcore/action-build@v1
-        with:
-          snapcraft-args: ${{ matrix.arch != 'amd64' && format('--target-arch={0}', matrix.arch) || '' }}
 
       - name: Find built snap file
         id: find_snap
         run: |
-          SNAP_FILE=$(ls *.snap | head -n 1)
-          echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
+          echo "snap_file_amd64=$(ls *_amd64.snap | head -n 1)" >> $GITHUB_OUTPUT
+          echo "snap_file_arm64=$(ls *_arm64.snap | head -n 1)" >> $GITHUB_OUTPUT
 
-      - name: Upload Snap artifact
+      - name: Upload Snap artifact (amd64)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.find_snap.outputs.snap_file }}
-          path: ${{ steps.find_snap.outputs.snap_file }}
+          name: ${{ steps.find_snap.outputs.snap_file_amd64 }}
+          path: ${{ steps.find_snap.outputs.snap_file_amd64 }}
+
+      - name: Upload Snap artifact (arm64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.find_snap.outputs.snap_file_arm64 }}
+          path: ${{ steps.find_snap.outputs.snap_file_arm64 }}
