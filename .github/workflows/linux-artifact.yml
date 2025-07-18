@@ -3,7 +3,7 @@ name: Build Snap (amd64 & arm64)
 on:
   workflow_dispatch:
   push:
-    branches: [main, window]
+    branches: [main]
 
 jobs:
   build-snap:
