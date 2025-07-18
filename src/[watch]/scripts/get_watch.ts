@@ -63,8 +63,8 @@ const get_watch = async ({source_id,preview_id,season_id="0",watch_id,server_typ
                 preview_id,
                 season_id,
                 watch_id,
-                server_type,
-                server_id
+                server_type: server_type !== "local" ? server_type : "",
+                server_id: server_id !== "local" ? server_id : "",
             }
             console.log(body);
             axios({

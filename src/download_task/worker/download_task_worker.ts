@@ -146,12 +146,9 @@ const download_task_worker = async ({pause_download_task,download_task_info,down
                 const watch_data = info_result.result;
                 
                 await mkdir(main_dir, {baseDir:BaseDirectory.AppData, recursive:true}).catch((e)=>{console.error(e)});
-                const manifest:any = {}
+                const manifest:any = {...watch_data}
                 
-                manifest.media_info = {}
-                manifest.type_schema = type_schema;
-                manifest.episodes = watch_data.episodes;
-
+                manifest.media_info = structuredClone(watch_data);
                 manifest.media_info.type = "local";
 
                 

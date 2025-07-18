@@ -137,8 +137,8 @@ function Watch() {
                     await update_watch_state({source_id,preview_id,season_id,watch_id,
                         state:{
                             current_time: player_state.currentTime,
-                            server_id: MEDIA_TYPE === "local" ? "local" : SERVER_INFO.current_server_id,
-                            server_type: MEDIA_TYPE === "local" ? "local" : SERVER_INFO.current_server_type
+                            server_id: SERVER_INFO?.current_server_id,
+                            server_type: SERVER_INFO?.current_server_type
                         }
                     });
 
