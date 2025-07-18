@@ -3,7 +3,7 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import { path } from '@tauri-apps/api';
 import { BaseDirectory, mkdir, writeTextFile, readTextFile} from '@tauri-apps/plugin-fs';
 
-const rephrase_local_hls = async ({input_file_path}:{input_file_path:string})=>{
+const reparse_local_hls = async ({input_file_path}:{input_file_path:string})=>{
     try{
         const cache_dir = await path.join(await path.appDataDir(), ".cache", "watch")
         mkdir(cache_dir, {recursive:true, baseDir:BaseDirectory.AppData}).catch((e) => { console.error(e) });
@@ -22,25 +22,19 @@ const rephrase_local_hls = async ({input_file_path}:{input_file_path:string})=>{
         });
 
         // Collect headers until the first #EXTINF tag
-        const headerLines = [];
+        const output_data:string[] = [];
         const splited = data.split("\n");
+        let count_segment = 0;
         for (const line of splited) {
-        if (line.includes("#EXTINF")) break;
-            headerLines.push(line);
+            if (!line || line[0].includes("#")) {
+                output_data.push(line);
+            }else{
+                output_data.push(parsedManifest.segments[count_segment].uri);
+                count_segment++;
+            }
         }
 
-        const headers = headerLines.join("\n");
-
-        // Build the modified M3U8 content
-        let outputdata = headers + "\n";
-
-        parsedManifest.segments.forEach((segment) => {
-            outputdata += `#EXTINF:${segment.duration},\n${segment.uri}\n`;
-        });
-
-        if (parsedManifest.endList) outputdata += `#EXT-X-ENDLIST\n`;
-
-        await writeTextFile(output_file, outputdata, {baseDir:BaseDirectory.AppData}).catch((e) => { console.error(e) });
+        await writeTextFile(output_file, output_data.join("\n"), {baseDir:BaseDirectory.AppData}).catch((e) => { console.error(e) });
 
         return {code:200, message:"OK", result: convertFileSrc(output_file)}
     }catch(e:any){
@@ -51,4 +45,4 @@ const rephrase_local_hls = async ({input_file_path}:{input_file_path:string})=>{
     }
 }
 
-export default rephrase_local_hls;
+export default reparse_local_hls;

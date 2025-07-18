@@ -183,26 +183,24 @@ const manage_download = async ({player_data,main_dir, pause_download_task, downl
         download_task_progress.current = {status: "finished", percent:100, label:`100%`};
 
         // Collect headers until the first #EXTINF tag
-        const headerLines = [];
+        const output_data:string[] = [];
         const splited = player_data.split("\n");
+        let count_segment = 0;
         for (const line of splited) {
-        if (line.includes("#EXTINF")) break;
-            headerLines.push(line);
+            if (!line || line[0].includes("#")){
+                output_data.push(line);
+            }else{
+                output_data.push(result_segments[count_segment]);
+                count_segment++
+            }
+            
         }
 
-        const headers = headerLines.join("\n");
-
-        // Build the modified M3U8 content
-        let outputdata = headers + "\n";
-
-        parsedManifest.segments.forEach((segment, index) => {
-            outputdata += `#EXTINF:${segment.duration},\n${result_segments[index]}\n`;
-        });
-
-        if (parsedManifest.endList) outputdata += `#EXT-X-ENDLIST\n`;
+        
 
         const output_file = await path.join(main_dir, "player.m3u8")
-        await writeTextFile(output_file, outputdata, {baseDir:BaseDirectory.AppData, create:true}).catch((e)=>{console.error(e)});
+
+        await writeTextFile(output_file, output_data.join("\n"), {baseDir:BaseDirectory.AppData, create:true}).catch((e)=>{console.error(e)});
         
 
         return {code:200, message:"OK", result: output_file}
