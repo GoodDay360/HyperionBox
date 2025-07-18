@@ -7,11 +7,7 @@ on:
 
 jobs:
   build-snap:
-    name: Build Snap
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64]
 
     steps:
       - uses: actions/checkout@v3
