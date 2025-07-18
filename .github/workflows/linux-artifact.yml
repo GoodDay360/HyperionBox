@@ -6,46 +6,24 @@ on:
     branches: [main, window]
 
 jobs:
-  build-amd64:
-    name: Build Snap for amd64
+  build-snap:
+    name: Build Snap for ${{ matrix.arch }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Snapcraft
+      - name: Build Snap with Snapcraft
+        id: snapcraft
         uses: snapcore/action-build@v1
+        with:
+          target-arch: ${{ matrix.arch }}
 
-      - name: Build Snap (amd64)
-        id: build_snap
-        run: |
-            snapcraft --target-arch=amd64
-            SNAP_FILE=$(ls hyperionbox_*_amd64.snap)
-            echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
-
-      - name: Upload Snap (amd64)
+      - name: Upload Snap artifact
         uses: actions/upload-artifact@v4
         with:
-            name: ${{ steps.build_snap.outputs.snap_file }}
-            path: ${{ steps.build_snap.outputs.snap_file }}
-
-  build-arm64:
-    name: Build Snap for arm64
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Snapcraft
-        uses: snapcore/action-build@v1
-
-      - name: Build Snap (arm64)
-        id: build_snap
-        run: |
-            snapcraft --target-arch=arm64
-            SNAP_FILE=$(ls hyperionbox_*_arm64.snap)
-            echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
-
-      - name: Upload Snap (arm64)
-        uses: actions/upload-artifact@v4
-        with:
-            name: ${{ steps.build_snap.outputs.snap_file }}
-            path: ${{ steps.build_snap.outputs.snap_file }}
+          name: hyperionbox-${{ matrix.arch }}
+          path: ${{ steps.snapcraft.outputs.snap }}
