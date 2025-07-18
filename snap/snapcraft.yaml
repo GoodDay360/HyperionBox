@@ -8,11 +8,11 @@ description: |
 grade: stable
 confinement: strict
 
-architectures:
-  - build-on: amd64
-    build-for: amd64
-  - build-on: amd64
-    build-for: arm64
+# architectures:
+#   - build-on: amd64
+#     build-for: amd64
+#   - build-on: amd64
+#     build-for: arm64
 
 
 layout:
@@ -92,8 +92,10 @@ parts:
     source: .
     override-build: |
       set -eu
+      rm -rf package-lock.json
       rustup default stable
       npm install
+      rm -rf src-tauri/target/release/bundle/deb
       npm run tauri build -- --bundles deb 
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
       mkdir -p $SNAPCRAFT_PART_INSTALL/meta

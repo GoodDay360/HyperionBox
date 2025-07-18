@@ -1,0 +1,35 @@
+name: Build Snap (amd64 & arm64)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, window]
+
+jobs:
+  build-snap:
+    name: Build Snap for ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Snap with Snapcraft
+        id: snapcraft
+        uses: snapcore/action-build@v1
+        with:
+          snapcraft-args: ${{ matrix.arch != 'amd64' && format('--target-arch={0}', matrix.arch) || '' }}
+
+      - name: Find built snap file
+        id: find_snap
+        run: |
+          SNAP_FILE=$(ls *.snap | head -n 1)
+          echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
+
+      - name: Upload Snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.find_snap.outputs.snap_file }}-${{ matrix.arch }}-${{ github.run_id }}
+          path: ${{ steps.find_snap.outputs.snap_file }}
