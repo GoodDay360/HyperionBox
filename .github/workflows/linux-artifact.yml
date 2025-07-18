@@ -18,15 +18,15 @@ jobs:
       - name: Build Snap (amd64)
         id: build_snap
         run: |
-          snapcraft --target-arch=amd64
-          SNAP_FILE=$(ls hyperionbox_*_amd64.snap)
-          echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
+            snapcraft --target-arch=amd64
+            SNAP_FILE=$(ls hyperionbox_*_amd64.snap)
+            echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
 
       - name: Upload Snap (amd64)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build_snap.outputs.snap_file }}
-          path: ${{ steps.build_snap.outputs.snap_file }}
+            name: ${{ steps.build_snap.outputs.snap_file }}
+            path: ${{ steps.build_snap.outputs.snap_file }}
 
   build-arm64:
     name: Build Snap for arm64
@@ -40,12 +40,12 @@ jobs:
       - name: Build Snap (arm64)
         id: build_snap
         run: |
-          snapcraft --target-arch=arm64
-          SNAP_FILE=$(ls hyperionbox_*_arm64.snap)
-          echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
+            snapcraft --target-arch=arm64
+            SNAP_FILE=$(ls hyperionbox_*_arm64.snap)
+            echo "snap_file=$SNAP_FILE" >> $GITHUB_OUTPUT
 
       - name: Upload Snap (arm64)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.build_snap.outputs.snap_file }}
-          path: ${{ steps.build_snap.outputs.snap_file }}
+            name: ${{ steps.build_snap.outputs.snap_file }}
+            path: ${{ steps.build_snap.outputs.snap_file }}

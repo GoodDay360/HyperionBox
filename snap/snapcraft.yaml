@@ -92,6 +92,7 @@ parts:
     source: .
     override-build: |
       set -eu
+      rm -rf package-lock.json
       rustup default stable
       npm install
       rm -rf src-tauri/target/release/bundle/deb
