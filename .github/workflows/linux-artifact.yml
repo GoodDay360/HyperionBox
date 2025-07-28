@@ -3,7 +3,7 @@ name: Build Snap (amd64 & arm64)
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [build]
 
 jobs:
   build-snap:
@@ -25,11 +25,11 @@ jobs:
       - name: Upload Snap artifact (amd64)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.find_snap.outputs.snap_file_amd64 }}
+          name: snap_artifact_amd64
           path: ${{ steps.find_snap.outputs.snap_file_amd64 }}
 
       - name: Upload Snap artifact (arm64)
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.find_snap.outputs.snap_file_arm64 }}
+          name: snap_artifact_arm64
           path: ${{ steps.find_snap.outputs.snap_file_arm64 }}
