@@ -1,24 +1,17 @@
-use std::collections::HashMap;
-use crate::anime;
 use tauri::async_runtime;
+use tokio;
+use crate::anime;
+use crate::models::home::HomeData;
+use crate::models::Error;
+use anyhow;
+use std::future::Future;
+use futures::future::{BoxFuture, FutureExt};
 
 
 #[tauri::command]
-pub fn home(source: String) -> Result<HashMap<String, Vec<anime::home::Content>>, String> {
+pub async fn home(source: String) -> Result<(), Error> {
     if source == "anime" {
-        let result = async_runtime::block_on(async move {
-            match anime::home::new().await {
-                Ok(data) => Ok(data),
-                Err(e) => Err(e),
-            }
-        });
-        
-        match result {
-            Ok(data) => return Ok(data),
-            Err(e) => return Err(e.to_string())?,
-        }
-        
+        anime::home::new().await?;
     }
-
-    return Err(format!("Invalid source: {}", source));
+    return Ok(());
 }

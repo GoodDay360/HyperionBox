@@ -2,7 +2,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 // SolidJS Imports
-import { createSignal, onMount } from "solid-js";
+import { createSignal, onMount, For } from "solid-js";
 
 // SolidJS Router Imports
 import { Route } from "@solidjs/router";
@@ -26,24 +26,56 @@ import Swiper from "@src/app/components/swiper";
 import styles from "../styles/home.module.css"
 
 
+interface RELEVANT_CONTENT  {
+    id: string,
+    title: string,
+    cover: string,
+    trailer: {
+        embed_url: string,
+        banner: string
+    }
+}
+
+interface CONTENT {
+    id: string,
+    title: string,
+    cover: string,
+}
+
+interface HOME_DATA {
+    relevant_content: RELEVANT_CONTENT[]; // Replace `any` with actual type if known
+    content: CONTENT[];
+}
+
 export default function Home() {
 
     const [autoplay_slider, set_autoplay_slider] = createSignal(true);
 
-    const [trailer, set_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
+
+    const [RELEVANT_DATA, SET_RELEVANT_DATA] = createSignal<RELEVANT_CONTENT[]>([]);
+    const [CONTENT_DATA, SET_CONTENT_DATA] = createSignal<CONTENT[]>([]);
+
+    const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
     
-    // onMount(() => {
-    //     console.log("here");
-    //     invoke('home', {source:"anime"})
-    //         .then((data) => console.log(data))
-    //         .catch((e) => console.error(e));
-    // })
+    onMount(() => {
+        console.log("here");
+        invoke<HOME_DATA>('home', {source:"anime"})
+            .then((data) => {
+                console.log(data)
+                SET_RELEVANT_DATA(data.relevant_content);
+                SET_CONTENT_DATA(data.content);
+            })
+            .catch((e) => console.error(e));
+
+        
+
+    })
     
     return (<div class={styles.container}>
         <NavigationBar />
         
         <Swiper
-            class={styles.relevent_swiper}
+            class={styles.relevant_swiper}
             useNavigation={false}
             usePagination={true}
             slidesPerView={1}
@@ -51,70 +83,74 @@ export default function Home() {
                 delay: 5000
             }}
         >
-            <div
-                class={styles.relevent_item_container}
-                style={{
-                    "background-image": "url('https://img.youtube.com/vi/gY5nDXOtv_o/maxresdefault.jpg"
-                }}
-            >
-                <div class={styles.relevent_item_container_filter}></div>
-
-                <div class={styles.relevent_info_container}>
-                    <img
-                        class={styles.relevent_img}
-                        src="https://cdn.myanimelist.net/images/anime/4/19644.webp"
-                    />
+            <For each={RELEVANT_DATA()}>
+                {(item) => (
                     <div
+                        class={styles.relevant_item_container}
                         style={{
-                            flex: 1,
-                            "min-height": "100%",
-                            display:"flex",
-                            "flex-direction":"column",
-                            "align-items":"flex-start",
-                            "padding-left":"16px"
+                            "background-image": "url('https://img.youtube.com/vi/gY5nDXOtv_o/maxresdefault.jpg)"
                         }}
                     >
-                        <h2 class={styles.relevent_title}>Dandadan 2nd Season</h2>
-                        <Button
-                            variant="contained" color="secondary"
-                            sx={{
-                                textTransform: 'none',
-                                fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                            }}
-                        >Watch Now</Button>
-                    </div>
+                        <div class={styles.relevant_item_container_filter}></div>
 
-                    <div
-                        style={{
-                            "min-height": "100%",
-                            display:"flex",
-                            "align-items":"flex-end",
-                            "padding":"5px"
-                        }}
-                    >
-                        <IconButton
-                            sx={{
-                                color: '#ff0033',
-                                fontSize: 'calc((100vw + 100vh)/2*0.035)',
-                            }}
-                            onClick={() => {
-                                set_trailer({
-                                    state: true,
-                                    source: "https://www.youtube.com/embed/dwilf3OGe-A?enablejsapi=1&wmode=opaque&autoplay=1"
-                                })
-                            }}
-                        >
-                            <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
-                        </IconButton>
+                        <div class={styles.relevant_info_container}>
+                            <img
+                                class={styles.relevant_img}
+                                src="https://cdn.myanimelist.net/images/anime/4/19644.webp"
+                            />
+                            <div
+                                style={{
+                                    flex: 1,
+                                    "min-height": "100%",
+                                    display:"flex",
+                                    "flex-direction":"column",
+                                    "align-items":"flex-start",
+                                    "padding-left":"16px"
+                                }}
+                            >
+                                <h2 class={styles.relevant_title}>Dandadan 2nd Season</h2>
+                                <Button
+                                    variant="contained" color="secondary"
+                                    sx={{
+                                        textTransform: 'none',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                    }}
+                                >Watch Now</Button>
+                            </div>
+
+                            <div
+                                style={{
+                                    "min-height": "100%",
+                                    display:"flex",
+                                    "align-items":"flex-end",
+                                    "padding":"5px"
+                                }}
+                            >
+                                <IconButton
+                                    sx={{
+                                        color: '#ff0033',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                    }}
+                                    onClick={() => {
+                                        set_show_trailer({
+                                            state: true,
+                                            source: "https://www.youtube.com/embed/dwilf3OGe-A?enablejsapi=1&wmode=opaque&autoplay=1"
+                                        })
+                                    }}
+                                >
+                                    <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
+                                </IconButton>
+                            </div>
+                        </div>
+                        
                     </div>
-                </div>
-                
-            </div>
+                )}
+            </For>
 
             
         </Swiper>
         
-        {trailer().state && 
+        {show_trailer().state && 
             <div class={styles.trailer_container}>
                 <div
                     style={{
@@ -131,7 +167,7 @@ export default function Home() {
                             fontSize: 'calc((100vw + 100vh)/2*0.035)',
                         }}
                         onClick={() => {
-                            set_trailer({
+                            set_show_trailer({
                                 state: false,
                                 source: ""
                             })
@@ -142,8 +178,8 @@ export default function Home() {
                 </div>
                 <iframe 
                     class={styles.trailer}
-                    src={trailer().source} 
-                    allow="autoplay; encrypted-media" allowfullscreen
+                    src={show_trailer().source} 
+                    allow="autoplay; encrypted-media; fullscreen" allowfullscreen
                 >
                 </iframe>
             </div>

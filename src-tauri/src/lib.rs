@@ -4,8 +4,10 @@ use tracing_subscriber::fmt;
 use tracing::Level;
 use dotenv::dotenv;
 
+pub mod models;
 pub mod commands;
 pub mod anime;
+
 
 
 
@@ -34,10 +36,11 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use crate::{commands};
+    use tauri::async_runtime;
 
-    #[test]
-    fn home() {
-        match commands::home("anime".to_string()) {
+    #[tokio::test]
+    async fn home() {
+        match commands::home("anime".to_string()).await {
             Ok(d) => {
                 println!("Data: {:?}", d)
             },

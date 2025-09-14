@@ -1,40 +1,46 @@
 use std::collections::HashMap;
+use std::ffi::CString;
 use tokio;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use crate::models::Error;
+
+use crate::models::home::{
+    Content, RelevantContent, TrailerContent, HomeData
+};
 
 use crate::anime::models::{
-    ApiResponse, Images, Trailer
+    ApiResponse
 };
 
 
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Content {
-    pub id: usize,
-    pub title: String,
-    pub images: Images,
-    pub trailer: Trailer,
-}
-
-async fn get_relevant_content() -> Result<Vec<Content>, Box<dyn std::error::Error>> {
+async fn get_relevant_content() -> Result<Vec<RelevantContent>, Box<dyn std::error::Error>> {
     let clinet = Client::new();
     let url = "https://api.jikan.moe/v4/seasons/now";
     let res = clinet.get(url)
         .send().await?;
     if res.status().is_success() {
         let result = res.json::<ApiResponse>().await?;
-        let mut new_relevant_content: Vec<Content> = vec![];
+        let mut new_relevant_content: Vec<RelevantContent> = vec![];
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.mal_id.as_ref().ok_or("no id")?;
             let title = item.title.as_ref().ok_or("no title")?;
-            let images = item.images.as_ref().ok_or("no images")?;
+            let cover = item.images.as_ref().ok_or("no images")?
+                .webp.as_ref().ok_or("no webp")?
+                .large_image_url.as_ref().ok_or("no image_url")?;
             let trailer = item.trailer.as_ref().ok_or("no trailer")?;
-            let relevant_content = Content {
-                id: id.clone(),
+            let trailer_embed_url = trailer.embed_url.as_ref().ok_or("no embed_url")?;
+            let trailer_banner = trailer.images.as_ref().ok_or("no images")?
+                .maximum_image_url.as_ref().ok_or("no maximum_image_url")?;
+
+            let relevant_content = RelevantContent {
+                id: id.to_string().clone(),
                 title: title.clone(),
-                images: images.clone(),
-                trailer: trailer.clone(),
+                cover: cover.clone(),
+                trailer: TrailerContent {
+                    embed_url: trailer_embed_url.clone(),
+                    banner: trailer_banner.clone(),
+                },
             };
             new_relevant_content.push(relevant_content);
         }
@@ -44,6 +50,8 @@ async fn get_relevant_content() -> Result<Vec<Content>, Box<dyn std::error::Erro
     }
     
 }
+
+
 
 
 async fn get_content() -> Result<Vec<Content>, Box<dyn std::error::Error>> {
@@ -57,13 +65,13 @@ async fn get_content() -> Result<Vec<Content>, Box<dyn std::error::Error>> {
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.mal_id.as_ref().ok_or("no id")?;
             let title = item.title.as_ref().ok_or("no title")?;
-            let images = item.images.as_ref().ok_or("no images")?;
-            let trailer = item.trailer.as_ref().ok_or("no trailer")?;
+            let cover = item.images.as_ref().ok_or("no images")?
+                .webp.as_ref().ok_or("no webp")?
+                .large_image_url.as_ref().ok_or("no image_url")?;
             let new_content = Content {
-                id: id.clone(),
+                id: id.to_string().clone(),
                 title: title.clone(),
-                images: images.clone(),
-                trailer: trailer.clone(),
+                cover: cover.clone()
             };
             new_content_data.push(new_content);
         }
@@ -76,7 +84,8 @@ async fn get_content() -> Result<Vec<Content>, Box<dyn std::error::Error>> {
 
 
 
-pub async fn new() -> Result<HashMap<String, Vec<Content>>, Box<dyn std::error::Error>> {
+
+pub async fn new() -> Result<HomeData, Error> {
 
     let (task_get_relevant_content,
         task_get_content
@@ -85,15 +94,22 @@ pub async fn new() -> Result<HashMap<String, Vec<Content>>, Box<dyn std::error::
         get_content()
     );
 
+    let mut relevant_content = task_get_relevant_content.map_err(|e| Error::String(e.to_string()))?;
     
-    let relevant_content =  task_get_relevant_content?;
-    let contnet = task_get_content?;
+    // match task_get_relevant_content {
+    //     Ok(data) => {_relevant_content = data},
+    //     Err(e) => return Err(format!("{}", e.to_string()))?,
+    // }
 
-    let mut data: HashMap<String, Vec<Content>> = HashMap::new();
+    let mut content= task_get_content.map_err(|e| Error::String(e.to_string()))?;
+    // match task_get_content {
+    //     Ok(data) => {_content = data},
+    //     Err(e) => return Err(format!("{}", e.to_string()))?,
+    // }
 
-    data.insert("relevant_content".to_string(), relevant_content);
-    data.insert("content".to_string(), contnet);
-
-    return Ok(data);
+    return Ok(HomeData {
+        relevant_content: relevant_content,
+        content: content,
+    });
     
 }
