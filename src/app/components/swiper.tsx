@@ -22,7 +22,7 @@ import 'swiper/css/pagination';
 
 
 // Style Imports
-import styles from "../styles/swiper.module.css"
+import "../styles/swiper.css"
 import { usePagination } from "@suid/material";
 import { useNavigate } from "@solidjs/router";
 
@@ -83,11 +83,11 @@ export default function Swiper(props: {
     
     return (<div 
         ref={swiper as HTMLDivElement}
-        class={`swiper ${styles.container} ${props.class}`} 
+        class={`swiper ${props.class}`} 
         style={props.style}
     >
         
-        <div class={`swiper-wrapper ${styles.swiper_wrapper} ${props.class}`} style={props.style}>
+        <div class={`swiper-wrapper ${props.class}`} style={props.style}>
             <For each={swiper_children}>{(item) => (
                 <div class={`swiper-slide`}>{item}</div>
             )}</For>
@@ -100,7 +100,7 @@ export default function Swiper(props: {
         
 
         {props.usePagination && 
-            <div class="swiper-pagination" ref={swiper_pagination as HTMLDivElement}/>
+            <div class={`swiper-pagination`} ref={swiper_pagination as HTMLDivElement}/>
         }
     </div>)
 }

@@ -3,7 +3,6 @@ use std::ffi::CString;
 use tokio;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use crate::models::Error;
 
 use crate::models::home::{
     Content, RelevantContent, TrailerContent, HomeData
@@ -14,13 +13,13 @@ use crate::anime::models::{
 };
 
 
-async fn get_relevant_content() -> Result<Vec<RelevantContent>, Box<dyn std::error::Error>> {
+async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
     let clinet = Client::new();
     let url = "https://api.jikan.moe/v4/seasons/now";
     let res = clinet.get(url)
-        .send().await?;
+        .send().await.map_err(|e| e.to_string())?;
     if res.status().is_success() {
-        let result = res.json::<ApiResponse>().await?;
+        let result = res.json::<ApiResponse>().await.map_err(|e| e.to_string())?;
         let mut new_relevant_content: Vec<RelevantContent> = vec![];
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.mal_id.as_ref().ok_or("no id")?;
@@ -54,13 +53,13 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, Box<dyn std::err
 
 
 
-async fn get_content() -> Result<Vec<Content>, Box<dyn std::error::Error>> {
+async fn get_content() -> Result<Vec<Content>, String> {
     let clinet = Client::new();
     let url = "https://api.jikan.moe/v4/anime";
     let res = clinet.get(url)
-        .send().await?;
+        .send().await.map_err(|e| e.to_string())?;
     if res.status().is_success() {
-        let result = res.json::<ApiResponse>().await?;
+        let result = res.json::<ApiResponse>().await.map_err(|e| e.to_string())?;
         let mut new_content_data: Vec<Content> = vec![];
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.mal_id.as_ref().ok_or("no id")?;
@@ -85,8 +84,9 @@ async fn get_content() -> Result<Vec<Content>, Box<dyn std::error::Error>> {
 
 
 
-pub async fn new() -> Result<HomeData, Error> {
+pub async fn new() -> Result<HomeData, String> {
 
+    
     let (task_get_relevant_content,
         task_get_content
     ) = tokio::join!(
@@ -94,18 +94,8 @@ pub async fn new() -> Result<HomeData, Error> {
         get_content()
     );
 
-    let mut relevant_content = task_get_relevant_content.map_err(|e| Error::String(e.to_string()))?;
-    
-    // match task_get_relevant_content {
-    //     Ok(data) => {_relevant_content = data},
-    //     Err(e) => return Err(format!("{}", e.to_string()))?,
-    // }
-
-    let mut content= task_get_content.map_err(|e| Error::String(e.to_string()))?;
-    // match task_get_content {
-    //     Ok(data) => {_content = data},
-    //     Err(e) => return Err(format!("{}", e.to_string()))?,
-    // }
+    let relevant_content = task_get_relevant_content.map_err(|e| e.to_string())?;
+    let content = task_get_content.map_err(|e| e.to_string())?;
 
     return Ok(HomeData {
         relevant_content: relevant_content,

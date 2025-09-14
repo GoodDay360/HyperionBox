@@ -38,7 +38,7 @@
 	width: 100%;
 	height: auto;
 	position: absolute;
-	bottom: 0;
+	bottom: 18px;
 	left: 0;
 	
 	display: flex;
@@ -49,9 +49,10 @@
 .relevant_info_container .relevant_img{
 	border-radius: 5px;
 	width: calc((100vw + 100vh)/2*0.18);
-	width: calc((100vw + 100vh)/2*0.2);
+	height: calc((100vw + 100vh)/2*0.25);
 	object-fit: cover;
-	margin: 8px;
+	margin-left: 18px;
+	margin-bottom: 18px;
 
 }
 
@@ -60,6 +61,17 @@
 	font-family: var(--font-family);
 	font-size: calc((100vw + 100vh)/2*0.045);
 	user-select: all;
+	width: 100%;
+	max-height: 50%;
+	overflow: hidden;
+	text-overflow: ellipsis; 
+	display: -webkit-box;
+	line-clamp: 2;
+	-webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+	white-space: normal;
+	word-break: keep-all;
+
 }
 
 
