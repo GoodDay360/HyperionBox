@@ -1,16 +1,20 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "HyperionBox",
-  "version": "1.2.0",
-  "identifier": "com.hyperionbox.app",
+  "version": "0.1.0",
+  "identifier": "io.github.goodday360.hyperionbox",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "bun run build",
     "frontendDist": "../dist"
+  },
+  "plugins": {
+      "safeAreaInsetsCss": {}
   },
   "app": {
     "windows": [
+      
       {
         "title": "HyperionBox",
         "width": 800,
@@ -18,26 +22,10 @@
       }
     ],
     "security": {
-      "csp": {
-        "default-src": "* customprotocol: asset:",
-        "script-src": "* 'unsafe-inline' 'unsafe-eval';",
-        "style-src": "* 'unsafe-inline' 'unsafe-eval';",
-        "script-src-elem": "* 'unsafe-inline' 'unsafe-eval';",
-        "connect-src": "* blob: data: asset: asset://localhost",
-        "frame-src": "* blob: data: asset: asset://localhost https://*.disqus.com https://disqus.com",
-        "img-src": "* blob: data: asset: asset://localhost",
-        "media-src": "* blob: data: asset: asset://localhost",
-        "object-src": "* blob: data: asset: asset://localhost"
-      },
-      "assetProtocol": {
-        "enable": true,
-        "scope": ["**", "$APPDATA/**", "$APPDATA/.cache/**"]
-
-      }
+      "csp": null
     }
   },
-  "plugins": {
-  },
+  
   "bundle": {
     "active": true,
     "targets": "all",
@@ -49,5 +37,4 @@
       "icons/icon.ico"
     ]
   }
-
 }

@@ -2,161 +2,16 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Capability for the main window",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:default",
-    "core:window:default",
-    "core:window:allow-set-maximizable",
-    "core:window:allow-set-resizable",
-    "core:window:allow-set-always-on-top",
-    "core:window:allow-set-size",
-    "core:window:allow-maximize",
-    "core:window:allow-set-fullscreen",
-    "core:window:allow-center",
-    "core:window:allow-destroy",
-    "core:window:allow-close",
     "opener:default",
-    "opener:allow-open-path",
     {
-      "identifier": "opener:allow-open-path",
+      "identifier": "opener:allow-open-url",
       "allow": [
-        {
-          "path": "**"
-        }
+        {"url": "https://*:*"},
+        {"url": "http://*:*"}
       ]
-    },
-    "log:default",
-    "shell:default",
-    "shell:allow-kill",
-    {
-      "identifier": "shell:allow-spawn",
-      "allow": [
-        {
-          "name": "windows-shell",
-          "cmd": "powershell.exe",
-          "args": [
-            "-ExecutionPolicy",
-            "Bypass",
-            " -File",
-            {
-              "validator": "^.*$"
-            }
-          ]
-        },
-        {
-          "name": "unix-shell",
-          "cmd": "sh",
-          "args": [
-            "-c",
-            {
-              "validator": "^.*$"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "windows-shell",
-          "cmd": "powershell.exe",
-          "args": [
-            "-ExecutionPolicy",
-            "Bypass",
-            " -File",
-            {
-              "validator": "^.*$"
-            }
-          ]
-        },
-        {
-          "name": "unix-shell",
-          "cmd": "sh",
-          "args": [
-            "-c",
-            {
-              "validator": "^.*$"
-            }
-          ]
-        }
-      ]
-    },
-    "fs:default",
-    "fs:write-files",
-    "fs:allow-fstat",
-    "fs:read-all",
-    "fs:read-dirs",
-    "fs:read-files",
-    "fs:read-meta",
-    "fs:allow-open",
-    "fs:allow-write",
-    "fs:allow-read",
-    "fs:allow-rename",
-    "fs:allow-mkdir",
-    "fs:allow-remove",
-    "fs:allow-write-text-file",
-    "fs:scope-download-recursive",
-    "fs:scope-resource-recursive",
-    {
-      "identifier": "fs:scope",
-      "allow": [
-        {
-          "path": "**"
-        },
-        {
-          "path": "$APPDATA/**"
-        },
-        {
-          "path": "$APPDATA/*"
-        },
-        {
-          "path": "$APPDATA/"
-        },
-        {
-          "path": "$APPDATA/.cache"
-        },
-        {
-          "path": "$APPDATA/.cache/**"
-        },
-        {
-          "path": "$TEMP/**"
-        },
-        {
-          "path": "$TEMP/*"
-        },
-        {
-          "path": "$TEMP/"
-        }
-      ]
-    },
-    "os:default",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "https://*"
-        },
-        {
-          "url": "http://*"
-        },
-        {
-          "url": "http://localhost:**"
-        },
-        {
-          "url": "http://127.0.0.1:**"
-        }
-      ],
-      "deny": []
-    },
-    "sql:default",
-    "sql:allow-execute",
-    "http:default",
-    "process:default",
-    "process:allow-restart",
-    "dialog:default",
-    "opener:default"
+    }
   ]
 }
