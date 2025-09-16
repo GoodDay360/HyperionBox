@@ -1,20 +1,21 @@
-use tauri::async_runtime;
-use tokio;
 use crate::anime;
 use crate::models::home::HomeData;
-use anyhow;
-use std::future::Future;
 use futures::future::{BoxFuture, FutureExt};
-
+use std::future::Future;
+use tauri::async_runtime;
+use tokio;
+use tracing::error;
 
 #[tauri::command]
-pub async fn home(source: String) -> Result<HomeData, String>  {
+pub async fn home(source: String) -> Result<HomeData, String> {
     if source == "anime" {
-        
-        let result = anime::home::new().await.map_err(|e| e.to_string())?;
-
-        return Ok(result);
-
+        match anime::home::new().await {
+            Ok(data) => return Ok(data),
+            Err(e) => {
+                println!("Error: {}", e);
+                return Err(e);
+            }
+        }
     }
-    return Err("error".to_string());
+    return Err("Unkown Source".to_string());
 }

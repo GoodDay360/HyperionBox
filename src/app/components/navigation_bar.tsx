@@ -5,7 +5,7 @@ import { For } from "solid-js"
 import { useNavigate, useLocation } from "@solidjs/router";
 
 // SUID Imports
-import { IconButton, ButtonBase } from "@suid/material"
+import { ButtonBase } from "@suid/material"
 
 
 // Icon Imports
@@ -15,11 +15,6 @@ import HomeOutlinedIcon from '@suid/icons-material/HomeOutlined';
 import FavoriteBorderRoundedIcon from '@suid/icons-material/FavoriteBorderRounded';
 import FavoriteRoundedIcon from '@suid/icons-material/FavoriteRounded';
 
-import TravelExploreOutlinedIcon from '@suid/icons-material/TravelExploreOutlined';
-import TravelExploreRoundedIcon from '@suid/icons-material/TravelExploreRounded';
-
-import SearchOutlinedIcon from '@suid/icons-material/SearchOutlined';
-import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 
 // Corvu Imports
 
@@ -36,14 +31,6 @@ export default function NavigationBar() {
 
 
     return (<div class={styles.container_1}>
-        <IconButton
-            sx={{
-                color: 'var(--color-1)',
-                fontSize: 'calc((100vw + 100vh)/2*0.04)',
-            }}
-        >
-            <SearchRoundedIcon fontSize="inherit" color="inherit" />
-        </IconButton>
         <For each={NavigateItem}>{(item) => (
             <ButtonBase
                 onClick={() => {
@@ -53,7 +40,7 @@ export default function NavigationBar() {
                     textTransform: 'none',
                     color: 'var(--color-1)',
                     fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                    fontWeight: '400',
+                    fontWeight: '500',
                     padding: '8px',
                     borderRadius: "15px",
                     paddingLeft: '18px',

@@ -8,6 +8,7 @@
 	--color-1: #f6f6f6;
 }
 
+
 * {
 	font-optical-sizing: auto;
 	box-sizing: border-box;
@@ -17,28 +18,30 @@
 /* Custom Scrollbar */
 		/* Firefox */
 * {
-	scrollbar-width: 8px;
-	scrollbar-color: var(--background-color-1) var(--background-color-2);
+	scrollbar-width: 10px;
+	scrollbar-color: var(--background-2);
 }
 
 /* WebKit */
 *::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
+	scrollbar-arrow-color: var(--background-3);
 }
 
 *::-webkit-scrollbar-track {
-	background: var(--background-color-2);
+	background: var(--background-1);
 }
 
+
 *::-webkit-scrollbar-thumb {
-	background-color: var(--background-color-1);
+	background-color: var(--background-2);
 	border-radius: 6px;
-	border: 3px solid var(--background-color-2); /* subtle inset */
+	border: 3px solid var(--background-1); /* subtle inset */
 }
 
 *::-webkit-scrollbar-thumb:hover {
-	background-color: rgb(25, 28, 30);
+	background-color: var(--background-3);
 }
 /* ===== */
 
@@ -66,11 +69,14 @@ body{
 }
 
 .app{
+	width: 100%;
 	display: flex;
 	flex: 1;
 	box-sizing: border-box;
 	background: var(--background-1);
+	flex-direction: column;
 }
+
 
 .tooltip {
 	background: var(--background-1);

@@ -1,29 +1,30 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct TrailerContent {
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Trailer {
+    pub url: String,
     pub embed_url: String,
-    pub banner: String,
 }
 
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RelevantContent {
     pub id: String,
     pub title: String,
-    pub cover: String,
-    pub trailer: TrailerContent,
+    pub banner: String,
+    pub poster: String,
+    pub trailer: Trailer,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Content {
     pub id: String,
     pub title: String,
-    pub cover: String,
+    pub poster: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct HomeData {
     pub relevant_content: Vec<RelevantContent>,
-    pub content: Vec<Content>,
+    pub content: HashMap<String, Vec<Content>>,
 }

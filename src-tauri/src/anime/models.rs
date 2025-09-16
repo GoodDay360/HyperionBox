@@ -1,135 +1,161 @@
+#![allow(non_snake_case)]
+
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ApiResponse {
-    pub pagination: Option<Pagination>,
     pub data: Option<Vec<Data>>,
+    pub meta: Option<Meta>,
+    pub links: Option<PageLinks>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Pagination {
-    pub last_visible_page: Option<usize>,
-    pub has_next_page: Option<bool>,
-    pub current_page: Option<usize>,
-    pub items: Option<PaginationItems>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Meta {
+    pub count: Option<isize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PaginationItems {
-    pub count: Option<usize>,
-    pub total: Option<usize>,
-    pub per_page: Option<usize>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct PageLinks {
+    pub first: Option<String>,
+    pub last: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Data {
-    pub mal_id: Option<usize>,
-    pub url: Option<String>,
-    pub images: Option<Images>,
-    pub trailer: Option<Trailer>,
-    pub approved: Option<bool>,
-    pub titles: Option<Vec<Title>>,
-    pub title: Option<String>,
-    pub title_english: Option<String>,
-    pub title_japanese: Option<String>,
-    pub title_synonyms: Option<Vec<String>>,
-    pub type_: Option<String>,
-    pub source: Option<String>,
-    pub episodes: Option<usize>,
-    pub status: Option<String>,
-    pub airing: Option<bool>,
-    pub aired: Option<Aired>,
-    pub duration: Option<String>,
-    pub rating: Option<String>,
-    pub score: Option<f32>,
-    pub scored_by: Option<usize>,
-    pub rank: Option<usize>,
-    pub popularity: Option<usize>,
-    pub members: Option<usize>,
-    pub favorites: Option<usize>,
+    pub id: Option<String>,
+    #[serde(rename = "type")]
+    pub _type: Option<String>,
+    pub links: Option<Links>,
+    pub attributes: Option<Attributes>,
+    pub relationships: Option<Relationships>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Links {
+    #[serde(rename = "self")]
+    pub self_: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Attributes {
+    pub createdAt: Option<String>,
+    pub updatedAt: Option<String>,
+    pub slug: Option<String>,
     pub synopsis: Option<String>,
-    pub background: Option<String>,
-    pub season: Option<String>,
-    pub year: Option<usize>,
-    pub broadcast: Option<Broadcast>,
-    pub producers: Option<Vec<Entity>>,
-    pub licensors: Option<Vec<Entity>>,
-    pub studios: Option<Vec<Entity>>,
-    pub genres: Option<Vec<Entity>>,
-    pub explicit_genres: Option<Vec<Entity>>,
-    pub themes: Option<Vec<Entity>>,
-    pub demographics: Option<Vec<Entity>>,
+    pub description: Option<String>,
+    pub coverImageTopOffset: Option<isize>,
+    pub titles: Option<Titles>,
+    pub canonicalTitle: Option<String>,
+    pub abbreviatedTitles: Option<Vec<String>>,
+    pub averageRating: Option<String>,
+    pub ratingFrequencies: Option<std::collections::HashMap<String, String>>,
+    pub userCount: Option<isize>,
+    pub favoritesCount: Option<isize>,
+    pub startDate: Option<String>,
+    pub endDate: Option<String>,
+    pub nextRelease: Option<String>,
+    pub popularityRank: Option<isize>,
+    pub ratingRank: Option<isize>,
+    pub ageRating: Option<String>,
+    pub ageRatingGuide: Option<String>,
+    pub subtype: Option<String>,
+    pub status: Option<String>,
+    pub tba: Option<String>,
+    pub posterImage: Option<PosterImage>,
+    pub coverImage: Option<CoverImage>,
+    pub episodeCount: Option<isize>,
+    pub episodeLength: Option<isize>,
+    pub totalLength: Option<isize>,
+    pub youtubeVideoId: Option<String>,
+    pub showType: Option<String>,
+    pub nsfw: Option<bool>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Images {
-    pub jpg: Option<ImageFormat>,
-    pub webp: Option<ImageFormat>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Titles {
+    pub en: Option<String>,
+    pub en_jp: Option<String>,
+    pub ja_jp: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ImageFormat {
-    pub image_url: Option<String>,
-    pub small_image_url: Option<String>,
-    pub large_image_url: Option<String>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct PosterImage {
+    pub tiny: Option<String>,
+    pub large: Option<String>,
+    pub small: Option<String>,
+    pub medium: Option<String>,
+    pub original: Option<String>,
+    pub meta: Option<PosterMeta>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Trailer {
-    pub youtube_id: Option<String>,
-    pub url: Option<String>,
-    pub embed_url: Option<String>,
-    pub images: Option<TrailerImages>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct CoverImage {
+    pub tiny: Option<String>,
+    pub large: Option<String>,
+    pub small: Option<String>,
+    pub original: Option<String>,
+    pub meta: Option<CoverMeta>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TrailerImages {
-    pub image_url: Option<String>,
-    pub small_image_url: Option<String>,
-    pub medium_image_url: Option<String>,
-    pub large_image_url: Option<String>,
-    pub maximum_image_url: Option<String>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct CoverMeta {
+    pub dimensions: Option<CoverDimensions>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Title {
-    pub type_: Option<String>,
-    pub title: Option<String>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct CoverDimensions {
+    pub tiny: Option<Size>,
+    pub large: Option<Size>,
+    pub small: Option<Size>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Aired {
-    pub from: Option<String>,
-    pub to: Option<String>,
-    pub prop: Option<AiredProp>,
-    pub string: Option<String>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct PosterMeta {
+    pub dimensions: Option<Dimensions>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct AiredProp {
-    pub from: Option<DateParts>,
-    pub to: Option<DateParts>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Dimensions {
+    pub tiny: Option<Size>,
+    pub large: Option<Size>,
+    pub small: Option<Size>,
+    pub medium: Option<Size>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct DateParts {
-    pub day: Option<usize>,
-    pub month: Option<usize>,
-    pub year: Option<usize>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Size {
+    pub width: Option<isize>,
+    pub height: Option<isize>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Broadcast {
-    pub day: Option<String>,
-    pub time: Option<String>,
-    pub timezone: Option<String>,
-    pub string: Option<String>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Relationships {
+    pub genres: Option<RelationshipLinks>,
+    pub categories: Option<RelationshipLinks>,
+    pub castings: Option<RelationshipLinks>,
+    pub installments: Option<RelationshipLinks>,
+    pub mappings: Option<RelationshipLinks>,
+    pub reviews: Option<RelationshipLinks>,
+    pub mediaRelationships: Option<RelationshipLinks>,
+    pub characters: Option<RelationshipLinks>,
+    pub staff: Option<RelationshipLinks>,
+    pub productions: Option<RelationshipLinks>,
+    pub quotes: Option<RelationshipLinks>,
+    pub episodes: Option<RelationshipLinks>,
+    pub streamingLinks: Option<RelationshipLinks>,
+    pub animeProductions: Option<RelationshipLinks>,
+    pub animeCharacters: Option<RelationshipLinks>,
+    pub animeStaff: Option<RelationshipLinks>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Entity {
-    pub mal_id: Option<usize>,
-    pub type_: Option<String>,
-    pub name: Option<String>,
-    pub url: Option<String>,
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct RelationshipLinks {
+    pub links: Option<RelatedLinks>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct RelatedLinks {
+    #[serde(rename = "self")]
+    pub self_: Option<String>,
+    pub related: Option<String>,
 }

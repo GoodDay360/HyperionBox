@@ -1,5 +1,5 @@
 // SolidJS Imports
-import { createSignal, JSXElement, onMount, For } from "solid-js";
+import { onMount, For } from "solid-js";
 import { children } from "solid-js";
 import type { JSX } from "solid-js";
 
@@ -23,8 +23,6 @@ import 'swiper/css/pagination';
 
 // Style Imports
 import "../styles/swiper.css"
-import { usePagination } from "@suid/material";
-import { useNavigate } from "@solidjs/router";
 
 
 export default function Swiper(props: { 

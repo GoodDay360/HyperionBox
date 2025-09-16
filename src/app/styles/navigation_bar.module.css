@@ -1,6 +1,6 @@
 
 .container_1{
-    width: 100%;
+    width: auto;
     height: auto;
     background: var(--background-1);
     padding: 8px;
