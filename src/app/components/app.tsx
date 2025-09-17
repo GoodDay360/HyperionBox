@@ -2,9 +2,10 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
-// SolidJS Router Imports
-import { onMount, onCleanup } from 'solid-js';
+// SolidJS Imports
+import { onMount, onCleanup, createContext, createSignal } from 'solid-js';
 import { Route, Router  } from "@solidjs/router";
+
 
 // SUID Imports
 import { createTheme, ThemeProvider } from "@suid/material/styles";
@@ -29,15 +30,25 @@ const theme = createTheme({
     },
 });
 
+export const ContextManager = createContext<{
+    screen_size: () => {
+        width: number;
+        height: number;
+    }
+}>();
+
 export default function App() {
     const appWindow = getCurrentWindow();
 
     let TitleBarRef!: HTMLElement;
 
+    const [screen_size, set_screen_size] = createSignal({width: 0, height: 0});
+
     onMount(()=>{
         function on_resize() {
             document.documentElement.style.setProperty('--inner-width', `${window.innerWidth}px`);
             document.documentElement.style.setProperty('--inner-height', `${window.innerHeight - (TitleBarRef?.clientHeight ?? 0)}px`);
+            set_screen_size({width: window.innerWidth, height: window.innerHeight - (TitleBarRef?.clientHeight ?? 0)});
         }
 
         appWindow.onResized(on_resize);
@@ -68,28 +79,31 @@ export default function App() {
     })
 
     return (<ThemeProvider theme={theme}>
-        <Toaster 
-            position="bottom-center"
-            gutter={5}
-            toastOptions={{
-                duration: 5000,
-                style: {
-                    border:"2px solid var(--background-1)",
-                    background: 'var(--background-2)',
-                    color: "var(--color-1)",
-                    "font-family": "var(--font-family)",
-                },
-            }}
-        />
+        <ContextManager.Provider value={{
+            screen_size
+        }}>
+            <Toaster 
+                position="bottom-center"
+                gutter={5}
+                toastOptions={{
+                    duration: 5000,
+                    style: {
+                        border:"2px solid var(--background-1)",
+                        background: 'var(--background-2)',
+                        color: "var(--color-1)",
+                        "font-family": "var(--font-family)",
+                    },
+                }}
+            />
 
-        <div class="app">
+            <div class="app">
 
-            <TitleBar ref={TitleBarRef} />
-            <Router>
-                <Route path="/" component={Home} />
-            </Router>
-        </div>
-        
+                <TitleBar ref={TitleBarRef} />
+                <Router>
+                    <Route path="/" component={Home} />
+                </Router>
+            </div>
+    </ContextManager.Provider>
     </ThemeProvider>)
 }
 

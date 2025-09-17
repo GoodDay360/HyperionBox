@@ -36,7 +36,7 @@
 	margin: 8px;
 	color: var(--color-1);
 	background: transparent;
-	width: calc((100vw + 100vh)/2*0.5);
+	width: calc(var(--inner-width) * 0.4);
 	font-family: var(--font-family);
 	font-size: calc((100vw + 100vh)/2*0.02);
 	box-sizing: border-box;

@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 
 // SolidJS Imports
-import { createSignal, onMount, Index } from "solid-js";
+import { createSignal, onMount, Index, useContext } from "solid-js";
 
 // SolidJS Router Imports
 
@@ -34,6 +34,9 @@ import LazyLoadImage from '@src/app/components/lazyloadimage';
 // Style Imports
 import styles from "../styles/home.module.css"
 
+// Script Imports
+import { ContextManager } from '@src/app/components/app';
+
 
 interface RELEVANT_CONTENT  {
     id: string,
@@ -58,6 +61,7 @@ interface HOME_DATA {
 }
 
 export default function Home() {
+    const context = useContext(ContextManager);
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [search, set_search] = createSignal<{state:boolean, value:string}>({state:false, value:""});
@@ -69,24 +73,24 @@ export default function Home() {
     
     const get_data = () => {
         set_is_loading(true);
-        invoke<HOME_DATA>('home', {source:"anime"})
-            .then((data) => {
-                console.log(data)
-                SET_RELEVANT_DATA(data.relevant_content);
-                SET_CONTENT_DATA(data.content);
+        // invoke<HOME_DATA>('home', {source:"anime"})
+        //     .then((data) => {
+        //         console.log(data)
+        //         SET_RELEVANT_DATA(data.relevant_content);
+        //         SET_CONTENT_DATA(data.content);
 
-                console.table(RELEVANT_DATA())
-                set_is_loading(false);
-            })
-            .catch((e) => {
-                console.error(e);
-                toast.remove();
-                toast.error("Something went wrong.",{
-                    style: {
-                        color:"red",
-                    }
-                })
-            });
+        //         console.table(RELEVANT_DATA())
+        //         set_is_loading(false);
+        //     })
+        //     .catch((e) => {
+        //         console.error(e);
+        //         toast.remove();
+        //         toast.error("Something went wrong.",{
+        //             style: {
+        //                 color:"red",
+        //             }
+        //         })
+        //     });
     }
 
     onMount(() => {
@@ -94,86 +98,96 @@ export default function Home() {
         get_data();
     })
     
-    return (
+    return (<>
         
         <div class={styles.container}>
-            <div class={styles.header_container}>
-                <div
-                    style={{
-                        flex: search().state ? 0 : 1,
-                        display: "flex",
-                        "flex-direction": "row",
-                        "justify-content": "flex-end",
-                    }}
-                >
-                    <IconButton
-                        sx={{
-                            color: search().state ? "red" : 'var(--color-1)',
-                            fontSize: 'calc((100vw + 100vh)/2*0.035)'
-                        }}
-                        onClick={() => {
-                            set_search({state:!search().state, value:""})
+
+            {/* Manage Header Base on Screen Size for responsive */}
+            {(context?.screen_size?.()?.width ?? 0) > 550  &&
+                <div class={styles.header_container}>
+                    <div
+                        style={{
+                            flex: search().state ? 0 : 1,
+                            display: "flex",
+                            "flex-direction": "row",
+                            "justify-content": "flex-end",
                         }}
                     >
-                        {search().state
-                            ? <CloseRoundedIcon color="inherit" fontSize='inherit' />
-                            : <SearchRoundedIcon color="inherit" fontSize='inherit' />
-                        }
-                    </IconButton>
-                </div>
-                {search().state
-                    ? <Slide in={search().state} direction='left'>
-                        <form class={styles.search_container}
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                console.log("SUB")
+                        <IconButton
+                            sx={{
+                                color: search().state ? "red" : 'var(--color-1)',
+                                fontSize: 'calc((100vw + 100vh)/2*0.035)'
                             }}
-                        > 
-                            <input class={styles.search_input} type='text' placeholder='Search'/> 
-                            <ButtonBase
-                                sx={{
-                                    color: 'var(--color-1)',
-                                    fontSize: 'calc((100vw + 100vh)/2*0.035)',
-                                    minHeight: "100%",
-                                    borderTopRightRadius: "16px",
-                                    borderBottomRightRadius: "16px",
-                                    padding: "5px"
-                                }}
-                                type='submit'
-                            >
-                                <SearchRoundedIcon color="inherit" fontSize='inherit' />
-                            </ButtonBase>
-                        </form>
-                    </Slide>
-                    : <>
-                        <Slide in={!search().state} direction='left'>
-                            <NavigationBar />
-                        </Slide>
-                        <div
-                            style={{
-                                flex: 1,
-                                display: "flex",
-                                "flex-direction": "row",
-                                "justify-content": "flex-end",
+                            onClick={() => {
+                                set_search({state:!search().state, value:""})
                             }}
                         >
-                            <IconButton disabled={is_loading()}
-                                sx={{
-                                    color: 'var(--color-1)',
-                                    fontSize: 'calc((100vw + 100vh)/2*0.035)'
+                            {search().state
+                                ? <CloseRoundedIcon color="inherit" fontSize='inherit' />
+                                : <SearchRoundedIcon color="inherit" fontSize='inherit' />
+                            }
+                        </IconButton>
+                    </div>
+                    {search().state
+                        ? <Slide in={search().state} direction='left'>
+                            <form class={styles.search_container}
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    console.log("SUB")
                                 }}
-                                onClick={() => {
-                                    get_data();
+                            > 
+                                <input class={styles.search_input} type='text' placeholder='Search'/> 
+                                <ButtonBase
+                                    sx={{
+                                        color: 'var(--color-1)',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                        minHeight: "100%",
+                                        borderTopRightRadius: "16px",
+                                        borderBottomRightRadius: "16px",
+                                        padding: "5px"
+                                    }}
+                                    type='submit'
+                                >
+                                    <SearchRoundedIcon color="inherit" fontSize='inherit' />
+                                </ButtonBase>
+                            </form>
+                        </Slide>
+                        : <>
+                            <Slide in={!search().state} direction='left'>
+                                <div
+                                    style={{
+                                        width: "auto",
+                                        height: "auto",
+                                    }}
+                                >
+                                    <NavigationBar type="top" />
+                                </div>
+                            </Slide>
+                            <div
+                                style={{
+                                    flex: 1,
+                                    display: "flex",
+                                    "flex-direction": "row",
+                                    "justify-content": "flex-end",
                                 }}
                             >
-                                <RefreshRoundedIcon color="inherit" fontSize='inherit' />
-                                    
-                            </IconButton>
-                        </div>
-                    </>
-                }
-                
-            </div>
+                                <IconButton disabled={is_loading()}
+                                    sx={{
+                                        color: 'var(--color-1)',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.035)'
+                                    }}
+                                    onClick={() => {
+                                        get_data();
+                                    }}
+                                >
+                                    <RefreshRoundedIcon color="inherit" fontSize='inherit' />
+                                        
+                                </IconButton>
+                            </div>
+                        </>
+                    }
+                </div>
+            }
             
             {!is_loading() 
                 ? (<>
@@ -347,6 +361,8 @@ export default function Home() {
                 </>
             }
             
+            
+
             {show_trailer().state && 
                 <div class={styles.trailer_container}>
                     <div
@@ -382,6 +398,11 @@ export default function Home() {
                 </div>
             }
         </div>
-    )
+
+        {/* Navigation Bar For Small Screen Width */}
+        {(context?.screen_size?.()?.width ?? 0) <= 550 &&
+            <NavigationBar type='bottom'/>
+        }
+    </>)
 }
 

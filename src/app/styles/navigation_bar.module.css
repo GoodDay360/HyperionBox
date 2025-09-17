@@ -1,5 +1,5 @@
 
-.container_1{
+.container_top{
     width: auto;
     height: auto;
     background: var(--background-1);
@@ -10,4 +10,10 @@
     justify-content: center;
     align-items: center;
     gap: 12px;
+}
+
+.container_bottom {
+    display: flex;
+    flex-direction: row;
+    position: sticky;
 }

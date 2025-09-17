@@ -17,7 +17,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
     println!("URL: {}", url);
     let res = clinet
         .get(url)
-        // .timeout(Duration::from_secs(30))
+        .timeout(Duration::from_secs(30))
         .send()
         .await
         .map_err(|e| e.to_string())?;
@@ -87,7 +87,7 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
     let url = format!("https://kitsu.io/api/edge/trending/anime",);
     let res = clinet
         .get(url)
-        // .timeout(Duration::from_secs(30))
+        .timeout(Duration::from_secs(30))
         .send()
         .await
         .map_err(|e| e.to_string())?;
