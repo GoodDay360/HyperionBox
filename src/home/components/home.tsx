@@ -1,12 +1,12 @@
 // Tauri API
 import { invoke } from '@tauri-apps/api/core';
-
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
 // SolidJS Imports
-import { createSignal, onMount, Index, useContext } from "solid-js";
+import { createSignal, onMount, For, Index, useContext } from "solid-js";
 
 // SolidJS Router Imports
-
+import { useNavigate } from '@solidjs/router';
 
 
 // SUID Imports
@@ -29,6 +29,7 @@ import toast from 'solid-toast';
 import NavigationBar from "@src/app/components/navigation_bar";
 import Swiper from "@src/app/components/swiper";
 import LazyLoadImage from '@src/app/components/lazyloadimage';
+import PullRefresh from '@src/app/components/pull_refresh';
 
 
 // Style Imports
@@ -61,10 +62,15 @@ interface HOME_DATA {
 }
 
 export default function Home() {
+    const navigate = useNavigate();
     const context = useContext(ContextManager);
 
+    const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
+
+
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
-    const [search, set_search] = createSignal<{state:boolean, value:string}>({state:false, value:""});
+    const [search, set_search] = createSignal<string>("");
+    const [search_mode, set_search_mode] = createSignal<boolean>(false);
 
     const [RELEVANT_DATA, SET_RELEVANT_DATA] = createSignal<RELEVANT_CONTENT[]>([]);
     const [CONTENT_DATA, SET_CONTENT_DATA] = createSignal<Record<string, CONTENT[]>>({});
@@ -73,24 +79,24 @@ export default function Home() {
     
     const get_data = () => {
         set_is_loading(true);
-        // invoke<HOME_DATA>('home', {source:"anime"})
-        //     .then((data) => {
-        //         console.log(data)
-        //         SET_RELEVANT_DATA(data.relevant_content);
-        //         SET_CONTENT_DATA(data.content);
+        invoke<HOME_DATA>('home', {source:"anime"})
+            .then((data) => {
+                console.log(data)
+                SET_RELEVANT_DATA(data.relevant_content);
+                SET_CONTENT_DATA(data.content);
 
-        //         console.table(RELEVANT_DATA())
-        //         set_is_loading(false);
-        //     })
-        //     .catch((e) => {
-        //         console.error(e);
-        //         toast.remove();
-        //         toast.error("Something went wrong.",{
-        //             style: {
-        //                 color:"red",
-        //             }
-        //         })
-        //     });
+                console.table(RELEVANT_DATA())
+                set_is_loading(false);
+            })
+            .catch((e) => {
+                console.error(e);
+                toast.remove();
+                toast.error("Something went wrong.",{
+                    style: {
+                        color:"red",
+                    }
+                })
+            });
     }
 
     onMount(() => {
@@ -99,15 +105,18 @@ export default function Home() {
     })
     
     return (<>
-        
-        <div class={styles.container}>
-
+        {CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) > 550 &&
+            <PullRefresh container={CONTAINER_REF() as HTMLElement}
+                onRefresh={get_data}
+            />
+        }
+        <div class={styles.container} ref={SET_CONTAINER_REF}>
             {/* Manage Header Base on Screen Size for responsive */}
-            {(context?.screen_size?.()?.width ?? 0) > 550  &&
-                <div class={styles.header_container}>
+            {(context?.screen_size?.()?.width ?? 0) > 550
+                ? <div class={styles.header_container}>
                     <div
                         style={{
-                            flex: search().state ? 0 : 1,
+                            flex: search_mode() ? 0 : 1,
                             display: "flex",
                             "flex-direction": "row",
                             "justify-content": "flex-end",
@@ -115,28 +124,42 @@ export default function Home() {
                     >
                         <IconButton
                             sx={{
-                                color: search().state ? "red" : 'var(--color-1)',
+                                color: search_mode() ? "red" : 'var(--color-1)',
                                 fontSize: 'calc((100vw + 100vh)/2*0.035)'
                             }}
                             onClick={() => {
-                                set_search({state:!search().state, value:""})
+                                set_search("");
+                                set_search_mode(!search_mode());
                             }}
                         >
-                            {search().state
+                            {search_mode()
                                 ? <CloseRoundedIcon color="inherit" fontSize='inherit' />
                                 : <SearchRoundedIcon color="inherit" fontSize='inherit' />
                             }
                         </IconButton>
                     </div>
-                    {search().state
-                        ? <Slide in={search().state} direction='left'>
+                    {search_mode()
+                        ? <Slide in={search_mode()} direction='left'>
                             <form class={styles.search_container}
                                 onSubmit={(e) => {
                                     e.preventDefault();
-                                    console.log("SUB")
+                                    if (!search()) return;
+                                    navigate(`/search?search=${encodeURIComponent(search().trim())}`);
+                                }}
+                                style={{
+                                    "padding-left": "12px",
                                 }}
                             > 
-                                <input class={styles.search_input} type='text' placeholder='Search'/> 
+                                <input class={styles.search_input} type='text' placeholder='Search'
+                                    value={search()}
+                                    style={{
+                                        width: "calc(var(--inner-width) * 0.4)",
+                                    }}
+                                    onInput={(e) => {
+                                        e.preventDefault();
+                                        set_search(e.target.value)
+                                    }}
+                                /> 
                                 <ButtonBase
                                     sx={{
                                         color: 'var(--color-1)',
@@ -144,7 +167,7 @@ export default function Home() {
                                         minHeight: "100%",
                                         borderTopRightRadius: "16px",
                                         borderBottomRightRadius: "16px",
-                                        padding: "5px"
+                                        padding: "8px"
                                     }}
                                     type='submit'
                                 >
@@ -153,7 +176,7 @@ export default function Home() {
                             </form>
                         </Slide>
                         : <>
-                            <Slide in={!search().state} direction='left'>
+                            <Slide in={!search_mode()} direction='left'>
                                 <div
                                     style={{
                                         width: "auto",
@@ -186,6 +209,50 @@ export default function Home() {
                             </div>
                         </>
                     }
+                </div>
+                : <div class={styles.header_container}>
+                    <form class={styles.search_container}
+                        style={{
+                            width: "100%",
+                            "padding-right": "12px",
+                        }}
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            if (!search()) return;
+                            
+                            navigate(`/search?search=${encodeURIComponent(search().trim())}`);
+                        }}
+                    > 
+                        <ButtonBase
+                            sx={{
+                                color: 'var(--color-1)',
+                                fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                minHeight: "100%",
+                                borderTopLeftRadius: "16px",
+                                borderBottomLeftRadius: "16px",
+                                padding: "8px"
+                            }}
+                            type='submit' disabled={is_loading()}
+                            
+                        >
+                            <SearchRoundedIcon color="inherit" fontSize='inherit' />
+                        </ButtonBase>
+
+                        <input 
+                            class={styles.search_input} 
+                            type='text' placeholder='Search'
+                            value={search()}
+                            style={{
+                                flex: 1
+                            }}
+                            onInput={(e) => {
+                                e.preventDefault();
+                                set_search(e.target.value);
+                            }}
+
+                        /> 
+                        
+                    </form>
                 </div>
             }
             
@@ -226,14 +293,21 @@ export default function Home() {
                                                     overflow:"hidden"
                                                 }}
                                             >
-                                                <h2 class={styles.relevant_title}>{item().title}</h2>
+                                                <h2 class={styles.relevant_title}
+                                                    onClick={() => {(async () => {
+                                                        await writeText(item().title)
+                                                        toast.success("Title copied to clipboard.",
+                                                            {style:{color:"green"}
+                                                        })
+                                                    })()}}
+                                                >{item().title}</h2>
                                                 <Button
                                                     variant="contained" color="secondary"
                                                     sx={{
                                                         textTransform: 'none',
                                                         fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                                     }}
-                                                >Watch Now</Button>
+                                                >View Now</Button>
                                             </div>
                                             {item()?.trailer?.embed_url &&
                                                 <div
@@ -266,11 +340,11 @@ export default function Home() {
                             </Index>
                         </Swiper>
                     </div>
-                    <Index each={Object.keys(CONTENT_DATA())}>
+                    <For each={Object.keys(CONTENT_DATA())}>
                         {(key) => (
                             <div class={styles.content_container}>
                                 <div class={styles.content_header_container}>
-                                    <h2 class={styles.content_header_title}>{key()}</h2>
+                                    <h2 class={styles.content_header_title}>{key}</h2>
                                 </div>
                                 <div class={styles.content_data_container}
                                     onWheel={(e) => {
@@ -281,7 +355,7 @@ export default function Home() {
                                         });
                                     }}
                                 >
-                                    <Index each={CONTENT_DATA()[key()]}>
+                                    <Index each={CONTENT_DATA()[key]}>
                                         {(item) => <div class={styles.content_data_box}>
                                             <ButtonBase
                                                 sx={{
@@ -307,7 +381,7 @@ export default function Home() {
                                 </div>
                             </div>
                         )}
-                    </Index>
+                    </For>
                 </>)
 
                 // Loading Skeleton Component Below ↓.

@@ -11,17 +11,18 @@ import { Route, Router  } from "@solidjs/router";
 import { createTheme, ThemeProvider } from "@suid/material/styles";
 
 // Solid Toast
-import { Toaster } from 'solid-toast';
+import { Toaster, toast } from 'solid-toast';
 
 
 // Style Imports
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 import "../styles/app.css";
 
 // Component Imports
-import Home from "@src/home/components/home";
 import TitleBar from '@src/app/components/titlebar';
+import Home from "@src/home/components/home";
+import Search from '@src/search/components/search';
+import View from '@src/view/components/view';
 
 
 const theme = createTheme({
@@ -42,15 +43,38 @@ export default function App() {
 
     let TitleBarRef!: HTMLElement;
 
+    const [is_enter_fullscreen, set_is_enter_fullscreen] = createSignal(false);
+
     const [screen_size, set_screen_size] = createSignal({width: 0, height: 0});
 
-    onMount(()=>{
-        function on_resize() {
-            document.documentElement.style.setProperty('--inner-width', `${window.innerWidth}px`);
-            document.documentElement.style.setProperty('--inner-height', `${window.innerHeight - (TitleBarRef?.clientHeight ?? 0)}px`);
-            set_screen_size({width: window.innerWidth, height: window.innerHeight - (TitleBarRef?.clientHeight ?? 0)});
-        }
+    function on_resize() {
+        document.documentElement.style.setProperty('--inner-width', `${window.innerWidth}px`);
+        document.documentElement.style.setProperty('--inner-height', `${window.innerHeight - (TitleBarRef?.clientHeight ?? 0)}px`);
+        set_screen_size({width: window.innerWidth, height: window.innerHeight - (TitleBarRef?.clientHeight ?? 0)});
+    }
 
+
+    onMount(()=>{
+        document.addEventListener('keydown', async function(event) {
+            if (event.key === 'F11') {
+                toast.remove();
+                if (await appWindow.isFullscreen()) {
+                    await appWindow.setFullscreen(false);
+                    set_is_enter_fullscreen(false);
+                    toast("Exited fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});
+                }else{
+                    await appWindow.setFullscreen(true);
+                    set_is_enter_fullscreen(true);
+                    toast("Entered fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});
+                    
+                }
+                on_resize();
+            }
+        });
+
+    })
+
+    onMount(()=>{
         appWindow.onResized(on_resize);
         on_resize();
         
@@ -97,10 +121,13 @@ export default function App() {
             />
 
             <div class="app">
-
-                <TitleBar ref={TitleBarRef} />
+                {!is_enter_fullscreen() &&
+                    <TitleBar ref={TitleBarRef} />
+                }
                 <Router>
-                    <Route path="/" component={Home} />
+                    {/* <Route path="/" component={Home} /> */}
+                    <Route path="/search" component={Search} />
+                    <Route path="/" component={View} />
                 </Router>
             </div>
     </ContextManager.Provider>

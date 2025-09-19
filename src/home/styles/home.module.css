@@ -5,9 +5,10 @@
 	flex:1;
 	display: flex;
 	flex-direction: column;
-	overflow-x: auto;
+	overflow-x: hidden;
 	overflow-y: auto;
 	box-sizing: border-box;
+
 }
 
 .header_container{
@@ -23,7 +24,6 @@
 
 .search_container {
 	height: auto;
-	padding-left: 12px;
 	border-radius: 16px;
 	background: var(--background-2);
 	display: flex;
@@ -36,9 +36,8 @@
 	margin: 8px;
 	color: var(--color-1);
 	background: transparent;
-	width: calc(var(--inner-width) * 0.4);
 	font-family: var(--font-family);
-	font-size: calc((100vw + 100vh)/2*0.02);
+	font-size: max(12px, calc((100vw + 100vh)/2*0.02));
 	box-sizing: border-box;
 }
 
@@ -99,9 +98,8 @@
 	color: var(--color-1);
 	font-family: var(--font-family);
 	font-size: calc((100vw + 100vh)/2*0.045);
-	user-select: all;
+	user-select: none;
 	width: 100%;
-	max-height: 50%;
 	overflow: hidden;
 	text-overflow: ellipsis; 
 	display: -webkit-box;
@@ -186,6 +184,7 @@
 
 .content_container .content_data_container .content_data_box{
 	min-width: calc((100vw + 100vh)/2 * 0.18);
+	width: calc((100vw + 100vh)/2 * 0.18);
 	height: auto;
 }
 

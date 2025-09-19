@@ -17,6 +17,7 @@
     "@suid/material": "^0.19.0",
     "@suid/vite-plugin": "^0.4.1",
     "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-clipboard-manager": "~2",
     "@tauri-apps/plugin-http": "~2",
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-os": "~2",

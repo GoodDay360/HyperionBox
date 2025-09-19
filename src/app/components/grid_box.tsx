@@ -5,11 +5,13 @@ import type { JSX, JSXElement } from "solid-js";
 import styles from "../styles/grid_box.module.css"
 
 export default function GridBox({
+    className="",
     children,
     row_gap=0,
     column_gap=0,
     style,
 }:{
+    className?: string,
     children: JSXElement,
     row_gap?: number,
     column_gap?: number,
@@ -50,7 +52,7 @@ export default function GridBox({
     });
 
 
-    return (<div ref={CONTAINER_REF} class={styles.container} style={style}>
+    return (<div ref={CONTAINER_REF} class={`${className} ${styles.container}`} style={style}>
         <div
             ref={GRID_BOX_REF}
             class={styles.grid_box}

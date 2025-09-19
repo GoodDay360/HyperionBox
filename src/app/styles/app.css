@@ -1,4 +1,6 @@
 :root {
+	touch-action: pan-x pan-y;
+	
 	--font-family: "Roboto", sans-serif;
 
 	--background-1: #000000;
@@ -56,9 +58,10 @@ html, body{
 body{
 	display: flex;
 	flex-direction: column;
-	padding-top: env(safe-area-inset-top, 0);
-	padding-bottom: env(safe-area-inset-bottom, 0);
 	background: var(--background-1);
+	overscroll-behavior-y: contain;
+	touch-action: pan-y;
+	margin: 0;
 }
 
 #root{
@@ -75,6 +78,8 @@ body{
 	box-sizing: border-box;
 	background: var(--background-1);
 	flex-direction: column;
+	padding-top: env(safe-area-inset-top, 0);
+	padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 

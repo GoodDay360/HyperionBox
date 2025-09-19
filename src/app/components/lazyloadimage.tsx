@@ -19,7 +19,7 @@ export default function LazyLoadImage({
 }) {
 
     let REF!: HTMLImageElement;
-
+    const [is_loaded, set_is_loaded] = createSignal(false);
     const [is_in_view, set_is_in_view] = createSignal(false);
 
     onMount(()=>{
@@ -47,10 +47,15 @@ export default function LazyLoadImage({
         class={className}
         style={style}
     >
-        {is_in_view() 
-            ? <img src={src} class={className} style={style} />
-            : <Skeleton variant="rectangular" sx={skeleton_sx} />
+        {!is_loaded() && 
+            <Skeleton variant="rectangular" sx={skeleton_sx} />
         }
+        {is_in_view() && 
+            <img src={src} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
+                onLoad={() => set_is_loaded(true)}
+            />
+        }
+        
     </div>)
 
 }

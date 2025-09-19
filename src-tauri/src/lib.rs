@@ -22,10 +22,11 @@ pub fn run() {
         .init();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![commands::home])
+        .invoke_handler(tauri::generate_handler![commands::home, commands::search,])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -37,7 +38,7 @@ mod tests {
 
     #[tokio::test]
     async fn home() {
-        match commands::home("anime".to_string()).await {
+        match commands::search("anime".to_string(), 1, "love".to_string()).await {
             Ok(d) => {
                 println!("Data: {:?}", d)
             }

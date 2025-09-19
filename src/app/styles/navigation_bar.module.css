@@ -16,4 +16,5 @@
     display: flex;
     flex-direction: row;
     position: sticky;
+    border-top: 2px solid var(--background-3);
 }

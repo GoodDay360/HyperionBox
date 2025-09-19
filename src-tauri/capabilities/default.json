@@ -7,12 +7,13 @@
   ],
   "permissions": [
     "core:default",
-    "opener:default",
     "core:window:default",
     "core:window:allow-start-dragging",
     "core:window:allow-toggle-maximize",
     "core:window:allow-minimize",
     "core:window:allow-close",
+    "core:window:allow-set-fullscreen",
+    "opener:default",
     {
       "identifier": "opener:allow-open-url",
       "allow": [
@@ -28,9 +29,15 @@
     {
       "identifier": "http:default",
       "allow": [
-        { "url": "https://*:*" },
-        { "url": "https://*:*" }
+        {
+          "url": "https://*:*"
+        },
+        {
+          "url": "https://*:*"
+        }
       ]
-    }
+    },
+    "clipboard-manager:default",
+    "clipboard-manager:allow-write-text"
   ]
 }

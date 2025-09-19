@@ -43,4 +43,6 @@ tauri-plugin-os = "2"
 chrono = "0.4.42"
 parsidate = "1.7.1"
 tauri-plugin-http = { version = "2", features = ["unsafe-headers"] }
+urlencoding = "2.1.3"
+tauri-plugin-clipboard-manager = "2"
 

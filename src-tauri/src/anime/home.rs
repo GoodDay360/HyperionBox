@@ -34,6 +34,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.id.as_ref().ok_or("no id")?;
             let atributes = item.attributes.as_ref().ok_or("no attributes")?;
+            let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
             let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
             let poster = atributes
                 .posterImage
@@ -66,7 +67,11 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
 
             let relevant_content = RelevantContent {
                 id: id.to_string().clone(),
-                title: title.clone(),
+                title: if title_en.is_some() {
+                    title_en.unwrap().clone()
+                } else {
+                    title.clone()
+                },
                 poster: poster.clone(),
                 banner: banner.clone(),
                 trailer: Trailer {
@@ -97,6 +102,7 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.id.as_ref().ok_or("no id")?;
             let atributes = item.attributes.as_ref().ok_or("no attributes")?;
+            let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
             let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
             let poster = atributes
                 .posterImage
@@ -108,7 +114,11 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
 
             let new_content = Content {
                 id: id.to_string().clone(),
-                title: title.clone(),
+                title: if title_en.is_some() {
+                    title_en.unwrap().clone()
+                } else {
+                    title.clone()
+                },
                 poster: poster.clone(),
             };
             new_content_data.push(new_content);
