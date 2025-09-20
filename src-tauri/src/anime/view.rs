@@ -1,0 +1,113 @@
+use reqwest::Client;
+use serde_json::{from_value, Value};
+use std::collections::HashMap;
+use std::time::Duration;
+use std::vec;
+use tauri::http::status;
+use urlencoding::encode;
+
+use crate::anime::models::Data;
+use crate::models::view::{EpisodeList, Trailer, ViewData};
+
+async fn get_content(id: String) -> Result<ViewData, String> {
+    let clinet = Client::new();
+    let url = format!("https://kitsu.io/api/edge/anime/{}", encode(&id));
+    println!("URL: {}", url);
+    let res = clinet
+        .get(url)
+        .timeout(Duration::from_secs(30))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    if res.status().is_success() {
+        // # Missing Key Debug
+        // let result_text = res.text().await.map_err(|e| e.to_string())?;
+        // let result = from_str::<ApiResponse>(&result_text).map_err(|e| e.to_string())?;
+        // println!("result: {:?}", result);
+        // #========================================
+
+        let result = res.json::<Value>().await.map_err(|e| e.to_string())?;
+
+        let data = from_value::<Data>(result.get("data").ok_or("no data")?.clone())
+            .ok()
+            .ok_or("unable to convert data")?;
+
+        let id = data.id.as_ref().ok_or("no id")?;
+        let _type = data._type.as_ref().ok_or("no type")?;
+
+        let atributes = data.attributes.as_ref().ok_or("no attributes")?;
+
+        let show_type = atributes.showType.as_ref().ok_or("no show type")?;
+        let episode_count = atributes.episodeCount.as_ref().ok_or("no episode count")?;
+        let age_rating = atributes.ageRating.as_ref().ok_or("no age rating")?;
+        let status = atributes.status.as_ref().ok_or("no status")?;
+
+        let description = atributes.description.as_ref().ok_or("no description")?;
+        let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
+        let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
+        let poster = atributes
+            .posterImage
+            .as_ref()
+            .ok_or("no poster")?
+            .large
+            .as_ref()
+            .ok_or("no large poster")?;
+
+        let mut banner: String = String::new();
+
+        if let Some(cover) = atributes.coverImage.as_ref() {
+            if let Some(large) = cover.large.as_ref() {
+                banner = large.to_string();
+            }
+        }
+        let mut trailer_url = String::new();
+        let mut trailer_embed_url = String::new();
+        if let Some(youtube_id) = atributes.youtubeVideoId.as_ref() {
+            trailer_url = format!("https://www.youtube.com/watch?v={}", youtube_id);
+            trailer_embed_url = format!("https://www.youtube.com/embed/{}", youtube_id);
+
+            if banner.is_empty() {
+                banner = format!(
+                    "https://img.youtube.com/vi/{}/maxresdefault.jpg",
+                    youtube_id
+                );
+            }
+        }
+
+        let mut meta_data: Vec<String> = vec![];
+
+        meta_data.push(_type.clone());
+        meta_data.push(show_type.clone());
+        meta_data.push(format!("Episodes: {}", episode_count.clone().to_string()));
+        meta_data.push(age_rating.clone());
+        meta_data.push(status.clone());
+
+        let view_data = ViewData {
+            id: id.to_string().clone(),
+            title: if title_en.is_some() {
+                title_en.unwrap().clone()
+            } else {
+                title.clone()
+            },
+            poster: poster.clone(),
+            banner: banner.clone(),
+            trailer: Trailer {
+                embed_url: trailer_embed_url.clone(),
+                url: trailer_url.clone(),
+            },
+            description: description.clone(),
+            meta_data,
+            episode_list: None,
+        };
+
+        return Ok(view_data);
+    } else {
+        return Err("error request view_data".into());
+    }
+}
+
+pub async fn new(id: String) -> Result<ViewData, String> {
+    let get_content_result = get_content(id).await?;
+
+    return Ok(get_content_result);
+}

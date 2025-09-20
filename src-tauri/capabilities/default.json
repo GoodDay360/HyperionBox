@@ -37,7 +37,30 @@
         }
       ]
     },
+    
     "clipboard-manager:default",
-    "clipboard-manager:allow-write-text"
+    "clipboard-manager:allow-write-text",
+
+    "fs:default",
+    "fs:allow-write",
+    "fs:write-files",
+    "fs:allow-read",
+    "fs:read-files",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-write-text-file",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        {"path": "$APPDATA/**" },
+        {"path": "$APPDATA/*"},
+        {"path": "$APPDATA/"},
+
+        {"path": "$TEMP/**" },
+        {"path": "$TEMP/*"},
+        {"path": "$TEMP/"}
+
+      ]
+    }
   ]
 }

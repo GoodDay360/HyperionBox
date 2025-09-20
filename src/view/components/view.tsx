@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
 // SolidJS Imports
-import { createSignal, onMount, Index, For } from "solid-js";
+import { createSignal, onMount, Index, For, useContext } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
@@ -17,6 +17,7 @@ import OndemandVideoRoundedIcon from '@suid/icons-material/OndemandVideoRounded'
 import CloseRoundedIcon from '@suid/icons-material/CloseRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
 import BookmarkAddOutlinedIcon from '@suid/icons-material/BookmarkAddOutlined';
+import ExtensionRoundedIcon from '@suid/icons-material/ExtensionRounded';
 
 // Solid Toast
 import toast from 'solid-toast';
@@ -28,44 +29,84 @@ import NavigationBar from "@src/app/components/navigation_bar";
 import Swiper from "@src/app/components/swiper";
 import LazyLoadImage from '@src/app/components/lazyloadimage';
 import GridBox from '@src/app/components/grid_box';
-
+import PullRefresh from '@src/app/components/pull_refresh';
 
 // Style Imports
 import styles from "../styles/view.module.css"
 
+// Script Imports
+import { ContextManager } from '@src/app/components/app';
 
-interface RELEVANT_CONTENT  {
+
+interface VIEW_DATA {
     id: string,
     title: string,
     poster: string,
     banner: string,
-    trailer: {
-        embed_url: string,
-        url: string
-    }
-}
+    description: string,
 
-interface CONTENT {
-    id: string,
-    title: string,
-    poster: string,
-}
+    meta_data: string[],
 
-interface HOME_DATA {
-    relevant_content: RELEVANT_CONTENT[]; // Replace `any` with actual type if known
-    content: CONTENT[];
+    trailer?: {
+        embed_url?: string,
+        url?: string
+    },
+
+    // Required: Season -> Episodes Page -> Episodes
+    episode_list?: {
+        index: number,
+        id: string,
+        title: string
+    }[][][],
 }
 
 export default function View() {
     const navigate = useNavigate();
-    
-    const [show_more, set_show_more] = createSignal(false);
+    const context = useContext(ContextManager);
 
-    return (
-        <div class={styles.container}>
+    const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
+
+    const [is_loading, set_is_loading] = createSignal<boolean>(true);
+
+    const [DATA, SET_DATA] = createSignal<VIEW_DATA>();
+
+    const [show_more, set_show_more] = createSignal(false);
+    const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
+
+    const get_data = () => {
+        set_is_loading(true);
+        invoke<VIEW_DATA>('view', {source:"anime", id: "1"})
+            .then((data) => {
+                SET_DATA(data);
+                console.table(data)
+                set_is_loading(false);
+            })
+            .catch((e) => {
+                console.error(e);
+                toast.remove();
+                toast.error("Something went wrong.",{
+                    style: {
+                        color:"red",
+                    }
+                })
+            });
+    }
+
+    onMount(() => {
+        get_data();
+    })
+
+
+    return (<>
+        {CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) > 550 &&
+            <PullRefresh container={CONTAINER_REF() as HTMLElement}
+                onRefresh={get_data}
+            />
+        }
+        <div class={styles.container} ref={SET_CONTAINER_REF}>
             <div class={styles.container_1}
                 style={{
-                    "background-image": `url('https://media.kitsu.app/anime/cover_images/7442/original.png')`
+                    "background-image": `url('${DATA()?.banner}')`
                 }}
             >
                 {/* Below component are position absolute */}
@@ -106,7 +147,7 @@ export default function View() {
                         </IconButton>
                         <img
                             class={styles.container_1_box_img}
-                            src={"https://media.kitsu.app/anime/poster_images/7442/large.jpg"}
+                            src={DATA()?.poster}
                         />
                     </div>
                     <div
@@ -121,14 +162,15 @@ export default function View() {
                     >
                         <h2 class={styles.container_1_box_title}
                             onClick={() => {(async () => {
-                                await writeText("Attach On Titan")
+                                await writeText(DATA()?.title ?? "");
+                                toast.remove();
                                 toast.success("Title copied to clipboard.",
                                     {style:{color:"green"}
                                 })
                                 
                             })()}}
                         
-                        >{"Attach On Titan"}</h2>
+                        >{DATA()?.title}</h2>
                         <Button
                             variant="contained" color="secondary"
                             sx={{
@@ -137,48 +179,44 @@ export default function View() {
                             }}
                         >Watch Now</Button>
                     </div>
-                    
-                    <div
-                        style={{
-                            "min-height": "100%",
-                            display:"flex",
-                            "align-items":"flex-end",
-                            "padding":"18px"
-                        }}
-                    >
-                        <IconButton
-                            sx={{
-                                color: '#ff0033',
-                                fontSize: 'calc((100vw + 100vh)/2*0.035)',
-                            }}
-                            onClick={() => {
-                                // set_show_trailer({
-                                //     state: true,
-                                //     source: item()?.trailer?.embed_url ?? ""
-                                // })
+                    {DATA()?.trailer?.embed_url && 
+                        <div
+                            style={{
+                                "min-height": "100%",
+                                display:"flex",
+                                "align-items":"flex-end",
+                                "padding":"18px"
                             }}
                         >
-                            <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
-                        </IconButton>
-                    </div>
+                            <IconButton
+                                sx={{
+                                    color: '#ff0033',
+                                    fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                }}
+                                onClick={() => {
+                                    set_show_trailer({
+                                        state: true,
+                                        source: DATA()?.trailer?.embed_url ?? ""
+                                    })
+                                }}
+                            >
+                                <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
+                            </IconButton>
+                        </div>
+                    }
                 </div>
 
 
             </div>
 
             <div class={styles.container_2}>
-                <GridBox
-                    row_gap={8}
-                    column_gap={8}
-                >
-                    <For each={[...Array(10)]}>
-                        {(item, index) => (
-                            <div class={styles.container_2_box}>
-                                <span class={styles.container_2_box_text}>{index()}abc</span>
-                            </div>
-                        )}
-                    </For>
-                </GridBox>
+                <For each={DATA()?.meta_data}>
+                    {(item) => (
+                        <div class={styles.container_2_box}>
+                            <span class={styles.container_2_box_text}>{item[0].toUpperCase() + item.slice(1)}</span>
+                        </div>
+                    )}
+                </For>
             </div>
 
             <div class={styles.container_3}>
@@ -205,36 +243,102 @@ export default function View() {
                                 "-webkit-line-clamp": 4
                             })
                         }}
-                    >&nbsp;&nbsp;&nbsp;&nbsp;{"In the year 2071, humanity has colonized several of the planets and moons of the solar system leaving the now uninhabitable surface of planet Earth behind. The Inter Solar System Police attempts to keep peace in the galaxy, aided in part by outlaw bounty hunters, referred to as \"Cowboys\". The ragtag team aboard the spaceship Bebop are two such individuals.\nMellow and carefree Spike Spiegel is balanced by his boisterous, pragmatic partner Jet Black as the pair makes a living chasing bounties and collecting rewards. Thrown off course by the addition of new members that they meet in their travels—Ein, a genetically engineered, highly intelligent Welsh Corgi; femme fatale Faye Valentine, an enigmatic trickster with memory loss; and the strange computer whiz kid Edward Wong—the crew embarks on thrilling adventures that unravel each member's dark and mysterious past little by little. \nWell-balanced with high density action and light-hearted comedy, Cowboy Bebop is a space Western classic and an homage to the smooth and improvised music it is named after.\n\n(Source: MAL Rewrite)"}</span>
+                    >&nbsp;&nbsp;&nbsp;&nbsp;{DATA()?.description}</span>
                 </div>
             </div>
 
             <div class={styles.episode_container}>
-                <div class={styles.episode_box}>
-                    <For each={[...Array(10)]}>
-                        {(item, index)=>(
-                            <ButtonBase
+                <div class={styles.episode_frame}>
+                    <div class={styles.episode_title_box}>
+                        <h2 class={styles.episode_title_box_text}>Episodes</h2>
+                        {/* <Button
+                            sx={{
+                                textTransform: 'none',
+                                fontSize: 'calc((100vw + 100vh)/2*0.02)',
+                                borderRadius: "calc((100vw + 100vh)/2*0.02)",
+                            }}
+                            onClick={() => {
+                                set_show_more(!show_more());
+                            }}
+                        >
+                            {show_more() ? "Show Less" : "Show More"}
+                        </Button> */}
+                    </div>
+                    {DATA()?.episode_list 
+                        ? <div class={styles.episode_box}>
+                            <For each={[...Array(10)]}>
+                                {(item, index)=>(
+                                    <ButtonBase
+                                        sx={{
+                                            color: "var(--color-1)",
+                                            textTransform: 'none',
+                                            fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                            justifyContent:"flex-start",
+                                            margin: 0,
+                                            paddingLeft: "12px", paddingRight: "12px",
+                                            paddingBottom: "5px", paddingTop: "5px",
+                                            borderRadius: "8px",
+                                            background: "var(--background-2)",
+                                            boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        Episode {index()}
+                                    </ButtonBase>
+                                )}
+                            </For>
+                        </div>
+                        : <div class={styles.link_plugin_box}>
+                            <Button variant='contained' color='secondary'
                                 sx={{
-                                    color: "var(--color-1)",
                                     textTransform: 'none',
                                     fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                                    justifyContent:"flex-start",
-                                    margin: 0,
-                                    paddingLeft: "12px", paddingRight: "12px",
-                                    paddingBottom: "5px", paddingTop: "5px",
-                                    borderRadius: "8px",
-                                    background: "var(--background-2)",
-                                    boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-                                    
+                                    color: "var(--color-1)",
                                 }}
+                                startIcon={<ExtensionRoundedIcon color='inherit' fontSize='inherit' />}
                             >
-                                Episode {index()}
-                            </ButtonBase>
-                        )}
-                    </For>
+                                Link Plugin
+                            </Button>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
-    )
+
+        {show_trailer().state && 
+            <div class={styles.trailer_container}>
+                <div
+                    style={{
+                        width: "100%",
+                        display:"flex",
+                        "align-items":"center",
+                        "justify-content":"flex-end",
+                        "padding":"5px"
+                    }}
+                >
+                    <IconButton
+                        sx={{
+                            color: '#ff0033',
+                            fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                        }}
+                        onClick={() => {
+                            set_show_trailer({
+                                state: false,
+                                source: ""
+                            })
+                        }}
+                    >
+                        <CloseRoundedIcon color='inherit' fontSize='inherit'/>
+                    </IconButton>
+                </div>
+                <iframe 
+                    class={styles.trailer}
+                    src={show_trailer().source} 
+                    allow="autoplay; encrypted-media; fullscreen" allowfullscreen
+                >
+                </iframe>
+            </div>
+        }
+    </>)
 }
 

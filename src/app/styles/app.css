@@ -82,21 +82,15 @@ body{
 	padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-
-.tooltip {
-	background: var(--background-1);
-	color: var(--color-1);
-	height: auto;
-	width: auto;
-	text-align: start;
-	padding: 8px;
-	font-family: var(--font-family);
-	border-radius: 5px;
+.hide_scrollbar {
+	scrollbar-width: none !important;
+	-ms-overflow-style: none !important;
 }
 
-.tooltip-trigger {
-	background: transparent;
-	border: none;
-}
 
+.hide_scrollbar::-webkit-scrollbar {
+	width: 0 !important;
+	height: 0 !important;
+	display: none !important;
+}
 

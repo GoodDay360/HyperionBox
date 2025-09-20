@@ -1,6 +1,8 @@
 // Tauri API
 import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { platform } from '@tauri-apps/plugin-os';
+
 
 // SolidJS Imports
 import { createSignal, onMount, For, Index, useContext } from "solid-js";
@@ -296,6 +298,7 @@ export default function Home() {
                                                 <h2 class={styles.relevant_title}
                                                     onClick={() => {(async () => {
                                                         await writeText(item().title)
+                                                        toast.remove();
                                                         toast.success("Title copied to clipboard.",
                                                             {style:{color:"green"}
                                                         })
@@ -346,7 +349,7 @@ export default function Home() {
                                 <div class={styles.content_header_container}>
                                     <h2 class={styles.content_header_title}>{key}</h2>
                                 </div>
-                                <div class={styles.content_data_container}
+                                <div class={`${styles.content_data_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                     onWheel={(e) => {
                                         e.preventDefault();
                                         e.currentTarget.scrollBy({
@@ -436,42 +439,42 @@ export default function Home() {
             }
             
             
+        </div>
 
-            {show_trailer().state && 
-                <div class={styles.trailer_container}>
-                    <div
-                        style={{
-                            width: "100%",
-                            display:"flex",
-                            "align-items":"center",
-                            "justify-content":"flex-end",
-                            "padding":"5px"
+        {show_trailer().state && 
+            <div class={styles.trailer_container}>
+                <div
+                    style={{
+                        width: "100%",
+                        display:"flex",
+                        "align-items":"center",
+                        "justify-content":"flex-end",
+                        "padding":"5px"
+                    }}
+                >
+                    <IconButton
+                        sx={{
+                            color: '#ff0033',
+                            fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                        }}
+                        onClick={() => {
+                            set_show_trailer({
+                                state: false,
+                                source: ""
+                            })
                         }}
                     >
-                        <IconButton
-                            sx={{
-                                color: '#ff0033',
-                                fontSize: 'calc((100vw + 100vh)/2*0.035)',
-                            }}
-                            onClick={() => {
-                                set_show_trailer({
-                                    state: false,
-                                    source: ""
-                                })
-                            }}
-                        >
-                            <CloseRoundedIcon color='inherit' fontSize='inherit'/>
-                        </IconButton>
-                    </div>
-                    <iframe 
-                        class={styles.trailer}
-                        src={show_trailer().source} 
-                        allow="autoplay; encrypted-media; fullscreen" allowfullscreen
-                    >
-                    </iframe>
+                        <CloseRoundedIcon color='inherit' fontSize='inherit'/>
+                    </IconButton>
                 </div>
-            }
-        </div>
+                <iframe 
+                    class={styles.trailer}
+                    src={show_trailer().source} 
+                    allow="autoplay; encrypted-media; fullscreen" allowfullscreen
+                >
+                </iframe>
+            </div>
+        }
 
         {/* Navigation Bar For Small Screen Width */}
         {(context?.screen_size?.()?.width ?? 0) <= 550 &&

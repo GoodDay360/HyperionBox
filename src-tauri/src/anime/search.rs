@@ -63,7 +63,7 @@ async fn get_content(page: usize, search: String) -> Result<SearchData, String> 
             max_page: (count as f64 / LIMIT as f64).ceil() as usize,
         });
     } else {
-        return Err("error request season_now".into());
+        return Err("error request search".into());
     }
 }
 

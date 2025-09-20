@@ -20,6 +20,7 @@ import "../styles/app.css";
 
 // Component Imports
 import TitleBar from '@src/app/components/titlebar';
+import ManagePlugin from '@src/manage_plugin/components/manage_plugin';
 import Home from "@src/home/components/home";
 import Search from '@src/search/components/search';
 import View from '@src/view/components/view';
@@ -127,7 +128,8 @@ export default function App() {
                 <Router>
                     {/* <Route path="/" component={Home} /> */}
                     <Route path="/search" component={Search} />
-                    <Route path="/" component={View} />
+                    {/* <Route path="/" component={View} /> */}
+                    <Route path="/" component={ManagePlugin} />
                 </Router>
             </div>
     </ContextManager.Provider>
