@@ -20,7 +20,7 @@ import "../styles/app.css";
 
 // Component Imports
 import TitleBar from '@src/app/components/titlebar';
-import ManagePlugin from '@src/manage_plugin/components/manage_plugin';
+import ManagePlugin from '@src/plugin/components/manage_plugin';
 import Home from "@src/home/components/home";
 import Search from '@src/search/components/search';
 import View from '@src/view/components/view';
@@ -117,6 +117,7 @@ export default function App() {
                         background: 'var(--background-2)',
                         color: "var(--color-1)",
                         "font-family": "var(--font-family)",
+                        "margin-bottom": "env(safe-area-inset-bottom, 0)"
                     },
                 }}
             />

@@ -47,7 +47,10 @@ pub fn run() -> Result<(), String> {
 
             /* Manage Plugin */
             commands::manage_plugin::get_plugin_list::get_plugin_list,
+            commands::manage_plugin::get_plugin_release::get_plugin_release,
+            commands::manage_plugin::get_installed_plugin_list::get_installed_plugin_list,
             commands::manage_plugin::install_plugin::install_plugin,
+            commands::manage_plugin::remove_plugin::remove_plugin,
             /* === */
             
         ])
