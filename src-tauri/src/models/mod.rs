@@ -1,3 +1,5 @@
 pub mod home;
 pub mod search;
 pub mod view;
+
+pub mod local_manifest;

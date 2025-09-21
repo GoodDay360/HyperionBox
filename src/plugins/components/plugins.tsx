@@ -303,7 +303,11 @@ export default function Plugin() {
                                 </div>
                                 {link_to().state && (
                                     <div class={styles.link_plugin_feedback_container}>
-                                        <div class={styles.link_plugin_feedback_box}>
+                                        <div class={`${styles.link_plugin_feedback_box} animate__animated animate__zoomIn`}
+                                            style={{
+                                                "--animate-duration": "250ms",
+                                            }}
+                                        >
                                             <LinkRoundedIcon 
                                                 sx={{
                                                     color: "var(--color-1)",
@@ -313,35 +317,73 @@ export default function Plugin() {
                                             <span class={styles.link_plugin_feedback_title}>Link Plugin</span>
                                             <span class={styles.link_plugin_feedback_text}>This will use "{link_to().plugin_id}" plugin to stream and download "{link_to().title}".</span>
                                             <div class={styles.link_plugin_feedback_button_box}>
-                                                <Button variant='text' color="error"
-                                                    sx={{
-                                                        fontSize: "calc((100vw + 100vh)/2*0.0225)",
-                                                        textTransform: "none",
-                                                        maxWidth: "fit-content",
-                                                        minWidth: "fit-content"
-                                                    }}
-                                                    onClick={() => {
-                                                        set_link_to({
-                                                            state: false,
-                                                            plugin_id: "",
-                                                            id: "",
-                                                            title: ""
-                                                        })
-                                                    }}
-                                                >
-                                                    Cancel
-                                                </Button>
+                                                {is_working()
+                                                    ? <CircularProgress color='secondary'
+                                                        size={"max(25px, calc((100vw + 100vh)/2*0.035))"}        
+                                                    />
+                                                    : <>
+                                                        <Button variant='text' color="error"
+                                                            sx={{
+                                                                fontSize: "calc((100vw + 100vh)/2*0.0225)",
+                                                                textTransform: "none",
+                                                                maxWidth: "fit-content",
+                                                                minWidth: "fit-content"
+                                                            }}
+                                                            onClick={() => {
+                                                                set_link_to({
+                                                                    state: false,
+                                                                    plugin_id: "",
+                                                                    id: "",
+                                                                    title: ""
+                                                                })
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </Button>
 
-                                                <Button variant='text' color="primary"
-                                                    sx={{
-                                                        fontSize: "calc((100vw + 100vh)/2*0.0225)",
-                                                        textTransform: "none",
-                                                        maxWidth: "fit-content",
-                                                        minWidth: "fit-content"
-                                                    }}
-                                                >
-                                                    Link
-                                                </Button>
+                                                        <Button variant='text' color="primary"
+                                                            sx={{
+                                                                fontSize: "calc((100vw + 100vh)/2*0.0225)",
+                                                                textTransform: "none",
+                                                                maxWidth: "fit-content",
+                                                                minWidth: "fit-content"
+                                                            }}
+                                                            onClick={() => {
+                                                                set_is_working(true);
+                                                                invoke("link_plugin", { 
+                                                                    source: link_from.source,
+                                                                    pluginId: link_to().plugin_id,
+                                                                    fromId: link_from.id,
+                                                                    toId: link_to().id
+                                                                })
+                                                                    .then(() => {
+                                                                        toast.remove();
+                                                                        toast.success("Plugin linked successfully.",{
+                                                                            style: {
+                                                                                color:"green",
+                                                                            }
+                                                                        });
+                                                                        navigate(-1);
+                                                                    })
+                                                                    .catch((e) => {
+                                                                        console.error(e);
+                                                                        toast.remove();
+                                                                        toast.error("Something went wrong while linking plugin.",{
+                                                                            style: {
+                                                                                color:"red",
+                                                                            }
+                                                                        });
+                                                                    })
+                                                                    .finally(() => {
+                                                                        set_is_working(false);
+                                                                    })
+                                                            }}
+                                                        >
+                                                            Link
+                                                        </Button>
+                                                    </>
+                                                }
+                                                
                                             </div>
                                         </div>
                                     </div>
@@ -410,8 +452,10 @@ export default function Plugin() {
                                                                         color:"cyan",
                                                                     }
                                                                 })
+                                                                set_install_progress(0);
                                                                 set_is_working(true);
                                                                 set_is_installing(true);
+                                                                
                                                                 install_plugin(
                                                                     "anime",
                                                                     plugin_id,
@@ -466,8 +510,8 @@ export default function Plugin() {
                             {Object.keys(INSTALLED_PLUGIN_DATA()).length > 0 
                                 ? <For each={Object.keys(INSTALLED_PLUGIN_DATA())}>
                                     {(plugin_id)=>{
-                                        let title = INSTALLED_PLUGIN_DATA()[plugin_id].title;
-                                        let version = INSTALLED_PLUGIN_DATA()[plugin_id].version;
+                                        const title = INSTALLED_PLUGIN_DATA()[plugin_id].title;
+                                        const [version, set_version] = createSignal<string>(INSTALLED_PLUGIN_DATA()[plugin_id].version);
 
 
                                         const [is_removing, set_is_removing] = createSignal<boolean>(false);
@@ -504,8 +548,9 @@ export default function Plugin() {
                                                                 "latest",
                                                             )
                                                                 .then((data) => {
-                                                                    let should_update = semver.gt(data.version, version);
+                                                                    let should_update = semver.gt(data.version, version());
                                                                     if (should_update) {
+                                                                        set_update_progress(0);
                                                                         toast.remove();
                                                                         toast("Updating plugin...",{
                                                                             style: {
@@ -524,6 +569,8 @@ export default function Plugin() {
                                                                         )
                                                                             .then((_) => {
                                                                                 set_is_updating(false);
+                                                                                set_version(data.version);
+                                                                                
                                                                             })
                                                                             .catch((e) => {
                                                                                 console.error(e);
@@ -573,7 +620,7 @@ export default function Plugin() {
                                                         overflow: "hidden",
                                                         "text-overflow": "ellipsis",
                                                     }}
-                                                >{title}</span> <span>| v{version}</span></span>
+                                                >{title}</span> <span>| v{version()}</span></span>
                                                 
                                                 {is_updating()  
                                                     ? <CircularProgress variant="determinate" value={update_progress()} color='secondary'

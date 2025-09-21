@@ -1,10 +1,17 @@
-use std::collections::HashMap;
+use tauri::async_runtime;
 
 use chlaty_core::request_plugin::get_episode_list;
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
-// pub fn new(source: String) -> Result<HashMap<String, DataResult>, String> {
-//     let get_episode_list_result = get_episode_list::new(&source)
-//         .map_err(|e| e.to_string())?;
-//     return Ok(get_plugin_list_result);
-// }
+#[tauri::command]
+pub async fn get_episode_list(source: String, plugin_id: String, id: String) -> Result<Vec<Vec<Vec<DataResult>>>, String> {
+    let result = async_runtime::spawn_blocking(move || {
+        return get_episode_list::new(&source, &plugin_id, &id)
+            .map_err(|e| e.to_string());
+    }).await.map_err(|e| e.to_string())?;
+
+    let get_episode_list_result = result?;
+
+
+    return Ok(get_episode_list_result);
+}

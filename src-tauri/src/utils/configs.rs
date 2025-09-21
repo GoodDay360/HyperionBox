@@ -13,8 +13,8 @@ use crate::utils::get_appdata;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Configs {
-    pub plugin_dir: String,
-    pub storage_dir: String,
+    pub plugin_dir: PathBuf,
+    pub storage_dir: PathBuf,
 }
 
 impl Configs {
@@ -25,8 +25,8 @@ impl Configs {
         let storage_dir = appdata_dir.join("storage").to_string_lossy().to_string();
 
         return Ok(Configs {
-            plugin_dir,
-            storage_dir
+            plugin_dir: PathBuf::from(plugin_dir),
+            storage_dir: PathBuf::from(storage_dir),
         })
     }
 }

@@ -129,7 +129,7 @@
 	font-family: var(--font-family);
 	font-size: calc((100vw + 100vh)/2*0.025);
 	font-weight: 400;
-	user-select: all;
+	user-select: none;
 	width: 100%;
 	max-height: 50%;
 	overflow: hidden;

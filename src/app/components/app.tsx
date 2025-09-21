@@ -16,6 +16,7 @@ import { Toaster, toast } from 'solid-toast';
 
 // Style Imports
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'animate.css';
 import "../styles/app.css";
 
 // Component Imports

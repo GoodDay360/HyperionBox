@@ -1,5 +1,7 @@
 pub mod configs;
 pub mod get_content;
+pub mod link_plugin;
+pub mod local_manifest;
 
 /* Manage Plugin */
 pub mod manage_plugin;

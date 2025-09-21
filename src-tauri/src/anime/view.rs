@@ -8,6 +8,7 @@ use urlencoding::encode;
 
 use crate::anime::models::Data;
 use crate::models::view::{EpisodeList, Trailer, ViewData};
+use crate::models::local_manifest::LocalManifest;
 
 async fn get_content(id: String) -> Result<ViewData, String> {
     let clinet = Client::new();
@@ -71,9 +72,11 @@ async fn get_content(id: String) -> Result<ViewData, String> {
             }
         }
 
+        /* Metadata */
+
         let mut meta_data: Vec<String> = vec![];
 
-        /* Metadata */
+        
         let _type = data._type.as_ref();
         let show_type = atributes.showType.as_ref();
         let episode_count = atributes.episodeCount.as_ref();
@@ -104,8 +107,8 @@ async fn get_content(id: String) -> Result<ViewData, String> {
 
         let view_data = ViewData {
             id: id.to_string().clone(),
-            title: if title_en.is_some() {
-                title_en.unwrap().clone()
+            title: if let Some(t) = title_en {
+                t.clone()
             } else {
                 title.clone()
             },
@@ -125,6 +128,7 @@ async fn get_content(id: String) -> Result<ViewData, String> {
         return Err("error request view_data".into());
     }
 }
+
 
 pub async fn new(id: String) -> Result<ViewData, String> {
     let get_content_result = get_content(id).await?;
