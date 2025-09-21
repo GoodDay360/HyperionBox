@@ -33,14 +33,11 @@ async fn get_content(id: String) -> Result<ViewData, String> {
             .ok_or("unable to convert data")?;
 
         let id = data.id.as_ref().ok_or("no id")?;
-        let _type = data._type.as_ref().ok_or("no type")?;
+        
 
         let atributes = data.attributes.as_ref().ok_or("no attributes")?;
 
-        let show_type = atributes.showType.as_ref().ok_or("no show type")?;
-        let episode_count = atributes.episodeCount.as_ref().ok_or("no episode count")?;
-        let age_rating = atributes.ageRating.as_ref().ok_or("no age rating")?;
-        let status = atributes.status.as_ref().ok_or("no status")?;
+        
 
         let description = atributes.description.as_ref().ok_or("no description")?;
         let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
@@ -76,11 +73,34 @@ async fn get_content(id: String) -> Result<ViewData, String> {
 
         let mut meta_data: Vec<String> = vec![];
 
-        meta_data.push(_type.clone());
-        meta_data.push(show_type.clone());
-        meta_data.push(format!("Episodes: {}", episode_count.clone().to_string()));
-        meta_data.push(age_rating.clone());
-        meta_data.push(status.clone());
+        /* Metadata */
+        let _type = data._type.as_ref();
+        let show_type = atributes.showType.as_ref();
+        let episode_count = atributes.episodeCount.as_ref();
+        let age_rating = atributes.ageRating.as_ref();
+        let status = atributes.status.as_ref();
+
+        if let Some(t) = _type {
+            meta_data.push(t.clone());
+        }
+
+        if let Some(show) = show_type {
+            meta_data.push(show.clone());
+        }
+
+        if let Some(episodes) = episode_count {
+            meta_data.push(format!("Episodes: {}", episodes));
+        }
+
+        if let Some(age) = age_rating {
+            meta_data.push(age.clone());
+        }
+
+        if let Some(stat) = status {
+            meta_data.push(stat.clone());
+        }
+
+        /* --- */
 
         let view_data = ViewData {
             id: id.to_string().clone(),

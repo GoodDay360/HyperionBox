@@ -284,6 +284,13 @@ export default function Home() {
                                             <LazyLoadImage
                                                 className={styles.relevant_img}
                                                 src={item.poster}
+
+                                                skeleton_sx={{
+                                                    width: "100%",
+                                                    height: "calc((100vw + 100vh)/2*0.18)",
+                                                    background: "calc((100vw + 100vh)/2*0.25)",
+                                                    borderRadius: "5px",
+                                                }}
                                             />
                                             <div
                                                 style={{

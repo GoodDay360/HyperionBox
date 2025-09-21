@@ -129,10 +129,14 @@ export default function Plugin() {
 
     createEffect(on(current_tab, () => {
         if (is_loading()) return;
+        set_is_loading(true);
         get_installed_plugin_list("anime")
             .then((data) => {    
                 console.log(data);
                 SET_INSTALLED_PLUGIN_DATA(data);
+            })
+            .finally(() => {
+                set_is_loading(false);
             })
         
     }))

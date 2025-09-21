@@ -157,6 +157,13 @@ export default function View() {
                                 <LazyLoadImage
                                     className={styles.container_1_box_img}
                                     src={DATA()?.poster ?? ""}
+
+                                    skeleton_sx={{
+                                        width: "100%",
+                                        height: "calc((100vw + 100vh)/2*0.18)",
+                                        background: "calc((100vw + 100vh)/2*0.25)",
+                                        borderRadius: "5px",
+                                    }}
                                 />
                             </div>
                             <div
