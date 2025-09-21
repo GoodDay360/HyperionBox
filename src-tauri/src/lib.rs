@@ -52,6 +52,11 @@ pub fn run() -> Result<(), String> {
             commands::manage_plugin::install_plugin::install_plugin,
             commands::manage_plugin::remove_plugin::remove_plugin,
             /* === */
+
+            /* Request Plugin */
+            commands::request_plugin::search_in_plugin::search_in_plugin,
+
+            /* === */
             
         ])
         .run(tauri::generate_context!())

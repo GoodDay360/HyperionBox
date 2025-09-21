@@ -89,7 +89,8 @@
 	width: calc((100vw + 100vh)/2*0.18);
 	height: calc((100vw + 100vh)/2*0.25);
 	object-fit: cover;
-	margin-left: 18px;
+	margin-left: 12px;
+	margin-right: 12px;
 	margin-bottom: 18px;
 	user-select: none;
 }
@@ -152,7 +153,7 @@
 	white-space: nowrap;
 	display: flex;
 	flex-direction: row;
-	justify-content: space-between;
+	justify-content: flex-start;
 	overflow-x: auto;
 	box-sizing: border-box;
 	gap: 12px;

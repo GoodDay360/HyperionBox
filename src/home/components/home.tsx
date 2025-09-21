@@ -270,20 +270,20 @@ export default function Home() {
                                 delay: 5000
                             }}
                         >
-                            <Index each={RELEVANT_DATA()}>
+                            <For each={RELEVANT_DATA()}>
                                 {(item) => 
                                     <div
                                         class={styles.relevant_item_container}
                                         style={{
-                                            "background-image": `url('${item().banner}')`
+                                            "background-image": `url('${item.banner}')`
                                         }}
                                     >
                                         <div class={styles.relevant_item_container_filter}></div>
 
                                         <div class={styles.relevant_info_container}>
-                                            <img
-                                                class={styles.relevant_img}
-                                                src={item().poster}
+                                            <LazyLoadImage
+                                                className={styles.relevant_img}
+                                                src={item.poster}
                                             />
                                             <div
                                                 style={{
@@ -297,22 +297,25 @@ export default function Home() {
                                             >
                                                 <h2 class={styles.relevant_title}
                                                     onClick={() => {(async () => {
-                                                        await writeText(item().title)
+                                                        await writeText(item.title)
                                                         toast.remove();
                                                         toast.success("Title copied to clipboard.",
                                                             {style:{color:"green"}
                                                         })
                                                     })()}}
-                                                >{item().title}</h2>
+                                                >{item.title}</h2>
                                                 <Button
                                                     variant="contained" color="secondary"
                                                     sx={{
                                                         textTransform: 'none',
                                                         fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                                     }}
+                                                    onClick={() => {
+                                                        navigate(`/view?source=${"anime"}&id=${item.id}`);
+                                                    }}
                                                 >View Now</Button>
                                             </div>
-                                            {item()?.trailer?.embed_url &&
+                                            {item?.trailer?.embed_url &&
                                                 <div
                                                     style={{
                                                         "min-height": "100%",
@@ -329,7 +332,7 @@ export default function Home() {
                                                         onClick={() => {
                                                             set_show_trailer({
                                                                 state: true,
-                                                                source: item()?.trailer?.embed_url ?? ""
+                                                                source: item?.trailer?.embed_url ?? ""
                                                             })
                                                         }}
                                                     >
@@ -340,7 +343,7 @@ export default function Home() {
                                         </div>
                                     </div>
                                 }
-                            </Index>
+                            </For>
                         </Swiper>
                     </div>
                     <For each={Object.keys(CONTENT_DATA())}>
@@ -358,16 +361,19 @@ export default function Home() {
                                         });
                                     }}
                                 >
-                                    <Index each={CONTENT_DATA()[key]}>
+                                    <For each={CONTENT_DATA()[key]}>
                                         {(item) => <div class={styles.content_data_box}>
                                             <ButtonBase
                                                 sx={{
                                                     width: "100%",
                                                     height: "auto",
                                                 }}
+                                                onClick={() => {
+                                                    navigate(`/view?source=${"anime"}&id=${item.id}`);
+                                                }}
                                             >
                                                 <LazyLoadImage 
-                                                    src={item().poster}
+                                                    src={item.poster}
                                                     className={styles.content_data_img}
 
                                                     skeleton_sx={{
@@ -378,9 +384,9 @@ export default function Home() {
                                                     }}
                                                 />
                                             </ButtonBase>
-                                            <span class={styles.content_data_title}>{item().title}</span>
+                                            <span class={styles.content_data_title}>{item.title}</span>
                                         </div>}
-                                    </Index>
+                                    </For>
                                 </div>
                             </div>
                         )}

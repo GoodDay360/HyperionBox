@@ -256,9 +256,18 @@
 	box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
-.content_container {
+
+.skeleton_container{
 	display: flex;
 	flex-direction: column;
-	padding-bottom: 18px;
-	gap: 0;
+	gap: 12px;
+}
+
+.skeleton_box_1{
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	padding-left: 12px; padding-right: 12px;
+	gap: 12px;
 }

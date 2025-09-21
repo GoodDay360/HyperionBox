@@ -20,7 +20,7 @@ import "../styles/app.css";
 
 // Component Imports
 import TitleBar from '@src/app/components/titlebar';
-import ManagePlugin from '@src/plugin/components/manage_plugin';
+import Plugin from '@src/plugins/components/plugins';
 import Home from "@src/home/components/home";
 import Search from '@src/search/components/search';
 import View from '@src/view/components/view';
@@ -127,10 +127,10 @@ export default function App() {
                     <TitleBar ref={TitleBarRef} />
                 }
                 <Router>
-                    {/* <Route path="/" component={Home} /> */}
+                    <Route path="/" component={Home} />
                     <Route path="/search" component={Search} />
-                    {/* <Route path="/" component={View} /> */}
-                    <Route path="/" component={ManagePlugin} />
+                    <Route path="/view" component={View} />
+                    <Route path="/plugin" component={Plugin} />
                 </Router>
             </div>
     </ContextManager.Provider>

@@ -1,9 +1,9 @@
-export type PluginList = {
+export type PluginData = {
     title: string,
     manifest: string
 }
 
-export type InstalledPluginList = {
+export type InstalledPluginData = {
     title: string,
     version: string
 }

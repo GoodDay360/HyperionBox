@@ -63,6 +63,9 @@ interface VIEW_DATA {
 export default function View() {
     const navigate = useNavigate();
     const context = useContext(ContextManager);
+    const [queryParams] = useSearchParams();
+    const source = queryParams?.source as string ?? "";
+    const id = queryParams?.id as string ?? "";
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
@@ -75,7 +78,7 @@ export default function View() {
 
     const get_data = () => {
         set_is_loading(true);
-        invoke<VIEW_DATA>('view', {source:"anime", id: "1"})
+        invoke<VIEW_DATA>('view', {source, id})
             .then((data) => {
                 SET_DATA(data);
                 console.table(data)
@@ -103,206 +106,300 @@ export default function View() {
                 onRefresh={get_data}
             />
         }
-        <div class={styles.container} ref={SET_CONTAINER_REF}>
-            <div class={styles.container_1}
-                style={{
-                    "background-image": `url('${DATA()?.banner}')`
-                }}
-            >
-                {/* Below component are position absolute */}
-                <div class={styles.container_1_filter}></div>
-                <IconButton
-                    sx={{
-                        color: "var(--color-1)",
-                        fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
-                        margin: "12px",
-                    }}
-                    onClick={() => {
-                        navigate(-1);
-                    }}
-                >
-                    <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
-                </IconButton>
-                {/* === */}
-                
-                <div class={styles.container_1_box}>
-                    <div class={styles.container_1_box_img_box}>
+        <div class={styles.container} ref={SET_CONTAINER_REF}
+            style={{
+                "overflow-y": is_loading() ? "hidden" : "auto",
+            }}
+        >
+            {!is_loading()
+                ? <>
+                    <div class={styles.container_1}
+                        style={{
+                            "background-image": `url('${DATA()?.banner}')`
+                        }}
+                    >
+                        {/* Below component are position absolute */}
+                        <div class={styles.container_1_filter}></div>
                         <IconButton
                             sx={{
-                                color: 'var(--color-1)',
-                                fontSize: 'calc((100vw + 100vh)/2*0.0285)',
-                                background: 'var(--background-2)',
-                                border: "2px solid var(--background-1)",
-                                position: 'absolute',
-                                padding: '5px',
-                                bottom: 0,
-                                right: 0,
-                                margin: '5px',
-                                "&:hover": {
-                                    background: 'var(--background-3)'
-                                }
-                            }}
-                        >
-                            <BookmarkAddOutlinedIcon color='inherit' fontSize='inherit' />
-                        </IconButton>
-                        <img
-                            class={styles.container_1_box_img}
-                            src={DATA()?.poster}
-                        />
-                    </div>
-                    <div
-                        style={{
-                            flex: 1,
-                            display:"flex",
-                            "flex-direction":"column",
-                            "align-items":"flex-start",
-                            "padding-left":"16px",
-                            overflow:"hidden"
-                        }}
-                    >
-                        <h2 class={styles.container_1_box_title}
-                            onClick={() => {(async () => {
-                                await writeText(DATA()?.title ?? "");
-                                toast.remove();
-                                toast.success("Title copied to clipboard.",
-                                    {style:{color:"green"}
-                                })
-                                
-                            })()}}
-                        
-                        >{DATA()?.title}</h2>
-                        <Button
-                            variant="contained" color="secondary"
-                            sx={{
-                                textTransform: 'none',
-                                fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                            }}
-                        >Watch Now</Button>
-                    </div>
-                    {DATA()?.trailer?.embed_url && 
-                        <div
-                            style={{
-                                "min-height": "100%",
-                                display:"flex",
-                                "align-items":"flex-end",
-                                "padding":"18px"
-                            }}
-                        >
-                            <IconButton
-                                sx={{
-                                    color: '#ff0033',
-                                    fontSize: 'calc((100vw + 100vh)/2*0.035)',
-                                }}
-                                onClick={() => {
-                                    set_show_trailer({
-                                        state: true,
-                                        source: DATA()?.trailer?.embed_url ?? ""
-                                    })
-                                }}
-                            >
-                                <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
-                            </IconButton>
-                        </div>
-                    }
-                </div>
-
-
-            </div>
-
-            <div class={styles.container_2}>
-                <For each={DATA()?.meta_data}>
-                    {(item) => (
-                        <div class={styles.container_2_box}>
-                            <span class={styles.container_2_box_text}>{item[0].toUpperCase() + item.slice(1)}</span>
-                        </div>
-                    )}
-                </For>
-            </div>
-
-            <div class={styles.container_3}>
-                <div class={styles.container_3_title_box}>
-                    <h2 class={styles.container_3_title}>Description</h2>
-                    <Button
-                        sx={{
-                            textTransform: 'none',
-                            fontSize: 'calc((100vw + 100vh)/2*0.02)',
-                            borderRadius: "calc((100vw + 100vh)/2*0.02)",
-                        }}
-                        onClick={() => {
-                            set_show_more(!show_more());
-                        }}
-                    >
-                        {show_more() ? "Show Less" : "Show More"}
-                    </Button>
-                </div>
-                <div class={styles.container_3_text_box}>
-                    <span class={styles.container_3_text}
-                        style={{
-                            ...(!show_more() && {
-                                "line-clamp": 4,
-                                "-webkit-line-clamp": 4
-                            })
-                        }}
-                    >&nbsp;&nbsp;&nbsp;&nbsp;{DATA()?.description}</span>
-                </div>
-            </div>
-
-            <div class={styles.episode_container}>
-                <div class={styles.episode_frame}>
-                    <div class={styles.episode_title_box}>
-                        <h2 class={styles.episode_title_box_text}>Episodes</h2>
-                        {/* <Button
-                            sx={{
-                                textTransform: 'none',
-                                fontSize: 'calc((100vw + 100vh)/2*0.02)',
-                                borderRadius: "calc((100vw + 100vh)/2*0.02)",
+                                color: "var(--color-1)",
+                                fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
+                                margin: "12px",
                             }}
                             onClick={() => {
-                                set_show_more(!show_more());
+                                navigate(-1);
                             }}
                         >
-                            {show_more() ? "Show Less" : "Show More"}
-                        </Button> */}
-                    </div>
-                    {DATA()?.episode_list 
-                        ? <div class={styles.episode_box}>
-                            <For each={[...Array(10)]}>
-                                {(item, index)=>(
-                                    <ButtonBase
+                            <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
+                        </IconButton>
+                        {/* === */}
+                        
+                        <div class={styles.container_1_box}>
+                            <div class={styles.container_1_box_img_box}>
+                                <IconButton
+                                    sx={{
+                                        color: 'var(--color-1)',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.0285)',
+                                        background: 'var(--background-2)',
+                                        border: "2px solid var(--background-1)",
+                                        position: 'absolute',
+                                        padding: '5px',
+                                        bottom: 0,
+                                        right: 0,
+                                        margin: '5px',
+                                        "&:hover": {
+                                            background: 'var(--background-3)'
+                                        }
+                                    }}
+                                >
+                                    <BookmarkAddOutlinedIcon color='inherit' fontSize='inherit' />
+                                </IconButton>
+                                <LazyLoadImage
+                                    className={styles.container_1_box_img}
+                                    src={DATA()?.poster ?? ""}
+                                />
+                            </div>
+                            <div
+                                style={{
+                                    flex: 1,
+                                    display:"flex",
+                                    "flex-direction":"column",
+                                    "align-items":"flex-start",
+                                    "padding-left":"16px",
+                                    overflow:"hidden"
+                                }}
+                            >
+                                <h2 class={styles.container_1_box_title}
+                                    onClick={() => {(async () => {
+                                        await writeText(DATA()?.title ?? "");
+                                        toast.remove();
+                                        toast.success("Title copied to clipboard.",
+                                            {style:{color:"green"}
+                                        })
+                                        
+                                    })()}}
+                                
+                                >{DATA()?.title}</h2>
+                                <Button
+                                    variant="contained" color="secondary"
+                                    sx={{
+                                        textTransform: 'none',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                    }}
+                                >Watch Now</Button>
+                            </div>
+                            {DATA()?.trailer?.embed_url && 
+                                <div
+                                    style={{
+                                        "min-height": "100%",
+                                        display:"flex",
+                                        "align-items":"flex-end",
+                                        "padding":"18px"
+                                    }}
+                                >
+                                    <IconButton
                                         sx={{
-                                            color: "var(--color-1)",
-                                            textTransform: 'none',
-                                            fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                                            justifyContent:"flex-start",
-                                            margin: 0,
-                                            paddingLeft: "12px", paddingRight: "12px",
-                                            paddingBottom: "5px", paddingTop: "5px",
-                                            borderRadius: "8px",
-                                            background: "var(--background-2)",
-                                            boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-                                            width: "100%",
+                                            color: '#ff0033',
+                                            fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                        }}
+                                        onClick={() => {
+                                            set_show_trailer({
+                                                state: true,
+                                                source: DATA()?.trailer?.embed_url ?? ""
+                                            })
                                         }}
                                     >
-                                        Episode {index()}
-                                    </ButtonBase>
-                                )}
-                            </For>
+                                        <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
+                                    </IconButton>
+                                </div>
+                            }
                         </div>
-                        : <div class={styles.link_plugin_box}>
-                            <Button variant='contained' color='secondary'
+
+
+                    </div>
+
+                    <div class={styles.container_2}>
+                        <For each={DATA()?.meta_data}>
+                            {(item) => (
+                                <div class={styles.container_2_box}>
+                                    <span class={styles.container_2_box_text}>{item[0].toUpperCase() + item.slice(1)}</span>
+                                </div>
+                            )}
+                        </For>
+                    </div>
+
+                    <div class={styles.container_3}>
+                        <div class={styles.container_3_title_box}>
+                            <h2 class={styles.container_3_title}>Description</h2>
+                            <Button
                                 sx={{
                                     textTransform: 'none',
-                                    fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                                    color: "var(--color-1)",
+                                    fontSize: 'calc((100vw + 100vh)/2*0.02)',
+                                    borderRadius: "calc((100vw + 100vh)/2*0.02)",
                                 }}
-                                startIcon={<ExtensionRoundedIcon color='inherit' fontSize='inherit' />}
+                                onClick={() => {
+                                    set_show_more(!show_more());
+                                }}
                             >
-                                Link Plugin
+                                {show_more() ? "Show Less" : "Show More"}
                             </Button>
                         </div>
-                    }
-                </div>
-            </div>
+                        <div class={styles.container_3_text_box}>
+                            <span class={styles.container_3_text}
+                                style={{
+                                    ...(!show_more() && {
+                                        "line-clamp": 4,
+                                        "-webkit-line-clamp": 4
+                                    })
+                                }}
+                            >&nbsp;&nbsp;&nbsp;&nbsp;{DATA()?.description}</span>
+                        </div>
+                    </div>
+
+                    <div class={styles.episode_container}>
+                        <div class={styles.episode_frame}>
+                            <div class={styles.episode_title_box}>
+                                <h2 class={styles.episode_title_box_text}>Episodes</h2>
+                                {/* <Button
+                                    sx={{
+                                        textTransform: 'none',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.02)',
+                                        borderRadius: "calc((100vw + 100vh)/2*0.02)",
+                                    }}
+                                    onClick={() => {
+                                        set_show_more(!show_more());
+                                    }}
+                                >
+                                    {show_more() ? "Show Less" : "Show More"}
+                                </Button> */}
+                            </div>
+                            {DATA()?.episode_list 
+                                ? <div class={styles.episode_box}>
+                                    <For each={[...Array(10)]}>
+                                        {(item, index)=>(
+                                            <ButtonBase
+                                                sx={{
+                                                    color: "var(--color-1)",
+                                                    textTransform: 'none',
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                                    justifyContent:"flex-start",
+                                                    margin: 0,
+                                                    paddingLeft: "12px", paddingRight: "12px",
+                                                    paddingBottom: "5px", paddingTop: "5px",
+                                                    borderRadius: "8px",
+                                                    background: "var(--background-2)",
+                                                    boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                                                    width: "100%",
+                                                }}
+                                            >
+                                                Episode {index()}
+                                            </ButtonBase>
+                                        )}
+                                    </For>
+                                </div>
+                                : <div class={styles.link_plugin_box}>
+                                    <Button variant='contained' color='secondary'
+                                        sx={{
+                                            textTransform: 'none',
+                                            fontSize: 'calc((100vw + 100vh)/2 * 0.025)',
+                                            color: "var(--color-1)",
+                                            display: "flex",
+                                            flexDirection: "row",
+                                            gap: "8px",
+                                        }}
+
+                                        onClick={() => {
+                                            navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.id}&link_title=${DATA()?.title}`);
+                                        }}
+                                    >
+                                        <ExtensionRoundedIcon color='inherit' fontSize='inherit'/> Link Plugin
+                                    </Button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </>
+                : <> {/* Loading Skeleton */}
+                    <div class={styles.skeleton_container}>
+                        <Skeleton variant="rectangular"
+                            sx={{
+                                width: "100%",
+                                height: "calc((100vw + 100vh)/2*0.45)",
+                                background: "var(--background-2)",
+                            }}
+                        />
+                        <div class={styles.skeleton_box_1}>
+                            <div
+                                style={{
+                                    display: "flex",
+                                    "flex-direction": "row",
+                                    "justify-content": "flex-start",
+                                    gap: "8px",
+                                }}
+                            >
+                                <Index each={[...Array(4)]}>
+                                    {(_) =>
+                                        <Skeleton variant="rectangular"
+                                            sx={{
+                                                flex: 1,
+                                                height: "40px",
+                                                background: "var(--background-2)",
+                                            }}
+                                        />
+                                    }
+                                </Index>
+                            </div>
+                            <Skeleton variant="rectangular"
+                                sx={{
+                                    width: "100%",
+                                    height: "100px",
+                                    background: "var(--background-2)",
+                                }}
+                            />
+                        </div>
+
+                        
+                        
+                        <div class={styles.episode_container}>
+                            <div class={styles.episode_frame}
+                                style={{
+                                    height: "auto"
+                                }}
+                            >
+                                <div class={styles.episode_title_box}>
+                                    <Skeleton variant="text"
+                                        sx={{
+                                            width: "100%",
+                                            height: "40px",
+                                            background: "var(--background-2)",
+                                        }}
+                                    />
+                                </div>
+                                <div class={styles.episode_box}
+                                    style={{
+                                        padding: "12px",
+                                        height: "auto"
+                                    }}
+                                >
+                                    <Index each={[...Array(12)]}>
+                                        {(_) =>
+                                            <Skeleton variant="rectangular"
+                                                sx={{
+                                                    width: "100%",
+                                                    height: "40px",
+                                                    background: "var(--background-2)",
+                                                }}
+                                            />
+                                        }
+                                    </Index>
+                                </div>
+                                    
+                            </div>
+                        </div>
+
+                    </div>
+                </>
+            }
         </div>
 
         {show_trailer().state && 

@@ -207,6 +207,9 @@ export default function Search() {
                                             width: "100%",
                                             height: "auto",
                                         }}
+                                        onClick={() => {
+                                            navigate(`/view?source=${"anime"}&id=${item.id}`);
+                                        }}
                                     >
                                         <LazyLoadImage 
                                             src={item.poster}
