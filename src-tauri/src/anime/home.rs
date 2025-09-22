@@ -130,8 +130,9 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
 }
 
 pub async fn new() -> Result<HomeData, String> {
-    let (task_get_relevant_content, task_get_trending_content) =
-        tokio::join!(get_relevant_content(), get_trending_content());
+    let (task_get_relevant_content, task_get_trending_content) = tokio::join!(
+        get_relevant_content(), get_trending_content()
+    );
 
     let relevant_content = task_get_relevant_content.map_err(|e| e.to_string())?;
 

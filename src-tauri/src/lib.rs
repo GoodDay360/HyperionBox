@@ -1,8 +1,9 @@
 use tracing::{error, info};
-
+use std::env;
 use dotenv::dotenv;
 use tracing::Level;
 use tracing_subscriber::fmt;
+use tauri::Manager;
 
 
 pub mod models;
@@ -14,12 +15,11 @@ pub mod commands;
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() -> Result<(), String> {
+pub fn run() {
     dotenv().ok();
-    utils::configs::init().map_err(|e| e.to_string())?;
-
+    
     fmt()
-        .with_max_level(Level::DEBUG)
+        .with_max_level(Level::INFO)
         .with_thread_names(true)
         .with_thread_ids(true)
         .with_target(true)
@@ -27,7 +27,18 @@ pub fn run() -> Result<(), String> {
         .with_line_number(true)
         .init();
 
+    
+
     tauri::Builder::default()
+        .setup(|app| {
+            let app_handle = app.handle();
+            let appdata_dir = app_handle.path().app_data_dir().map_err(|e| e.to_string())?;
+            
+            env::set_var("HYPERIONBOX_APPDATA", appdata_dir);
+
+            utils::configs::init()?;
+            return Ok(());
+        })
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_http::init())
@@ -63,7 +74,6 @@ pub fn run() -> Result<(), String> {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
-    return Ok(());
 }
 
 #[cfg(test)]
@@ -77,15 +87,15 @@ mod tests {
         utils::configs::init().map_err(|e| e.to_string()).unwrap();
     }
 
-    // #[tokio::test]
-    // async fn test() {
-    //     match commands::view("anime".to_string(), "1".to_string()).await {
-    //         Ok(d) => {
-    //             println!("Data: {:?}", d)
-    //         }
-    //         Err(_) => assert!(false),
-    //     }
-    // }
+    #[tokio::test]
+    async fn test() {
+        match commands::get_content::view("anime".to_string(), "1".to_string()).await {
+            Ok(d) => {
+                println!("Data: {:?}", d)
+            }
+            Err(_) => assert!(false),
+        }
+    }
 
 
     use crate::utils::configs;

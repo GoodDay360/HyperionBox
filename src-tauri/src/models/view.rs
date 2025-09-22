@@ -1,17 +1,12 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use chlaty_core::request_plugin::get_episode_list::DataResult;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Trailer {
     pub url: String,
     pub embed_url: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct EpisodeList {
-    pub index: String,
-    pub id: String,
-    pub title: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -26,5 +21,5 @@ pub struct ViewData {
     pub trailer: Trailer,
 
     // Required: Season -> Episodes Page -> Episodes
-    pub episode_list: Option<Vec<Vec<Vec<EpisodeList>>>>,
+    pub episode_list: Option<Vec<Vec<Vec<DataResult>>>>,
 }

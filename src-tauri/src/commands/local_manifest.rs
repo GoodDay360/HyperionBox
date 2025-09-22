@@ -11,13 +11,12 @@ use crate::utils::configs;
 use crate::models::local_manifest::{LocalManifest, LinkPlugin};
 
 #[tauri::command]
-pub fn get_local_manifest(source: String, plugin_id: String, id: String) -> Result<LocalManifest, String> {
+pub fn get_local_manifest(source: String, id: String) -> Result<LocalManifest, String> {
     let config_data = configs::get()?;
 
     let storage_dir = config_data.storage_dir;
     let source_dir = storage_dir.join(&source);
-    let plugin_dir = source_dir.join(&plugin_id);
-    let item_dir = plugin_dir.join(&id);
+    let item_dir = source_dir.join(&id);
     if !item_dir.exists() {
         fs::create_dir_all(&item_dir).map_err(|e| e.to_string())?;
     }
@@ -43,13 +42,12 @@ pub fn get_local_manifest(source: String, plugin_id: String, id: String) -> Resu
 }
 
 #[tauri::command]
-pub fn save_local_manifest(source: String, plugin_id: String, id: String, manifest_data: LocalManifest) -> Result<(), String> {
+pub fn save_local_manifest(source: String, id: String, manifest_data: LocalManifest) -> Result<(), String> {
     let config_data = configs::get()?;
 
     let storage_dir = config_data.storage_dir;
     let source_dir = storage_dir.join(&source);
-    let plugin_dir = source_dir.join(&plugin_id);
-    let item_dir = plugin_dir.join(&id);
+    let item_dir = source_dir.join(&id);
     if !item_dir.exists() {
         fs::create_dir_all(&item_dir).map_err(|e| e.to_string())?;
     }

@@ -1,25 +1,20 @@
 // Tauri API
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { platform } from '@tauri-apps/plugin-os';
 
 // SolidJS Imports
-import { createSignal, onMount, Index, For, useContext, onCleanup, createEffect, on } from "solid-js";
+import { createSignal, onMount, For, onCleanup, createEffect, on } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
 
 
 // SUID Imports
-import { Button, IconButton, ButtonBase, Skeleton, CircularProgress } from '@suid/material';
+import { Button, IconButton, ButtonBase, CircularProgress } from '@suid/material';
 
 // SUID Icon Imports
-import OndemandVideoRoundedIcon from '@suid/icons-material/OndemandVideoRounded';
-import CloseRoundedIcon from '@suid/icons-material/CloseRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
-import BookmarkAddOutlinedIcon from '@suid/icons-material/BookmarkAddOutlined';
-import ExtensionRoundedIcon from '@suid/icons-material/ExtensionRounded';
 import FileDownloadRoundedIcon from '@suid/icons-material/FileDownloadRounded';
 import DownloadDoneRoundedIcon from '@suid/icons-material/DownloadDoneRounded';
 import RemoveDoneRoundedIcon from '@suid/icons-material/RemoveDoneRounded';
@@ -35,17 +30,12 @@ import toast from 'solid-toast';
 import semver from 'semver';
 
 // Component Imports
-import NavigationBar from "@src/app/components/navigation_bar";
-import Swiper from "@src/app/components/swiper";
 import LazyLoadImage from '@src/app/components/lazyloadimage';
-import GridBox from '@src/app/components/grid_box';
-import PullRefresh from '@src/app/components/pull_refresh';
 
 // Style Imports
 import styles from "../styles/plugin.module.css"
 
 // Script Imports
-import { ContextManager } from '@src/app/components/app';
 import { get_plugin_list, install_plugin, get_installed_plugin_list, remove_plugin, get_plugin_release } from '../scripts/manage_plugins';
 import { search_in_plugin } from '../scripts/request_plugin';
 
@@ -66,7 +56,6 @@ export default function Plugin() {
 
     const [search_title, set_search_title] = createSignal(link_from.title);
 
-    const context = useContext(ContextManager);
 
     const [current_tab, set_current_tab] = createSignal(0);
 

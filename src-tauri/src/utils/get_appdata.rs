@@ -1,13 +1,10 @@
 
 use std::env;
 use std::path::PathBuf;
-use tauri;
 
 pub fn new() -> Result<PathBuf, String> {
-    let context: tauri::Context<tauri::Wry> = tauri::generate_context!();
-    let identifier = context.config().identifier.clone();
-    let system_appdata_dir = PathBuf::from(env::var("APPDATA").map_err(|e| e.to_string())?);
-    let appdata_dir = system_appdata_dir.join(identifier);
+    let appdata_dir = PathBuf::from(env::var("HYPERIONBOX_APPDATA")
+        .map_err(|e| format!("Error getting 'HYPERIONBOX_APPDATA' environment: {}", e.to_string()))?);
 
     return Ok(appdata_dir);
 }

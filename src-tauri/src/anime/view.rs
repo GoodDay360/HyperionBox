@@ -7,7 +7,7 @@ use tauri::http::status;
 use urlencoding::encode;
 
 use crate::anime::models::Data;
-use crate::models::view::{EpisodeList, Trailer, ViewData};
+use crate::models::view::{Trailer, ViewData};
 use crate::models::local_manifest::LocalManifest;
 
 async fn get_content(id: String) -> Result<ViewData, String> {

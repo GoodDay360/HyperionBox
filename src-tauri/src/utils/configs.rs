@@ -1,10 +1,11 @@
 
-use std::{env, hash::Hash};
+use std::{env};
 use std::path::PathBuf;
 use std::fs;
 use std::io::BufReader;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
+use tauri::Manager;
 
 use crate::utils::get_appdata;
 
@@ -61,7 +62,6 @@ pub fn get() -> Result<Configs, String> {
         fs::write(&config_file, config_data_to_string).map_err(|e| e.to_string())?;
     }
 
-    println!("{}", appdata_dir.display());
 
     return Ok(config_data);
 }
@@ -78,10 +78,14 @@ pub fn set(configs: Configs) -> Result<(), String> {
 }
 
 pub fn init() -> Result<(), String> {
-    let config_data = get()?;
-    
-    env::set_var("CHLATY_PLUGIN_DIRECTORY", config_data.plugin_dir);
-    env::set_var("CHLATY_STORAGE_DIRECTORY", config_data.storage_dir);
+    println!("Init Configs");
 
+    
+    let config_data = get()?;
+    env::set_var("CHLATY_PLUGIN_DIRECTORY", &config_data.plugin_dir);
+    env::set_var("CHLATY_STORAGE_DIRECTORY", &config_data.storage_dir);
+
+    println!("ALL PATH: {} | {}", &config_data.plugin_dir.display(), &config_data.storage_dir.display());
+    
     return Ok(());
 }

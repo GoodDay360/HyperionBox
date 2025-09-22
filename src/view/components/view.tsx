@@ -10,7 +10,7 @@ import { useSearchParams, useNavigate } from "@solidjs/router";
 
 
 // SUID Imports
-import { Button, IconButton, ButtonBase, Skeleton } from '@suid/material';
+import { Button, IconButton, ButtonBase, Skeleton, Pagination } from '@suid/material';
 
 // SUID Icon Imports
 import OndemandVideoRoundedIcon from '@suid/icons-material/OndemandVideoRounded';
@@ -18,6 +18,7 @@ import CloseRoundedIcon from '@suid/icons-material/CloseRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
 import BookmarkAddOutlinedIcon from '@suid/icons-material/BookmarkAddOutlined';
 import ExtensionRoundedIcon from '@suid/icons-material/ExtensionRounded';
+import AddLinkRoundedIcon from '@suid/icons-material/AddLinkRounded';
 
 // Solid Toast
 import toast from 'solid-toast';
@@ -25,10 +26,7 @@ import toast from 'solid-toast';
 
 
 // Component Imports
-import NavigationBar from "@src/app/components/navigation_bar";
-import Swiper from "@src/app/components/swiper";
 import LazyLoadImage from '@src/app/components/lazyloadimage';
-import GridBox from '@src/app/components/grid_box';
 import PullRefresh from '@src/app/components/pull_refresh';
 
 // Style Imports
@@ -69,12 +67,16 @@ export default function View() {
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
-    const [is_loading, set_is_loading] = createSignal<boolean>(true);
+    const [is_loading, set_is_loading] = createSignal<boolean>(false);
 
     const [DATA, SET_DATA] = createSignal<VIEW_DATA>();
 
     const [show_more, set_show_more] = createSignal(false);
     const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
+
+    const [current_season_index, _] = createSignal<number>(0);
+    const [current_episode_index, set_current_episode_index] = createSignal<number>(0);
+
 
     const get_data = () => {
         set_is_loading(true);
@@ -267,42 +269,52 @@ export default function View() {
                         <div class={styles.episode_frame}>
                             <div class={styles.episode_title_box}>
                                 <h2 class={styles.episode_title_box_text}>Episodes</h2>
-                                {/* <Button
-                                    sx={{
-                                        textTransform: 'none',
-                                        fontSize: 'calc((100vw + 100vh)/2*0.02)',
-                                        borderRadius: "calc((100vw + 100vh)/2*0.02)",
-                                    }}
-                                    onClick={() => {
-                                        set_show_more(!show_more());
-                                    }}
-                                >
-                                    {show_more() ? "Show Less" : "Show More"}
-                                </Button> */}
+                                {DATA()?.episode_list !== null && 
+                                    <IconButton
+                                        sx={{
+                                            color: 'var(--color-1)',
+                                            fontSize: 'calc((100vw + 100vh)/2*0.04)',
+                                        }}
+                                        onClick={() =>{
+                                            navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.id}&link_title=${DATA()?.title}`);
+                                        }}
+                                    >
+                                        <AddLinkRoundedIcon fontSize='inherit' color='inherit' />
+                                    </IconButton>
+                                }
+                                
                             </div>
-                            {DATA()?.episode_list 
+                            {DATA()?.episode_list !== null
                                 ? <div class={styles.episode_box}>
-                                    <For each={[...Array(10)]}>
-                                        {(item, index)=>(
-                                            <ButtonBase
-                                                sx={{
-                                                    color: "var(--color-1)",
-                                                    textTransform: 'none',
-                                                    fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                                                    justifyContent:"flex-start",
-                                                    margin: 0,
-                                                    paddingLeft: "12px", paddingRight: "12px",
-                                                    paddingBottom: "5px", paddingTop: "5px",
-                                                    borderRadius: "8px",
-                                                    background: "var(--background-2)",
-                                                    boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-                                                    width: "100%",
-                                                }}
-                                            >
-                                                Episode {index()}
-                                            </ButtonBase>
-                                        )}
-                                    </For>
+                                    {(DATA()?.episode_list?.length ?? 0) > 0 
+                                        ? <For each={DATA()?.episode_list?.[current_season_index()]?.[current_episode_index()]}>
+                                            {(item)=>(
+                                                <ButtonBase
+                                                    sx={{
+                                                        color: "var(--color-1)",
+                                                        textTransform: 'none',
+                                                        fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                                        justifyContent:"flex-start",
+                                                        textAlign:"left",
+                                                        margin: 0,
+                                                        paddingLeft: "12px", paddingRight: "12px",
+                                                        paddingBottom: "5px", paddingTop: "5px",
+                                                        borderRadius: "8px",
+                                                        background: "var(--background-2)",
+                                                        boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                                                        width: "100%",
+                                                    }}
+                                                >
+                                                    Episode {item.index}: {item.title}
+                                                </ButtonBase>
+                                            )}
+                                        </For>
+                                            
+                                        
+                                        : <div class={styles.no_episode_box}>
+                                            <span class={styles.no_episode_text}>No episodes found.</span>
+                                        </div>
+                                    }
                                 </div>
                                 : <div class={styles.link_plugin_box}>
                                     <Button variant='contained' color='secondary'
@@ -323,6 +335,23 @@ export default function View() {
                                     </Button>
                                 </div>
                             }
+                        </div>
+                        <div class={styles.pagination_box}>
+                            <Pagination 
+                                color="primary" variant="outlined" showFirstButton showLastButton 
+                                siblingCount={0}
+                                page={current_episode_index() + 1} 
+                                count={DATA()?.episode_list?.[current_season_index()]?.length ?? 0} 
+                                onChange={(_, value)=> {
+                                    set_current_episode_index(value - 1);
+                                }}
+                                size='large'
+                                sx={{
+                                    "& .MuiPaginationItem-root": {
+                                        color: "var(--color-1)",
+                                    }
+                                }}
+                            />
                         </div>
                     </div>
                 </>
