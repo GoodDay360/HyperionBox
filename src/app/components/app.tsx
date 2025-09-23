@@ -3,7 +3,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 // SolidJS Imports
-import { onMount, onCleanup, createContext, createSignal } from 'solid-js';
+import { onMount, onCleanup, createContext, createSignal, lazy } from 'solid-js';
 import { Route, Router  } from "@solidjs/router";
 
 
@@ -20,12 +20,14 @@ import 'animate.css';
 import "../styles/app.css";
 
 // Component Imports
+
 import TitleBar from '@src/app/components/titlebar';
 import Plugin from '@src/plugins/components/plugins';
 import Home from "@src/home/components/home";
 import Search from '@src/search/components/search';
 import View from '@src/view/components/view';
-import Watch from '@src/watch/components/watch';
+const Watch = lazy(() => import('@src/watch/components/watch'));
+
 
 
 const theme = createTheme({
@@ -129,10 +131,10 @@ export default function App() {
                     <TitleBar ref={TitleBarRef} />
                 }
                 <Router>
-                    {/* <Route path="/" component={Home} /> */}
+                    <Route path="/" component={Home} />
                     <Route path="/search" component={Search} />
                     <Route path="/view" component={View} />
-                    <Route path="/" component={Watch} />
+                    <Route path="/watch" component={Watch} />
                     <Route path="/plugin" component={Plugin} />
                 </Router>
             </div>

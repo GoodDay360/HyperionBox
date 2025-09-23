@@ -3,6 +3,8 @@ use serde::{Deserialize, Serialize};
 
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
+use crate::models::local_manifest::LinkPlugin;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Trailer {
     pub url: String,
@@ -22,4 +24,5 @@ pub struct ViewData {
 
     // Required: Season -> Episodes Page -> Episodes
     pub episode_list: Option<Vec<Vec<Vec<DataResult>>>>,
+    pub link_plugin: Option<LinkPlugin>,
 }

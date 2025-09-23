@@ -21,10 +21,12 @@ export default function PullRefresh({
 
     const [pulling, setPulling] = createSignal(false);
     const [request_refreshing, set_request_refreshing] = createSignal(false);
+    
     const threshold = 60;
     let startY = 0;
     let PR_CONTAINER_REF!: HTMLDivElement;
 
+    let start_pull_timeout!: NodeJS.Timeout;
     const handleTouchStart = (e: TouchEvent) => {
         if (container.scrollTop === 0) {
             startY = e.touches[0].clientY;
@@ -38,19 +40,22 @@ export default function PullRefresh({
         const distance = e.touches[0].clientY - startY;
         if (distance > 0) {
             e.preventDefault();
-            if (PR_CONTAINER_REF) PR_CONTAINER_REF.style.top = `${Math.min(distance - threshold, 40)}px`;
+            if (PR_CONTAINER_REF) PR_CONTAINER_REF.style.top = `calc( env(safe-area-inset-top, 0) + ${Math.min(distance - threshold, 40)}px)`;
+            start_pull_timeout = setTimeout(() => {
+                set_request_refreshing(true);
+            },500)
         }
     };
 
     const handleTouchEnd = () => {
-        if (!pulling() || request_refreshing()) return;
+        if (!pulling()) return;
 
         const currentTop = parseInt(PR_CONTAINER_REF?.style.top || "0");
-        if (currentTop >= 0) {
+        if (currentTop >= 0 && request_refreshing()) {
             
             /* Refresh Method Here */
-            onRefresh();
-
+            
+                onRefresh();
             /* === */
 
         } else {
@@ -62,6 +67,7 @@ export default function PullRefresh({
 
         set_request_refreshing(false);
         setPulling(false);
+        clearTimeout(start_pull_timeout);
     };
 
     onMount(() => {

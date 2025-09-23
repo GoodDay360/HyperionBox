@@ -1,5 +1,4 @@
 // Tauri API
-import { invoke } from '@tauri-apps/api/core';
 import { platform } from '@tauri-apps/plugin-os';
 
 // SolidJS Imports
@@ -29,8 +28,6 @@ import toast from 'solid-toast';
 
 
 // Component Imports
-import LazyLoadImage from '@src/app/components/lazyloadimage';
-import GridBox from '@src/app/components/grid_box';
 import PullRefresh from '@src/app/components/pull_refresh';
 
 
@@ -70,10 +67,10 @@ export default function Watch() {
     const [queryParams] = useSearchParams();
     const context = useContext(ContextManager);
 
-    const source:string = queryParams.source as string ?? "anime";
-    const plugin_id:string = queryParams.plugin_id as string ?? "hianime";
-    const view_id:string = queryParams.view_id as string ?? "100"; 
-    const episode_id:string = queryParams.episode_id as string ?? "2142";
+    const source:string = queryParams.source as string ?? "";
+    const link_plugin_id:string = queryParams.link_plugin_id as string ?? "";
+    const link_id:string = queryParams.link_id as string ?? ""; 
+    const episode_id:string = queryParams.episode_id as string ?? "";
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
     
@@ -98,7 +95,7 @@ export default function Watch() {
     
 
     const load_episode_list = async () => {
-        const data = await get_episode_list(source, plugin_id, view_id);
+        const data = await get_episode_list(source, link_plugin_id, link_id);
         console.log("Episode List: ", data);
         SET_EPISODE_LIST(data);
 
@@ -117,7 +114,7 @@ export default function Watch() {
     }
 
     const load_episode_server = async () => {
-        const data = await get_episode_server(source, plugin_id, current_episode_id());
+        const data = await get_episode_server(source, link_plugin_id, current_episode_id());
         console.log("Episode Server: ", data);
         SET_EPISODE_SERVER_DATA(data);
 
@@ -142,7 +139,7 @@ export default function Watch() {
 
     const load_server = async () => {
         set_is_loading_server(true);
-        const data = await get_server(source, plugin_id, selected_server_id());
+        const data = await get_server(source, link_plugin_id, selected_server_id());
         console.log("SERVER DATA: ", data);
 
         SET_SERVER_DATA(data);
@@ -173,6 +170,7 @@ export default function Watch() {
 
     
     onMount(() => {
+        console.log(source, link_plugin_id, link_id, episode_id);
         get_data();
     })
 
@@ -225,7 +223,7 @@ export default function Watch() {
         {(CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550) &&
             <PullRefresh container={CONTAINER_REF() as HTMLElement}
                 onRefresh={()=> {
-
+                    get_data();
                 }}
             />
         }
@@ -576,7 +574,7 @@ export default function Watch() {
                                     overflow: "hidden",
                                 }}
                             >
-                                <For each={[...Array(10)]}>
+                                <Index each={[...Array(10)]}>
                                     {(_) =>(
                                         <Skeleton variant='rectangular'
                                             sx={{
@@ -586,7 +584,7 @@ export default function Watch() {
                                             }}
                                         />
                                     )}
-                                </For>
+                                </Index>
                             </div>
                         </div>
                     </div>

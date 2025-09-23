@@ -118,6 +118,7 @@ async fn get_content(id: String) -> Result<ViewData, String> {
             description: description.clone(),
             meta_data,
             episode_list: None,
+            link_plugin: None,
         };
 
         return Ok(view_data);

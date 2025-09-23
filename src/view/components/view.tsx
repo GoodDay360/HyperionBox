@@ -56,6 +56,10 @@ interface VIEW_DATA {
         id: string,
         title: string
     }[][][],
+    link_plugin?: {
+        plugin_id?: string,
+        id?: string
+    }
 }
 
 export default function View() {
@@ -304,6 +308,9 @@ export default function View() {
                                                         boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
                                                         width: "100%",
                                                     }}
+                                                    onClick={() => {
+                                                        navigate(`/watch?source=${encodeURIComponent(source)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&episode_id=${encodeURIComponent(item.id)}`);
+                                                    }}
                                                 >
                                                     Episode {item.index}: {item.title}
                                                 </ButtonBase>
@@ -328,7 +335,7 @@ export default function View() {
                                         }}
 
                                         onClick={() => {
-                                            navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.id}&link_title=${DATA()?.title}`);
+                                            navigate(`/plugin?link_source=${encodeURIComponent(source)}&link_id=${encodeURIComponent(DATA()?.id ?? " ")}&link_title=${encodeURIComponent(DATA()?.title ?? " ")}`);
                                         }}
                                     >
                                         <ExtensionRoundedIcon color='inherit' fontSize='inherit'/> Link Plugin

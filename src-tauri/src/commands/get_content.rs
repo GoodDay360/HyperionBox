@@ -53,7 +53,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
         let mut link_plugin_id: String = String::new();
         let mut link_id: String = String::new();
 
-        if let Some(link_plugin) = local_manifest.link_plugin {
+        if let Some(link_plugin) = local_manifest.link_plugin.clone() {
             link_plugin_id = link_plugin.plugin_id.unwrap_or("".to_string());
             link_id = link_plugin.id.unwrap_or("".to_string());
         }
@@ -74,6 +74,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                 }
             };
             view_data.episode_list = Some(episode_list);
+            view_data.link_plugin = local_manifest.link_plugin;
             return Ok(view_data);
         }else {
             match anime::view::new(id).await {
