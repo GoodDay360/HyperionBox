@@ -41,6 +41,8 @@ export default function PullRefresh({
         if (distance > 0) {
             e.preventDefault();
             if (PR_CONTAINER_REF) PR_CONTAINER_REF.style.top = `calc( env(safe-area-inset-top, 0) + ${Math.min(distance - threshold, 40)}px)`;
+            // const currentTop = parseInt(PR_CONTAINER_REF?.style.top || "0");
+            //  console.log(currentTop);
             start_pull_timeout = setTimeout(() => {
                 set_request_refreshing(true);
             },500)
@@ -50,7 +52,7 @@ export default function PullRefresh({
     const handleTouchEnd = () => {
         if (!pulling()) return;
 
-        const currentTop = parseInt(PR_CONTAINER_REF?.style.top || "0");
+        const currentTop = PR_CONTAINER_REF?.getBoundingClientRect().top || 0;
         if (currentTop >= 0 && request_refreshing()) {
             
             /* Refresh Method Here */

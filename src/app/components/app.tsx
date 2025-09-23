@@ -3,7 +3,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 // SolidJS Imports
-import { onMount, onCleanup, createContext, createSignal, lazy } from 'solid-js';
+import { onMount, onCleanup, createContext, createSignal } from 'solid-js';
 import { Route, Router  } from "@solidjs/router";
 
 
@@ -26,7 +26,7 @@ import Plugin from '@src/plugins/components/plugins';
 import Home from "@src/home/components/home";
 import Search from '@src/search/components/search';
 import View from '@src/view/components/view';
-const Watch = lazy(() => import('@src/watch/components/watch'));
+import Watch from '@src/watch/components/watch';
 
 
 
