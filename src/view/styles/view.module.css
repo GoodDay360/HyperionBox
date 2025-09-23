@@ -208,7 +208,8 @@
 
 .episode_box{
 	width: 100%;
-	height: calc(var(--inner-height) * 0.6);
+	height: fit-content;
+	max-height: calc((100vw + 100vh)/2*0.75);
 	overflow: auto;
 	display: flex;
 	flex-direction: column;
@@ -269,6 +270,7 @@
 	box-sizing: border-box;
 
 	padding: 12px;
+	padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
 
 	background: rgba(0, 0, 0, 0.4); /* semi-transparent black */
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);

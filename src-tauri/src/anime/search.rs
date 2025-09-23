@@ -1,5 +1,4 @@
 use reqwest::Client;
-use std::collections::HashMap;
 use std::time::Duration;
 use urlencoding::encode;
 

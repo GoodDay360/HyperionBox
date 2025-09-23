@@ -1,0 +1,16 @@
+#player { /* Or the actual Vidstack element */
+    width: 100%;
+    height: calc((100vw + 100vh)/2*0.45);
+    object-fit: contain !important;
+    border-radius: 0 !important;
+}
+
+media-player {
+    border-radius: 0 !important;
+}
+media-controls {
+    border-radius: 0 !important;
+}
+media-google-cast-button {
+    display: none;
+}

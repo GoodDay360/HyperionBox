@@ -12,5 +12,6 @@
     z-index: 3;
     width: auto;
     height: auto;
+    padding-top: env(safe-area-inset-top, 0);
 }
 

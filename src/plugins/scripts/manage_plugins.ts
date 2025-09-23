@@ -2,7 +2,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 // Script Type Imports
-import { PluginData, InstalledPluginData, PluginRelease } from '../types/manage_plugin';
+import { PluginData, InstalledPluginData, PluginRelease } from '../types/manage_plugin_type';
 
 
 export function get_plugin_list(source: string): Promise<Record<string, PluginData>> {

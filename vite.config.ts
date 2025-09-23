@@ -4,6 +4,7 @@ import solidPlugin from "vite-plugin-solid";
 import suidPlugin from "@suid/vite-plugin";
 import webfontDownload from 'vite-plugin-webfont-dl';
 import eslint from 'vite-plugin-eslint'
+import { vite as vidstack } from 'vidstack/plugins';
 
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
@@ -14,7 +15,7 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async ({command, mode}) => ({
-  plugins: [...(mode === 'production' ? [eslint()] : []), solid(), solidPlugin(), suidPlugin(), webfontDownload()],
+  plugins: [...(mode === 'production' ? [eslint()] : []), solid(), solidPlugin(), suidPlugin(), webfontDownload(), vidstack()],
 
   build: {
     target: "esnext",

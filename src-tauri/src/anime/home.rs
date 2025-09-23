@@ -14,7 +14,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
         "https://kitsu.io/api/edge/anime?page[limit]=20&filter[season]={}&filter[seasonYear]={}",
         calendar.anime_season, calendar.year
     );
-    println!("URL: {}", url);
+    
     let res = clinet
         .get(url)
         .timeout(Duration::from_secs(30))

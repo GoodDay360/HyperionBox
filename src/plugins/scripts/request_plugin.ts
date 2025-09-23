@@ -2,7 +2,7 @@
 import { invoke } from '@tauri-apps/api/core';
 
 // Script Type Imports
-import { SearchInPluginData } from '../types/request_plugin';
+import { SearchInPluginData } from '../types/request_plugin_type';
 
 
 export function search_in_plugin(source: string, pluginId: string, search: string, page: number): Promise<SearchInPluginData[]> {

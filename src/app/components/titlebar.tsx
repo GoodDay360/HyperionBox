@@ -30,12 +30,12 @@ export default function TitleBar({
     return (<>{["linux", "macos", "windows"].includes(platform()) && (
         <div ref={ref as HTMLDivElement} class={styles.titlebar_container}>   
             <div class={styles.titlebar_draggable}
-                onMouseDown={(e)=> {
+                onMouseDown={async (e)=> {
                     e.preventDefault();
                     if (e.buttons === 1) {
                         // Primary (left) button
                         e.detail === 2
-                        ? appWindow.toggleMaximize() // Maximize on double click
+                        ? appWindow.setFullscreen(!(await appWindow.isFullscreen())) 
                         : appWindow.startDragging(); // Else start dragging
                     }
                 }}
@@ -67,7 +67,7 @@ export default function TitleBar({
                         fontSize: "16px",
                     }}
 
-                    onClick={()=> appWindow.toggleMaximize()}
+                    onClick={()=> (async () => appWindow.setFullscreen(!(await appWindow.isFullscreen())))()}
                 >
                     <CropSquareRoundedIcon color='inherit' fontSize='inherit'/>
                 </ButtonBase>

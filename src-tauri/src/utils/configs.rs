@@ -5,7 +5,6 @@ use std::fs;
 use std::io::BufReader;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
-use tauri::Manager;
 
 use crate::utils::get_appdata;
 

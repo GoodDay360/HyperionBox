@@ -1,8 +1,7 @@
-use std::collections::HashMap;
 use tauri::async_runtime;
-
+use std::collections::HashMap;
 use chlaty_core::manage_plugin::get_installed_plugin_list;
-use chlaty_core::manage_plugin::get_installed_plugin_list::PluginInfo;
+use chlaty_core::utils::manifest::PluginInfo;
 
 
 #[tauri::command]

@@ -1,19 +1,16 @@
 use reqwest::Client;
 use serde_json::{from_value, Value};
-use std::collections::HashMap;
 use std::time::Duration;
 use std::vec;
-use tauri::http::status;
 use urlencoding::encode;
 
 use crate::anime::models::Data;
 use crate::models::view::{Trailer, ViewData};
-use crate::models::local_manifest::LocalManifest;
 
 async fn get_content(id: String) -> Result<ViewData, String> {
     let clinet = Client::new();
     let url = format!("https://kitsu.io/api/edge/anime/{}", encode(&id));
-    println!("URL: {}", url);
+    
     let res = clinet
         .get(url)
         .timeout(Duration::from_secs(30))

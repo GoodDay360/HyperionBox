@@ -123,7 +123,7 @@ export default function Search() {
     })
     
     return (<>
-        {CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) > 550 &&
+        {(CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550) &&
             <PullRefresh container={CONTAINER_REF() as HTMLElement}
                 onRefresh={()=> {
                     if (is_loading() && !search()) return;

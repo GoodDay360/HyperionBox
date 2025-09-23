@@ -1,14 +1,10 @@
 
 use std::fs;
 use std::io::BufReader;
-use std::path::PathBuf;
-use serde_json::{Value, json, to_string_pretty, from_reader};
-use tracing::{warn};
-use std::collections::HashMap;
+use serde_json::{to_string_pretty, from_reader};
 
-use crate::utils::get_appdata;
 use crate::utils::configs;
-use crate::models::local_manifest::{LocalManifest, LinkPlugin};
+use crate::models::local_manifest::{LocalManifest};
 
 #[tauri::command]
 pub fn get_local_manifest(source: String, id: String) -> Result<LocalManifest, String> {

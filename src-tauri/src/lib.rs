@@ -1,4 +1,3 @@
-use tracing::{error, info};
 use std::env;
 use dotenv::dotenv;
 use tracing::Level;
@@ -66,6 +65,9 @@ pub fn run() {
 
             /* Request Plugin */
             commands::request_plugin::search_in_plugin::search_in_plugin,
+            commands::request_plugin::get_episode_list::get_episode_list,
+            commands::request_plugin::get_episode_server::get_episode_server,
+            commands::request_plugin::get_server::get_server,
             /* === */
 
             commands::link_plugin::link_plugin,

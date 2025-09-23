@@ -1,5 +1,3 @@
-use tauri::async_runtime;
-
 use chlaty_core::request_plugin::get_episode_list;
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 

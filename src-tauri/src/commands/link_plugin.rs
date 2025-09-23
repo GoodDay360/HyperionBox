@@ -1,13 +1,4 @@
 
-use std::fs;
-use std::io::BufReader;
-use std::path::PathBuf;
-use serde_json::{Value, json, to_string_pretty, from_reader};
-use tracing::{warn};
-use std::collections::HashMap;
-
-use crate::utils::get_appdata;
-use crate::utils::configs;
 use crate::models::local_manifest::{LocalManifest, LinkPlugin};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 

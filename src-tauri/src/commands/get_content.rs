@@ -1,7 +1,7 @@
 use tokio;
 use tracing::{warn, error};
 
-use chlaty_core::request_plugin::get_episode_list;
+
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
 use crate::anime;
@@ -17,7 +17,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
         match anime::home::new().await {
             Ok(data) => return Ok(data),
             Err(e) => {
-                println!("Error: {}", e);
+                error!("Error: {}", e);
                 return Err(e);
             }
         }
@@ -32,7 +32,7 @@ pub async fn search(source: String, page: usize, search: String) -> Result<Searc
         match anime::search::new(page, search).await {
             Ok(data) => return Ok(data),
             Err(e) => {
-                println!("Error: {}", e);
+                error!("Error: {}", e);
                 return Err(e);
             }
         }

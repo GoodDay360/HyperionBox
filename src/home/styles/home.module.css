@@ -39,6 +39,7 @@
 	font-family: var(--font-family);
 	font-size: max(12px, calc((100vw + 100vh)/2*0.02));
 	box-sizing: border-box;
+	user-select: none;
 }
 
 
@@ -201,6 +202,7 @@
 	box-sizing: border-box;
 
 	padding: 12px;
+	padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
 
 	background: rgba(0, 0, 0, 0.4); /* semi-transparent black */
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);

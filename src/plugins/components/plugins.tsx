@@ -40,8 +40,8 @@ import { get_plugin_list, install_plugin, get_installed_plugin_list, remove_plug
 import { search_in_plugin } from '../scripts/request_plugin';
 
 // Script Type Imports
-import { PluginData, InstalledPluginData } from '../types/manage_plugin';
-import { SearchInPluginData } from '../types/request_plugin';
+import { PluginData, InstalledPluginData } from '../types/manage_plugin_type';
+import { SearchInPluginData } from '../types/request_plugin_type';
 
 export default function Plugin() {
     const navigate = useNavigate();

@@ -17,24 +17,16 @@
     {
       "identifier": "opener:allow-open-url",
       "allow": [
-        {
-          "url": "https://*:*"
-        },
-        {
-          "url": "http://*:*"
-        }
+        {"url": "https://*:*"},
+        {"url": "http://*:*"}
       ]
     },
     "os:default",
     {
       "identifier": "http:default",
       "allow": [
-        {
-          "url": "https://*:*"
-        },
-        {
-          "url": "https://*:*"
-        }
+        {"url": "https://*:*"},
+        {"url": "http://*:*"}
       ]
     },
     
