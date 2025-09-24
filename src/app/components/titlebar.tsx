@@ -34,9 +34,11 @@ export default function TitleBar({
                     e.preventDefault();
                     if (e.buttons === 1) {
                         // Primary (left) button
-                        e.detail === 2
-                        ? appWindow.setFullscreen(!(await appWindow.isFullscreen())) 
-                        : appWindow.startDragging(); // Else start dragging
+                        if (e.detail === 2){
+                            await appWindow.toggleMaximize();
+                        }else{
+                            appWindow.startDragging(); // Else start dragging
+                        }
                     }
                 }}
             >
@@ -67,7 +69,7 @@ export default function TitleBar({
                         fontSize: "16px",
                     }}
 
-                    onClick={()=> (async () => appWindow.setFullscreen(!(await appWindow.isFullscreen())))()}
+                    onClick={()=> appWindow.toggleMaximize()}
                 >
                     <CropSquareRoundedIcon color='inherit' fontSize='inherit'/>
                 </ButtonBase>

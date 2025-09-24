@@ -77,14 +77,10 @@ pub fn set(configs: Configs) -> Result<(), String> {
 }
 
 pub fn init() -> Result<(), String> {
-    println!("Init Configs");
 
-    
     let config_data = get()?;
     env::set_var("CHLATY_PLUGIN_DIRECTORY", &config_data.plugin_dir);
     env::set_var("CHLATY_STORAGE_DIRECTORY", &config_data.storage_dir);
-
-    println!("ALL PATH: {} | {}", &config_data.plugin_dir.display(), &config_data.storage_dir.display());
     
     return Ok(());
 }

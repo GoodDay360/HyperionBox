@@ -68,6 +68,7 @@ export default function App() {
                     set_is_enter_fullscreen(false);
                     toast("Exited fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});
                 }else{
+                    await appWindow.unmaximize();
                     await appWindow.setFullscreen(true);
                     set_is_enter_fullscreen(true);
                     toast("Entered fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});

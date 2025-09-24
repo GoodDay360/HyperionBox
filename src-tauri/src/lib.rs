@@ -4,7 +4,6 @@ use tracing::Level;
 use tracing_subscriber::fmt;
 use tauri::Manager;
 
-
 pub mod models;
 pub mod utils;
 pub mod anime;
@@ -12,19 +11,29 @@ pub mod anime;
 
 pub mod commands;
 
+#[cfg(debug_assertions)]
+pub const IS_DEV: bool = true;
+
+#[cfg(not(debug_assertions))]
+pub const IS_DEV: bool = false;
+
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     dotenv().ok();
+    if IS_DEV {
+        println!("IS_DEV: {}", IS_DEV);
+        fmt()
+            .with_max_level(Level::DEBUG)
+            .with_thread_names(true)
+            .with_thread_ids(true)
+            .with_target(true)
+            .with_file(true)
+            .with_line_number(true)
+            .init();
+    }
     
-    fmt()
-        .with_max_level(Level::INFO)
-        .with_thread_names(true)
-        .with_thread_ids(true)
-        .with_target(true)
-        .with_file(true)
-        .with_line_number(true)
-        .init();
 
     
 

@@ -35,7 +35,7 @@ export default function PullRefresh({
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-        if (!pulling() || request_refreshing()) return;
+        if (!pulling()) return;
 
         const distance = e.touches[0].clientY - startY;
         if (distance > 0) {

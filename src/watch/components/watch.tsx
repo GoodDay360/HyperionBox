@@ -251,7 +251,11 @@ export default function Watch() {
                                 ? <media-player
                                     id="player"
                                     playsInline crossOrigin
+                                    fullscreenOrientation='landscape'
                                     streamType='on-demand'
+                                    onFullscreenChange={(e)=>{
+                                        console.log(e);
+                                    }}
                                     src={{
                                         src:SERVER_DATA()?.data.sources.find((item) => item.type === 'hls')?.file ?? "", 
                                         type:"application/x-mpegurl"
