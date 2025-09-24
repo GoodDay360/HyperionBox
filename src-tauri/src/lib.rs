@@ -22,7 +22,7 @@ pub const IS_DEV: bool = false;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     dotenv().ok();
-    if IS_DEV {
+    if !IS_DEV {
         println!("IS_DEV: {}", IS_DEV);
         fmt()
             .with_max_level(Level::DEBUG)

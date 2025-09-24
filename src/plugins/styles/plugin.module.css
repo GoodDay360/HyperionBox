@@ -166,6 +166,9 @@
 	left: 0;
 	z-index: 4;
 	padding: 16px;
+	padding-top: calc(16px + var(--safe-area-top, 0));
+	padding-bottom: calc(16px + var(--safe-area-bottom, 0));
+
 
 	background: rgba(0, 0, 0, 0.4); /* semi-transparent black */
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);

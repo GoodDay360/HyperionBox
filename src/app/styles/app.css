@@ -70,6 +70,16 @@ body{
 	box-sizing: border-box;
 	overflow: hidden;
 }
+#safe-area-probe{
+	position: fixed;
+	display: none;
+	padding-top: env(safe-area-inset-top);
+	padding-bottom: env(safe-area-inset-bottom);
+	padding-left: env(safe-area-inset-left);
+	padding-right: env(safe-area-inset-right);
+	visibility: hidden;
+	pointer-events: none;
+}
 
 .app{
 	width: 100%;
@@ -78,8 +88,8 @@ body{
 	box-sizing: border-box;
 	background: var(--background-1);
 	flex-direction: column;
-	padding-top: env(safe-area-inset-top, 0);
-	padding-bottom: env(safe-area-inset-bottom, 0);
+	padding-top: var(--safe-area-top, 0);
+	padding-bottom: var(--safe-area-bottom, 0);
 }
 
 .hide_scrollbar {

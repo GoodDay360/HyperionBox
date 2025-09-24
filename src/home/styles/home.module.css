@@ -202,7 +202,7 @@
 	box-sizing: border-box;
 
 	padding: 12px;
-	padding-bottom: calc(12px + env(safe-area-inset-bottom, 0));
+	padding-bottom: calc(12px + var(--safe-area-bottom, 0));
 
 	background: rgba(0, 0, 0, 0.4); /* semi-transparent black */
 	box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);

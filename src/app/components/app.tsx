@@ -46,11 +46,15 @@ export const ContextManager = createContext<{
 export default function App() {
     const appWindow = getCurrentWindow();
 
+    let SafeAreaProbeRef !: HTMLDivElement;
+
     let TitleBarRef!: HTMLElement;
 
     const [is_enter_fullscreen, set_is_enter_fullscreen] = createSignal(false);
 
+    const [safe_area, set_safe_area] = createSignal({top: 0, bottom: 0, left: 0, right: 0});
     const [screen_size, set_screen_size] = createSignal({width: 0, height: 0});
+    
 
     function on_resize() {
         document.documentElement.style.setProperty('--inner-width', `${window.innerWidth}px`);
@@ -93,19 +97,21 @@ export default function App() {
     })
 
     onMount(() => { 
-        
-        window.open = function (
-            url?: string | URL,
-        ): Window | null {
-            if (typeof url === 'string' || url instanceof URL) {
-                openUrl(url.toString());
-            } else {
-                console.warn('window.open called without a valid URL');
-            }
+        const style = window.getComputedStyle(SafeAreaProbeRef);
 
-            // Return null to mimic the original behavior
-            return null;
-        };
+        set_safe_area({
+            top: parseInt(style.paddingTop),
+            bottom: parseInt(style.paddingBottom),
+            left: parseInt(style.paddingLeft),
+            right: parseInt(style.paddingRight),
+        });
+
+        document.documentElement.style.setProperty('--safe-area-top', `${safe_area().top}px`);
+        document.documentElement.style.setProperty('--safe-area-bottom', `${safe_area().bottom}px`);
+        document.documentElement.style.setProperty('--safe-area-left', `${safe_area().left}px`);
+        document.documentElement.style.setProperty('--safe-area-right', `${safe_area().right}px`);
+
+        console.log("SAFE AREA: ", JSON.stringify(safe_area(), null, 2));
     })
 
     return (<ThemeProvider theme={theme}>
@@ -126,6 +132,7 @@ export default function App() {
                     },
                 }}
             />
+            <div id="safe-area-probe" ref={SafeAreaProbeRef}/>
 
             <div class="app">
                 {!is_enter_fullscreen() &&
