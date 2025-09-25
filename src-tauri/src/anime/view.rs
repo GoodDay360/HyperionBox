@@ -5,7 +5,7 @@ use std::vec;
 use urlencoding::encode;
 
 use crate::anime::models::Data;
-use crate::models::view::{Trailer, ViewData};
+use crate::models::view::{Trailer, ViewData, ManifestData};
 
 async fn get_content(id: String) -> Result<ViewData, String> {
     let clinet = Client::new();
@@ -103,21 +103,23 @@ async fn get_content(id: String) -> Result<ViewData, String> {
         /* --- */
 
         let view_data = ViewData {
-            id: id.to_string().clone(),
-            title: if let Some(t) = title_en {
-                t.clone()
-            } else {
-                title.clone()
-            },
-            poster: poster.clone(),
-            banner: banner.clone(),
-            trailer: Trailer {
-                embed_url: trailer_embed_url.clone(),
-                url: trailer_url.clone(),
-            },
-            description: description.clone(),
-            meta_data,
-            episode_list: None,
+            manifest_data: Some(ManifestData {
+                id: id.to_string().clone(),
+                title: if let Some(t) = title_en {
+                    t.clone()
+                } else {
+                    title.clone()
+                },
+                poster: poster.clone(),
+                banner: banner.clone(),
+                trailer: Trailer {
+                    embed_url: trailer_embed_url.clone(),
+                    url: trailer_url.clone(),
+                },
+                description: description.clone(),
+                meta_data,
+                episode_list: None,
+            }),
             link_plugin: None,
         };
 

@@ -13,6 +13,7 @@ dependencies = [
  "futures",
  "parsidate",
  "reqwest",
+ "rusqlite",
  "serde",
  "serde_json",
  "tauri",

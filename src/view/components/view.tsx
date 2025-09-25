@@ -35,8 +35,7 @@ import styles from "../styles/view.module.css"
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
 
-
-interface VIEW_DATA {
+interface ManifestData {
     id: string,
     title: string,
     poster: string,
@@ -56,10 +55,17 @@ interface VIEW_DATA {
         id: string,
         title: string
     }[][][],
-    link_plugin?: {
-        plugin_id?: string,
-        id?: string
-    }
+}
+
+interface LinkPlugin {
+    plugin_id?: string,
+    id?: string
+
+}
+
+interface ViewData {
+    manifest_data?: ManifestData,
+    link_plugin?: LinkPlugin
 }
 
 export default function View() {
@@ -73,7 +79,7 @@ export default function View() {
 
     const [is_loading, set_is_loading] = createSignal<boolean>(false);
 
-    const [DATA, SET_DATA] = createSignal<VIEW_DATA>();
+    const [DATA, SET_DATA] = createSignal<ViewData>();
 
     const [show_more, set_show_more] = createSignal(false);
     const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
@@ -84,7 +90,7 @@ export default function View() {
 
     const get_data = () => {
         set_is_loading(true);
-        invoke<VIEW_DATA>('view', {source, id})
+        invoke<ViewData>('view', {source, id})
             .then((data) => {
                 SET_DATA(data);
                 console.table(data)
@@ -121,7 +127,7 @@ export default function View() {
                 ? <>
                     <div class={styles.container_1}
                         style={{
-                            "background-image": `url('${DATA()?.banner}')`
+                            "background-image": `url('${DATA()?.manifest_data?.banner}')`
                         }}
                     >
                         {/* Below component are position absolute */}
@@ -162,7 +168,7 @@ export default function View() {
                                 </IconButton>
                                 <LazyLoadImage
                                     className={styles.container_1_box_img}
-                                    src={DATA()?.poster ?? ""}
+                                    src={DATA()?.manifest_data?.poster ?? ""}
 
                                     skeleton_sx={{
                                         width: "100%",
@@ -184,7 +190,7 @@ export default function View() {
                             >
                                 <h2 class={styles.container_1_box_title}
                                     onClick={() => {(async () => {
-                                        await writeText(DATA()?.title ?? "");
+                                        await writeText(DATA()?.manifest_data?.title ?? "");
                                         toast.remove();
                                         toast.success("Title copied to clipboard.",
                                             {style:{color:"green"}
@@ -192,7 +198,7 @@ export default function View() {
                                         
                                     })()}}
                                 
-                                >{DATA()?.title}</h2>
+                                >{DATA()?.manifest_data?.title}</h2>
                                 <Button
                                     variant="contained" color="secondary"
                                     sx={{
@@ -201,7 +207,7 @@ export default function View() {
                                     }}
                                 >Watch Now</Button>
                             </div>
-                            {DATA()?.trailer?.embed_url && 
+                            {DATA()?.manifest_data?.trailer?.embed_url && 
                                 <div
                                     style={{
                                         "min-height": "100%",
@@ -218,7 +224,7 @@ export default function View() {
                                         onClick={() => {
                                             set_show_trailer({
                                                 state: true,
-                                                source: DATA()?.trailer?.embed_url ?? ""
+                                                source: DATA()?.manifest_data?.trailer?.embed_url ?? ""
                                             })
                                         }}
                                     >
@@ -232,7 +238,7 @@ export default function View() {
                     </div>
 
                     <div class={styles.container_2}>
-                        <For each={DATA()?.meta_data}>
+                        <For each={DATA()?.manifest_data?.meta_data}>
                             {(item) => (
                                 <div class={styles.container_2_box}>
                                     <span class={styles.container_2_box_text}>{item[0].toUpperCase() + item.slice(1)}</span>
@@ -265,7 +271,7 @@ export default function View() {
                                         "-webkit-line-clamp": 4
                                     })
                                 }}
-                            >&nbsp;&nbsp;&nbsp;&nbsp;{DATA()?.description}</span>
+                            >&nbsp;&nbsp;&nbsp;&nbsp;{DATA()?.manifest_data?.description}</span>
                         </div>
                     </div>
 
@@ -273,14 +279,14 @@ export default function View() {
                         <div class={styles.episode_frame}>
                             <div class={styles.episode_title_box}>
                                 <h2 class={styles.episode_title_box_text}>Episodes</h2>
-                                {DATA()?.episode_list !== null && 
+                                {DATA()?.manifest_data?.episode_list !== null && 
                                     <IconButton
                                         sx={{
                                             color: 'var(--color-1)',
                                             fontSize: 'calc((100vw + 100vh)/2*0.04)',
                                         }}
                                         onClick={() =>{
-                                            navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.id}&link_title=${DATA()?.title}`);
+                                            navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.manifest_data?.id}&link_title=${DATA()?.manifest_data?.title}`);
                                         }}
                                     >
                                         <AddLinkRoundedIcon fontSize='inherit' color='inherit' />
@@ -288,10 +294,10 @@ export default function View() {
                                 }
                                 
                             </div>
-                            {DATA()?.episode_list !== null
+                            {DATA()?.manifest_data?.episode_list !== null
                                 ? <div class={styles.episode_box}>
-                                    {(DATA()?.episode_list?.length ?? 0) > 0 
-                                        ? <For each={DATA()?.episode_list?.[current_season_index()]?.[current_episode_index()]}>
+                                    {(DATA()?.manifest_data?.episode_list?.length ?? 0) > 0 
+                                        ? <For each={DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_index()]}>
                                             {(item)=>(
                                                 <ButtonBase
                                                     sx={{
@@ -335,7 +341,7 @@ export default function View() {
                                         }}
 
                                         onClick={() => {
-                                            navigate(`/plugin?link_source=${encodeURIComponent(source)}&link_id=${encodeURIComponent(DATA()?.id ?? " ")}&link_title=${encodeURIComponent(DATA()?.title ?? " ")}`);
+                                            navigate(`/plugin?link_source=${encodeURIComponent(source)}&link_id=${encodeURIComponent(DATA()?.manifest_data?.id ?? " ")}&link_title=${encodeURIComponent(DATA()?.manifest_data?.title ?? " ")}`);
                                         }}
                                     >
                                         <ExtensionRoundedIcon color='inherit' fontSize='inherit'/> Link Plugin
@@ -348,7 +354,7 @@ export default function View() {
                                 color="primary" variant="outlined" showFirstButton showLastButton 
                                 siblingCount={0}
                                 page={current_episode_index() + 1} 
-                                count={DATA()?.episode_list?.[current_season_index()]?.length ?? 0} 
+                                count={DATA()?.manifest_data?.episode_list?.[current_season_index()]?.length ?? 0} 
                                 onChange={(_, value)=> {
                                     set_current_episode_index(value - 1);
                                 }}

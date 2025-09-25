@@ -12,7 +12,7 @@ pub struct Trailer {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ViewData {
+pub struct ManifestData {
     pub id: String,
     pub title: String,
     pub poster: String,
@@ -24,5 +24,11 @@ pub struct ViewData {
 
     // Required: Season -> Episodes Page -> Episodes
     pub episode_list: Option<Vec<Vec<Vec<DataResult>>>>,
+}
+
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ViewData {
+    pub manifest_data: Option<ManifestData>,
     pub link_plugin: Option<LinkPlugin>,
 }

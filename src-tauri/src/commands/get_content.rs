@@ -65,6 +65,8 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
 
             let mut view_data = task_get_view_data?;
 
+            let mut manifest_data = view_data.manifest_data.ok_or("No Manifest Data")?;
+
             let episode_list: Vec<Vec<Vec<DataResult>>>;
             match task_get_episode_list {
                 Ok(data) => episode_list = data,
@@ -73,10 +75,10 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                     episode_list = vec![];
                 }
             };
-            view_data.episode_list = Some(episode_list);
-            view_data.meta_data.insert(0, format!("Plugin: {}", link_plugin_id));
-            view_data.link_plugin = local_manifest.link_plugin;
-            return Ok(view_data);
+            manifest_data.episode_list = Some(episode_list);
+            manifest_data.meta_data.insert(0, format!("Plugin: {}", link_plugin_id));
+
+            return Ok(ViewData { manifest_data: Some(manifest_data), link_plugin: local_manifest.link_plugin });
         }else {
             match anime::view::new(id).await {
                 Ok(data) => return Ok(data),

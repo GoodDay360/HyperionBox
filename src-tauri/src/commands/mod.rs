@@ -10,3 +10,7 @@ pub mod manage_plugin;
 /* Request Plugin */
 pub mod request_plugin;
 /* --- */
+
+/* Favorite */
+pub mod favorite;
+/* --- */

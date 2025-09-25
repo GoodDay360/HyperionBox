@@ -1,4 +1,4 @@
-use crate::models::view::ViewData;
+use crate::models::view::ManifestData;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -10,14 +10,14 @@ pub struct LinkPlugin {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct LocalManifest {
-    pub view_data: Option<ViewData>,
+    pub manifest_data: Option<ManifestData>,
     pub link_plugin: Option<LinkPlugin>,
 }
 
 impl LocalManifest {
     pub fn default() -> LocalManifest {
         LocalManifest {
-            view_data: None,
+            manifest_data: None,
             link_plugin: None,
         }
     }

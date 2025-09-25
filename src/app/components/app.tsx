@@ -137,12 +137,12 @@ export default function App() {
                     <TitleBar ref={TitleBarRef} />
                 }
                 <Router>
-                    {/* <Route path="/" component={Home} /> */}
+                    <Route path="/" component={Home} />
                     <Route path="/search" component={Search} />
                     <Route path="/view" component={View} />
                     <Route path="/watch" component={Watch} />
                     <Route path="/plugin" component={Plugin} />
-                    <Route path="/" component={ManageFavorite} />
+                    {/* <Route path="/" component={ManageFavorite} /> */}
                 </Router>
             </div>
     </ContextManager.Provider>
