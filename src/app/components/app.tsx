@@ -27,6 +27,7 @@ import Home from "@src/home/components/home";
 import Search from '@src/search/components/search';
 import View from '@src/view/components/view';
 import Watch from '@src/watch/components/watch';
+import ManageFavorite from '@src/manage_favorite/components/manage_favorite';
 
 
 
@@ -87,13 +88,11 @@ export default function App() {
     onMount(()=>{
         appWindow.onResized(on_resize);
         on_resize();
-        
         window.addEventListener('resize', on_resize);
 
         onCleanup(() => {
             window.removeEventListener('resize', on_resize);
         });
-
     })
 
     onMount(() => { 
@@ -111,7 +110,6 @@ export default function App() {
         document.documentElement.style.setProperty('--safe-area-left', `${safe_area().left}px`);
         document.documentElement.style.setProperty('--safe-area-right', `${safe_area().right}px`);
 
-        console.log("SAFE AREA: ", JSON.stringify(safe_area(), null, 2));
     })
 
     return (<ThemeProvider theme={theme}>
@@ -139,11 +137,12 @@ export default function App() {
                     <TitleBar ref={TitleBarRef} />
                 }
                 <Router>
-                    <Route path="/" component={Home} />
+                    {/* <Route path="/" component={Home} /> */}
                     <Route path="/search" component={Search} />
                     <Route path="/view" component={View} />
                     <Route path="/watch" component={Watch} />
                     <Route path="/plugin" component={Plugin} />
+                    <Route path="/" component={ManageFavorite} />
                 </Router>
             </div>
     </ContextManager.Provider>

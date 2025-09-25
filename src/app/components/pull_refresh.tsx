@@ -42,10 +42,7 @@ export default function PullRefresh({
         const distance = e.touches[0].clientY - startY;
         if (distance > 0) {
             e.preventDefault();
-            if (PR_CONTAINER_REF) PR_CONTAINER_REF.style.top = `calc( env(safe-area-inset-top, 0) + ${Math.min(distance - threshold, 40)}px)`;
-            // const currentTop = parseInt(PR_CONTAINER_REF?.style.top || "0");
-            //  console.log(currentTop);
-            
+            if (PR_CONTAINER_REF) PR_CONTAINER_REF.style.top = `calc( var(--safe-area-top, 0) + ${Math.min(distance - threshold, 40)}px)`;            
             set_request_refreshing(true);
         }
     };

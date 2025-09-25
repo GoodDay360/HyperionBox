@@ -352,116 +352,121 @@ export default function Watch() {
                                     gap: '8px',
                                 }}
                             >
-                                <div
-                                    style={{
-                                        flex:1,
-                                    }}
-                                >
-                                    <FormControl fullWidth>
-                                        <InputLabel id="season_label"
-                                            sx={{
-                                                color: 'var(--color-1)',
-                                                fontSize: 'calc((100vw + 100vh)/2*0.0175)',
-                                                fontWeight: '500',
-                                                userSelect: 'none',
-                                            }}
-                                        >Season</InputLabel>
-                                        <Select
-                                            labelId="season_label"
-                                            value={current_season_index()}
-                                            label="Season"
-                                            onChange={(e)=>{
-                                                const value = e.target.value;
-                                                set_current_season_index(value);
-                                            }}  
-                                            sx={{
-                                                color: 'var(--color-1)',
-                                                fontSize: 'calc((100vw + 100vh)/2*0.0175)',
-                                                fontWeight: '500',
-                                                background: 'var(--background-2)',
-                                                "& .MuiSvgIcon-root": {
-                                                    color: "var(--color-1)"
-                                                }
-                                            }}
-                                            MenuProps={{
-                                                PaperProps: {
-                                                    sx: {
-                                                        color: 'var(--color-1)',
-                                                        background: 'var(--background-3)',
-                                                        fontSize: 'calc((100vw + 100vh)/2*0.0175)',
-                                                        maxHeight: "calc((100vw + 100vh)/2*0.4)",
-                                                    },
-                                                },
-                                            }}
-
-                                        >
-                                            <For each={[...Array(EPISODE_LIST()?.length ?? 0)]}>
-                                                {(_, index) =>(
-                                                    <MenuItem value={index()}
-                                                        sx={{
+                                {((EPISODE_LIST()?.length ?? 0) > 1) && 
+                                    <div
+                                        style={{
+                                            flex:1,
+                                        }}
+                                    >
+                                    
+                                        <FormControl fullWidth>
+                                            <InputLabel id="season_label"
+                                                sx={{
+                                                    color: 'var(--color-1)',
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.0175)',
+                                                    fontWeight: '500',
+                                                    userSelect: 'none',
+                                                }}
+                                            >Season</InputLabel>
+                                            <Select
+                                                labelId="season_label"
+                                                value={current_season_index()}
+                                                label="Season"
+                                                onChange={(e)=>{
+                                                    const value = e.target.value;
+                                                    set_current_season_index(value);
+                                                }}  
+                                                sx={{
+                                                    color: 'var(--color-1)',
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.0175)',
+                                                    fontWeight: '500',
+                                                    background: 'var(--background-2)',
+                                                    "& .MuiSvgIcon-root": {
+                                                        color: "var(--color-1)"
+                                                    }
+                                                }}
+                                                MenuProps={{
+                                                    PaperProps: {
+                                                        sx: {
+                                                            color: 'var(--color-1)',
+                                                            background: 'var(--background-3)',
                                                             fontSize: 'calc((100vw + 100vh)/2*0.0175)',
-                                                        }}
-                                                    >Season: {index()+1}</MenuItem>
-                                                )}
-                                            </For>
-                                        </Select>
-                                    </FormControl>
-                                </div>
-
-                                <div
-                                    style={{
-                                        flex:1,
-                                    }}
-                                >
-                                    <FormControl fullWidth>
-                                        <InputLabel id="episode_page_label"
-                                            sx={{
-                                                color: 'var(--color-1)',
-                                                fontSize: 'calc((100vw + 100vh)/2*0.0175)',
-                                                fontWeight: '500',
-                                                userSelect: 'none',
-                                            }}
-                                        >Episode page</InputLabel>
-                                        <Select
-                                            labelId="episode_page_label"
-                                            value={current_episode_page_index()}
-                                            label="Episode page"
-                                            onChange={(e)=>{
-                                                const value = e.target.value;
-                                                set_current_episode_page_index(parseInt(value));
-                                            }}
-                                            sx={{
-                                                color: 'var(--color-1)',
-                                                fontSize: 'calc((100vw + 100vh)/2*0.0175)',
-                                                fontWeight: '500',
-                                                background: 'var(--background-2)',
-                                                "& .MuiSvgIcon-root": {
-                                                    color: "var(--color-1)"
-                                                }
-                                            }}
-                                            MenuProps={{
-                                                PaperProps: {
-                                                    sx: {
-                                                        color: 'var(--color-1)',
-                                                        background: 'var(--background-3)',
-                                                        maxHeight: "calc((100vw + 100vh)/2*0.4)",
+                                                            maxHeight: "calc((100vw + 100vh)/2*0.4)",
+                                                        },
                                                     },
-                                                },
-                                            }}
+                                                }}
 
-                                        >
-                                            <For each={[...Array(EPISODE_LIST()?.[current_season_index()]?.length ?? 0)]}>
-                                                {(_, index) =>(
-                                                    <MenuItem value={index()}
-                                                        sx={{
-                                                            fontSize: 'calc((100vw + 100vh)/2*0.0175)',
-                                                        }}
-                                                    >Episode page: {index()+1}</MenuItem>
-                                                )}
-                                            </For>
-                                        </Select>
-                                    </FormControl>
-                                </div>
+                                            >
+                                                <For each={[...Array(EPISODE_LIST()?.length ?? 0)]}>
+                                                    {(_, index) =>(
+                                                        <MenuItem value={index()}
+                                                            sx={{
+                                                                fontSize: 'calc((100vw + 100vh)/2*0.0175)',
+                                                            }}
+                                                        >Season: {index()+1}</MenuItem>
+                                                    )}
+                                                </For>
+                                            </Select>
+                                        </FormControl>
+                                    
+                                    </div>
+                                }
+                                {((EPISODE_LIST()?.[current_season_index()]?.length ?? 0) > 1) && 
+                                    <div
+                                        style={{
+                                            flex:1,
+                                        }}
+                                    >
+                                        <FormControl fullWidth>
+                                            <InputLabel id="episode_page_label"
+                                                sx={{
+                                                    color: 'var(--color-1)',
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.0175)',
+                                                    fontWeight: '500',
+                                                    userSelect: 'none',
+                                                }}
+                                            >Episode page</InputLabel>
+                                            <Select
+                                                labelId="episode_page_label"
+                                                value={current_episode_page_index()}
+                                                label="Episode page"
+                                                onChange={(e)=>{
+                                                    const value = e.target.value;
+                                                    set_current_episode_page_index(parseInt(value));
+                                                }}
+                                                sx={{
+                                                    color: 'var(--color-1)',
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.0175)',
+                                                    fontWeight: '500',
+                                                    background: 'var(--background-2)',
+                                                    "& .MuiSvgIcon-root": {
+                                                        color: "var(--color-1)"
+                                                    }
+                                                }}
+                                                MenuProps={{
+                                                    PaperProps: {
+                                                        sx: {
+                                                            color: 'var(--color-1)',
+                                                            background: 'var(--background-3)',
+                                                            maxHeight: "calc((100vw + 100vh)/2*0.4)",
+                                                        },
+                                                    },
+                                                }}
+
+                                            >
+                                                <For each={[...Array(EPISODE_LIST()?.[current_season_index()]?.length ?? 0)]}>
+                                                    {(_, index) =>(
+                                                        <MenuItem value={index()}
+                                                            sx={{
+                                                                fontSize: 'calc((100vw + 100vh)/2*0.0175)',
+                                                            }}
+                                                        >Episode page: {index()+1}</MenuItem>
+                                                    )}
+                                                </For>
+                                            </Select>
+                                        </FormControl>
+                                    </div>
+                                }
                             </div>
 
                             <div class={styles.search_container}> 
@@ -494,7 +499,7 @@ export default function Watch() {
                         <div class={`${styles.episode_body_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}>
                             <For each={EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()].filter(
                                 (item) => search() === "" || item.index.toString().includes(search().trim()) 
-                                    || item.id.includes(search().trim()) || item.title.includes(search().trim())
+                                    || item.id.includes(search().trim()) || item.title.toLowerCase().includes(search().trim().toLowerCase())
                             )}>
                                 {(item)=>(
                                     <ButtonBase

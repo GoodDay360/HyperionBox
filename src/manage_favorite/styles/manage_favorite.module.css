@@ -1,0 +1,105 @@
+.container{
+	width: 100%;
+	height: auto;
+	background: var(--background-1);
+	flex:1;
+	display: flex;
+	flex-direction: column;
+	overflow-x: auto;
+	overflow-y: auto;
+	box-sizing: border-box;
+}
+
+.header_container{
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+	border-bottom: 2.5px solid var(--background-3);
+	padding: 12px;
+	
+}
+
+.header_container .header_title{
+	color: var(--color-1);
+	font-family: var(--font-family);
+	font-size: max(30px, calc((100vw + 100vh)/2*0.035));
+	user-select: none;
+	max-width: 100%;
+	font-weight: 800;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+
+.body_container{
+	width: 100%;
+	overflow: auto;
+}
+
+.container_1{
+	padding: 18px;
+	padding-bottom: 8px;
+	display: flex;
+	flex-direction: row;
+	gap: 12px;
+}
+
+.search_box {
+	width: 100%;
+	height: auto;
+	border-radius: 16px;
+	background: var(--background-2);
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.search_input {
+	all: unset;
+
+	flex: 1;
+	margin: 8px;
+	color: var(--color-1);
+	background: transparent;
+	font-family: var(--font-family);
+	font-size: max(12px, calc((100vw + 100vh) / 2 * 0.02));
+	box-sizing: border-box;
+}
+
+.create_tag_box{
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	padding: 18px;
+	align-items: center;
+	gap: 12px;
+
+}
+
+.item_container{
+	width: 100%;
+	padding: 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	box-sizing: border-box;
+}
+
+.item_box{
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	gap: 12px;
+	align-items: center;
+}
+
+.rename_box{
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	gap: 12px;
+	align-items: center;
+}

@@ -60,7 +60,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
 
         if !link_plugin_id.is_empty() && !link_id.is_empty() {
             let (task_get_view_data, task_get_episode_list) = tokio::join!(
-                anime::view::new(id), get_episode_list(source, link_plugin_id, link_id)
+                anime::view::new(id), get_episode_list(source, link_plugin_id.clone(), link_id)
             );
 
             let mut view_data = task_get_view_data?;
@@ -74,6 +74,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                 }
             };
             view_data.episode_list = Some(episode_list);
+            view_data.meta_data.insert(0, format!("Plugin: {}", link_plugin_id));
             view_data.link_plugin = local_manifest.link_plugin;
             return Ok(view_data);
         }else {
