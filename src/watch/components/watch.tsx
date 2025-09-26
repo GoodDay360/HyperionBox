@@ -114,15 +114,17 @@ export default function Watch() {
 
 
         for (const [season_index, season] of data.entries()){
-            for (const [page_index, ep_page] of season.entries()){
-                for (const ep of ep_page){
-                    if (ep.index === current_episode_index()){
-                        set_current_episode_page_index(page_index);
+            if (season_index === current_season_index()){
+                for (const [page_index, ep_page] of season.entries()){
+                    for (const ep of ep_page){
+                        if (ep.index === current_episode_index()){
+                            set_current_episode_page_index(page_index);
 
-                        set_current_season_index(season_index);
-                        set_current_episode_index(ep.index);
-                        set_current_episode_id(ep.id);
-                        return;
+                            set_current_season_index(season_index);
+                            set_current_episode_index(ep.index);
+                            set_current_episode_id(ep.id);
+                            return;
+                        }
                     }
                 }
             }
