@@ -3,3 +3,4 @@ pub mod search;
 pub mod view;
 
 pub mod local_manifest;
+pub mod watch_state;

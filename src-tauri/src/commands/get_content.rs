@@ -85,11 +85,21 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
         manifest_data.episode_list = Some(episode_list);
         manifest_data.meta_data.insert(0, format!("Plugin: {}", link_plugin_id));
 
-        view_data = ViewData { manifest_data: Some(manifest_data), link_plugin: local_manifest.link_plugin.clone() };
+        view_data = ViewData { 
+            manifest_data: Some(manifest_data), 
+            link_plugin: local_manifest.link_plugin.clone(),
+            current_watch_episode_index: None,
+            current_watch_season_index: None
+        };
     }else {
         match task_get_view_manifest_data.await {
             Ok(data) => {
-                view_data = ViewData { manifest_data: Some(data), link_plugin: None };
+                view_data = ViewData { 
+                    manifest_data: Some(data), 
+                    link_plugin: None,
+                    current_watch_episode_index: None,
+                    current_watch_season_index: None
+                };
             },
             Err(e) => {
                 error!("[Get View Data] Error: {}", e);
@@ -98,15 +108,21 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
         }
     }
 
+    view_data.current_watch_season_index = local_manifest.current_watch_season_index;
+    view_data.current_watch_episode_index = local_manifest.current_watch_episode_index;
+    
+
     let favoriate_tag = get_tag_from_favorite(source.clone(), id.clone()).await?;
     if favoriate_tag.len() > 0 {
         local_manifest.manifest_data = view_data.manifest_data.clone();
         save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
         
-        if let Some(mut manifest_data) =  view_data.manifest_data {
+        /* Insert Plugin Info */
+        if let Some(mut manifest_data) = view_data.manifest_data {
             manifest_data.meta_data.insert(0, format!("Favorite: {}", favoriate_tag.join(", ")));
             view_data.manifest_data = Some(manifest_data);
         }
+        /* --- */
     }
 
     

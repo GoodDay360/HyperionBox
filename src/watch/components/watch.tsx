@@ -2,7 +2,7 @@
 import { platform } from '@tauri-apps/plugin-os';
 
 // SolidJS Imports
-import { createSignal, onMount, For, Index, useContext } from "solid-js";
+import { createSignal, onMount, For, Index, useContext, onCleanup } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
@@ -41,12 +41,18 @@ import "../styles/modify_player.css"
 import { ContextManager } from '@src/app/components/app';
 import MODIFY_PLOADER from '../scripts/modify_ploader';
 import MODIFY_FLOADER from '../scripts/modify_floader';
-import { get_episode_list, get_episode_server, get_server } from '../scripts/watch';
+import { 
+    get_episode_list, get_episode_server, get_server,
+    get_watch_state, save_watch_state
+
+
+} from '../scripts/watch';
 
 // Type Imports
 import { EpisodeList } from '../types/episode_list_type';
 import { ServerData } from '../types/server_type';
 import { EpisodeServerData } from '../types/episode_server_type';
+import { WatchState } from '../types/watch_state';
 
 // Vidstack Imports
 import 'vidstack/bundle';
@@ -68,9 +74,11 @@ export default function Watch() {
     const context = useContext(ContextManager);
 
     const source:string = queryParams.source as string ?? "";
+    const id:string = queryParams.id as string ?? "";
     const link_plugin_id:string = queryParams.link_plugin_id as string ?? "";
     const link_id:string = queryParams.link_id as string ?? ""; 
-    const episode_id:string = queryParams.episode_id as string ?? "";
+    const season_index:number = parseInt(queryParams.season_index as string) ?? 0;
+    const episode_index:number = parseInt(queryParams.episode_index as string) ?? 0;
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
     
@@ -86,13 +94,18 @@ export default function Watch() {
 
 
     const [search, set_search] = createSignal<string>("");
-    const [current_episode_id, set_current_episode_id] = createSignal<string>(episode_id);
     const [selected_server_id, set_selected_server_id] = createSignal<string>("");
-    const [current_season_index, set_current_season_index] = createSignal<number>(0);
     const [current_episode_page_index, set_current_episode_page_index] = createSignal<number>(0);
-    
 
+    const [current_season_index, set_current_season_index] = createSignal<number>(season_index);
+    const [current_episode_index, set_current_episode_index] = createSignal<number>(episode_index);
+
+    const [current_season_id, set_current_season_id] = createSignal<string>("");
+    const [current_episode_id, set_current_episode_id] = createSignal<string>("");
     
+    
+    
+    let current_watch_time:number = 0;
 
     const load_episode_list = async () => {
         const data = await get_episode_list(source, link_plugin_id, link_id);
@@ -103,9 +116,12 @@ export default function Watch() {
         for (const [season_index, season] of data.entries()){
             for (const [page_index, ep_page] of season.entries()){
                 for (const ep of ep_page){
-                    if (ep.id === current_episode_id()){
-                        set_current_season_index(season_index);
+                    if (ep.index === current_episode_index()){
                         set_current_episode_page_index(page_index);
+
+                        set_current_season_index(season_index);
+                        set_current_episode_index(ep.index);
+                        set_current_episode_id(ep.id);
                         return;
                     }
                 }
@@ -114,7 +130,11 @@ export default function Watch() {
     }
 
     const load_episode_server = async () => {
-        const data = await get_episode_server(source, link_plugin_id, current_episode_id());
+        const data = await get_episode_server(
+            source, id, link_plugin_id, 
+            current_season_index(), current_episode_index(),
+            current_season_id(), current_episode_id()
+        );
         console.log("Episode Server: ", data);
         SET_EPISODE_SERVER_DATA(data);
 
@@ -147,8 +167,8 @@ export default function Watch() {
     }
 
     const get_data = async () => {
-
         set_is_loading(true);
+        current_watch_time = 0;
         set_is_loading_server(true);
         try {
             await load_episode_list();
@@ -170,11 +190,40 @@ export default function Watch() {
 
     
     onMount(() => {
-        console.log(source, link_plugin_id, link_id, episode_id);
+        console.log(source, link_plugin_id, link_id, season_index, episode_index);
         get_data();
     })
 
-    const onProviderChange = (e: MediaProviderChangeEvent) => {
+    onMount(() => {
+        let save_watch_state_interval: ReturnType<typeof setInterval> | undefined;
+
+        save_watch_state_interval = setInterval(() => {
+            if (current_watch_time > 0 && !is_loading()){
+                save_watch_state(source, id, current_season_index(), current_episode_index(), {
+                    current_time: current_watch_time
+                })
+                    .catch((e) => {
+                        console.error(e);
+                        toast.remove();
+                        toast.error("Something went wrong while saving watch state.",{
+                            style: {
+                                color:"red",
+                            }
+                        })
+                        clearInterval(save_watch_state_interval);
+                    });
+            }
+        },1000);
+        
+
+        onCleanup(() => {
+            clearInterval(save_watch_state_interval);
+        })
+    })
+
+    const onProviderChange = async (e: MediaProviderChangeEvent) => {
+        if (!CONTAINER_REF()) return;
+
         let provider = e.target.provider;
         if (isHLSProvider(provider) && Hls.isSupported()) {
             provider.library = Hls;
@@ -254,18 +303,47 @@ export default function Watch() {
                                     fullscreenOrientation='landscape'
                                     onfullscreenchange={(e) => {console.log(e)}}
                                     streamType='on-demand'
-                                    onFullscreenChange={(e)=>{
-                                        console.log(e);
+                                    style={{ 
+                                        "border-radius": '0',
+                                    }}
+                                    on:loaded-data={async (e) => {
+                                        const player = e.target;
+                                        player.volume = parseFloat(localStorage.getItem("volume") || "1") || 1;
+                                        let watch_state: WatchState | undefined;
+                                        try{
+                                            watch_state = await get_watch_state(
+                                                source,
+                                                id,
+                                                current_season_index(),
+                                                current_episode_index()
+                                            );
+                                        }catch(e){
+                                            console.error(e);
+                                            toast.remove();
+                                            toast.error("Something went wrong while getting watch state.",{
+                                                style: {
+                                                    color:"red",
+                                                }
+                                            })
+                                        }
+                                        current_watch_time = watch_state?.current_time || 0
+                                        player.currentTime = current_watch_time;
+                                    }}
+                                    volume={parseFloat(localStorage.getItem("volume") || "1") || 1}
+                                    on:time-update={(e)=>{
+                                        if (is_loading()) return;
+                                        current_watch_time = e.detail.currentTime;
+                                    }}
+                                    on:volume-change={(e) => {
+                                        if (is_loading()) return;
+                                        localStorage.setItem("volume", e.detail.volume.toString());
                                     }}
                                     src={{
                                         src:SERVER_DATA()?.data.sources.find((item) => item.type === 'hls')?.file ?? "", 
                                         type:"application/x-mpegurl"
                                     }}
-                                    storage={"vidstack-storage"}
                                     on:provider-change={onProviderChange}
-                                    style={{ 
-                                        "border-radius": '0',
-                                    }}
+                                    
                                 >
                                     <media-provider>
                                         <For each={SERVER_DATA()?.data.tracks}>{(item) => 
@@ -278,6 +356,7 @@ export default function Watch() {
                                         }</For>
                                     </media-provider>
                                     <media-video-layout
+                                        
                                         thumbnails={SERVER_DATA()?.data.tracks.find((item) => item.kind === 'thumbnail')?.file}
                                     >
                                         <media-time-slider/>
@@ -521,7 +600,9 @@ export default function Watch() {
                                             }
                                         }}
                                         onClick={() => {
+                                            set_current_season_id(current_season_index().toString());
                                             set_current_episode_id(item.id);
+                                            set_current_episode_index(item.index);
                                             get_data();
                                         }}
                                     >

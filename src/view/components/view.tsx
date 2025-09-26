@@ -34,39 +34,8 @@ import styles from "../styles/view.module.css"
 
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
+import { ViewData } from '../types/view_type';
 
-interface ManifestData {
-    id: string,
-    title: string,
-    poster: string,
-    banner: string,
-    description: string,
-
-    meta_data: string[],
-
-    trailer?: {
-        embed_url?: string,
-        url?: string
-    },
-
-    // Required: Season -> Episodes Page -> Episodes
-    episode_list?: {
-        index: number,
-        id: string,
-        title: string
-    }[][][],
-}
-
-interface LinkPlugin {
-    plugin_id?: string,
-    id?: string
-
-}
-
-interface ViewData {
-    manifest_data?: ManifestData,
-    link_plugin?: LinkPlugin
-}
 
 export default function View() {
     const navigate = useNavigate();
@@ -209,7 +178,12 @@ export default function View() {
                                         textTransform: 'none',
                                         fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                     }}
-                                >Watch Now</Button>
+                                    onClick={() => {
+                                        let current_season_index = DATA()?.current_watch_season_index ?? 0;
+                                        let current_episode_index = DATA()?.current_watch_episode_index ?? 0;
+                                        navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index)}&episode_index=${encodeURIComponent(current_episode_index)}`);
+                                    }}
+                                >{((DATA()?.current_watch_season_index ?? -1) >= 0 && (DATA()?.current_watch_episode_index ?? -1) >= 0) ? "Continue Watching" : "Watch Now" }</Button>
                             </div>
                             {DATA()?.manifest_data?.trailer?.embed_url && 
                                 <div
@@ -305,7 +279,7 @@ export default function View() {
                                             {(item)=>(
                                                 <ButtonBase
                                                     sx={{
-                                                        color: "var(--color-1)",
+                                                        color: (current_season_index() === (DATA()?.current_watch_season_index ?? 0) && (DATA()?.current_watch_episode_index ?? 0) === item.index) ? "gray" : "var(--color-1)",
                                                         textTransform: 'none',
                                                         fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                                         justifyContent:"flex-start",
@@ -314,12 +288,12 @@ export default function View() {
                                                         paddingLeft: "12px", paddingRight: "12px",
                                                         paddingBottom: "5px", paddingTop: "5px",
                                                         borderRadius: "8px",
-                                                        background: "var(--background-2)",
+                                                        background: (current_season_index() === (DATA()?.current_watch_season_index ?? 0) && (DATA()?.current_watch_episode_index ?? 0) === item.index) ? "var(--background-3)" : "var(--background-2)",
                                                         boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
                                                         width: "100%",
                                                     }}
                                                     onClick={() => {
-                                                        navigate(`/watch?source=${encodeURIComponent(source)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&episode_id=${encodeURIComponent(item.id)}`);
+                                                        navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(item.index)}`);
                                                     }}
                                                 >
                                                     Episode {item.index}: {item.title}

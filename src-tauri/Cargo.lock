@@ -527,7 +527,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chlaty-core"
 version = "0.1.0"
-source = "git+https://github.com/chlaty/chlaty-core?branch=main#d94db3288f824aa8379c9d8f595cb97e0841061e"
+source = "git+https://github.com/chlaty/chlaty-core?branch=main#72692d97801128986d20cb9e5231f972321cc675"
 dependencies = [
  "dotenv",
  "indicatif",

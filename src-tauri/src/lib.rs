@@ -91,6 +91,11 @@ pub fn run() {
             commands::favorite::get_tag_from_favorite,
             commands::favorite::remove_favorite,
             /* === */
+
+            /* Watch State */
+            commands::watch_state::get_watch_state,
+            commands::watch_state::save_watch_state,
+            /* === */
             
         ])
         .run(tauri::generate_context!())

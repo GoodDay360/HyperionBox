@@ -14,3 +14,7 @@ pub mod request_plugin;
 /* Favorite */
 pub mod favorite;
 /* --- */
+
+/* Watch State */
+pub mod watch_state;
+/* --- */

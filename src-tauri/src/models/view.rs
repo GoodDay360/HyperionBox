@@ -31,4 +31,6 @@ pub struct ManifestData {
 pub struct ViewData {
     pub manifest_data: Option<ManifestData>,
     pub link_plugin: Option<LinkPlugin>,
+    pub current_watch_season_index: Option<usize>,
+    pub current_watch_episode_index: Option<usize>,
 }
