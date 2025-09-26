@@ -7,7 +7,7 @@ use crate::models::search::{Content, SearchData};
 
 const LIMIT: usize = 20;
 
-async fn get_content(page: usize, search: String) -> Result<SearchData, String> {
+async fn get_content(page: usize, search: &str) -> Result<SearchData, String> {
     let clinet = Client::new();
     let url = format!(
         "https://kitsu.io/api/edge/anime?page[limit]={}&page[offset]={}&filter[text]={}",
@@ -66,7 +66,7 @@ async fn get_content(page: usize, search: String) -> Result<SearchData, String> 
     }
 }
 
-pub async fn new(page: usize, search: String) -> Result<SearchData, String> {
+pub async fn new(page: usize, search: &str) -> Result<SearchData, String> {
     let get_content_result = get_content(page, search).await?;
 
     return Ok(get_content_result);

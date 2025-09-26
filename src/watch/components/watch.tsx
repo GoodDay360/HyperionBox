@@ -250,7 +250,7 @@ export default function Watch() {
                             {!is_loading_server() 
                                 ? <media-player
                                     id="player"
-                                    playsInline webkit-playsinline crossOrigin
+                                    playsInline webkit-playsinline crossOrigin autoPlay
                                     fullscreenOrientation='landscape'
                                     onfullscreenchange={(e) => {console.log(e)}}
                                     streamType='on-demand'

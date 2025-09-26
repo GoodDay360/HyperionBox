@@ -7,7 +7,7 @@ use crate::utils::configs;
 use crate::models::local_manifest::{LocalManifest};
 
 #[tauri::command]
-pub fn get_local_manifest(source: String, id: String) -> Result<LocalManifest, String> {
+pub async fn get_local_manifest(source: String, id: String) -> Result<LocalManifest, String> {
     let config_data = configs::get()?;
 
     let storage_dir = config_data.storage_dir;
@@ -38,7 +38,7 @@ pub fn get_local_manifest(source: String, id: String) -> Result<LocalManifest, S
 }
 
 #[tauri::command]
-pub fn save_local_manifest(source: String, id: String, manifest_data: LocalManifest) -> Result<(), String> {
+pub async fn save_local_manifest(source: String, id: String, local_manifest_data: LocalManifest) -> Result<(), String> {
     let config_data = configs::get()?;
 
     let storage_dir = config_data.storage_dir;
@@ -50,8 +50,8 @@ pub fn save_local_manifest(source: String, id: String, manifest_data: LocalManif
 
     let manifest_path = item_dir.join("manifest.json");
 
-    let manifest_data_to_string = to_string_pretty(&manifest_data).map_err(|e| e.to_string())?;
-    fs::write(&manifest_path, manifest_data_to_string).map_err(|e| e.to_string())?;
+    let local_manifest_data_to_string = to_string_pretty(&local_manifest_data).map_err(|e| e.to_string())?;
+    fs::write(&manifest_path, local_manifest_data_to_string).map_err(|e| e.to_string())?;
 
     return Ok(());
 }

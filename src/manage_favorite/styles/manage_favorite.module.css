@@ -24,7 +24,7 @@
 .header_container .header_title{
 	color: var(--color-1);
 	font-family: var(--font-family);
-	font-size: max(30px, calc((100vw + 100vh)/2*0.035));
+	font-size: max(28px, calc((100vw + 100vh)/2*0.035));
 	user-select: none;
 	max-width: 100%;
 	font-weight: 800;

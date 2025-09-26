@@ -80,6 +80,17 @@ pub fn run() {
             /* === */
 
             commands::link_plugin::link_plugin,
+
+            /* Favorite */
+            commands::favorite::create_tag,
+            commands::favorite::get_all_tag,
+            commands::favorite::rename_tag,
+            commands::favorite::remove_tag,
+
+            commands::favorite::add_favorite,
+            commands::favorite::get_tag_from_favorite,
+            commands::favorite::remove_favorite,
+            /* === */
             
         ])
         .run(tauri::generate_context!())

@@ -123,10 +123,17 @@ export default function Plugin() {
             .then((data) => {    
                 console.log(data);
                 SET_INSTALLED_PLUGIN_DATA(data);
+                if (current_tab() === 0) {
+                    if (Object.keys(SEARCH_IN_PLUGIN_DATA()).length === 0) {
+                        request_search_in_plugin()
+                    }
+                };
             })
             .finally(() => {
                 set_is_loading(false);
             })
+
+        
         
     }))
 

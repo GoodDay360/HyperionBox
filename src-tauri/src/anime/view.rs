@@ -5,9 +5,9 @@ use std::vec;
 use urlencoding::encode;
 
 use crate::anime::models::Data;
-use crate::models::view::{Trailer, ViewData, ManifestData};
+use crate::models::view::{Trailer, ManifestData};
 
-async fn get_content(id: String) -> Result<ViewData, String> {
+async fn get_content(id: &str) -> Result<ManifestData, String> {
     let clinet = Client::new();
     let url = format!("https://kitsu.io/api/edge/anime/{}", encode(&id));
     
@@ -102,8 +102,7 @@ async fn get_content(id: String) -> Result<ViewData, String> {
 
         /* --- */
 
-        let view_data = ViewData {
-            manifest_data: Some(ManifestData {
+        let view_data = ManifestData {
                 id: id.to_string().clone(),
                 title: if let Some(t) = title_en {
                     t.clone()
@@ -119,8 +118,6 @@ async fn get_content(id: String) -> Result<ViewData, String> {
                 description: description.clone(),
                 meta_data,
                 episode_list: None,
-            }),
-            link_plugin: None,
         };
 
         return Ok(view_data);
@@ -130,7 +127,7 @@ async fn get_content(id: String) -> Result<ViewData, String> {
 }
 
 
-pub async fn new(id: String) -> Result<ViewData, String> {
+pub async fn new(id: &str) -> Result<ManifestData, String> {
     let get_content_result = get_content(id).await?;
 
     return Ok(get_content_result);

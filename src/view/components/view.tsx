@@ -163,6 +163,10 @@ export default function View() {
                                             background: 'var(--background-3)'
                                         }
                                     }}
+
+                                    onClick={() => {
+                                        navigate(`/manage_favorite?link_source=${encodeURIComponent(source)}&link_id=${encodeURIComponent(id)}`);
+                                    }}
                                 >
                                     <BookmarkAddOutlinedIcon color='inherit' fontSize='inherit' />
                                 </IconButton>

@@ -142,7 +142,7 @@ export default function App() {
                     <Route path="/view" component={View} />
                     <Route path="/watch" component={Watch} />
                     <Route path="/plugin" component={Plugin} />
-                    {/* <Route path="/" component={ManageFavorite} /> */}
+                    <Route path="/manage_favorite" component={ManageFavorite} />
                 </Router>
             </div>
     </ContextManager.Provider>
