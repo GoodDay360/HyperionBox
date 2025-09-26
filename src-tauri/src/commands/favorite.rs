@@ -1,11 +1,17 @@
 use rusqlite::{Connection, Result, params};
 use std::fs;
-use serde_json::{from_str};
+use serde::{Deserialize, Serialize};
+use chrono::Utc;
+
 
 use crate::utils::configs;
-use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
-use crate::models::view::ViewData;
-use crate::commands::get_content::view;
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct ItemFromFavorite {
+    pub source: String,
+    pub id: String,
+    pub timestamp: usize
+}
 
 pub fn get_db() -> Result<Connection, String> {
     let config_data = configs::get()?;
@@ -153,6 +159,46 @@ pub async fn get_tag_from_favorite(source: String, id: String) -> Result<Vec<Str
         .map_err(|e| e.to_string())?;
 
     Ok(tags)
+}
+
+#[tauri::command]
+pub fn get_item_from_favorite(tag_name: String) -> Result<Vec<ItemFromFavorite>, String> {
+    let conn = get_db()?;
+
+    let mut stmt = conn
+        .prepare("
+            SELECT source, id, timestamp FROM favorite
+            WHERE tag_name = ?1
+            ORDER BY timestamp DESC
+        ")
+        .map_err(|e| e.to_string())?;
+
+    let items = stmt
+        .query_map(params![tag_name], |row| {
+            Ok(ItemFromFavorite {
+                source: row.get(0)?,
+                id: row.get(1)?,
+                timestamp: row.get::<_, usize>(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(items)
+}
+
+#[tauri::command]
+pub async fn update_timestamp_favorite(source: String, id: String) -> Result<(), String> {
+    let conn = get_db()?; // Reuse your existing get_db function
+
+    conn.execute(
+        "UPDATE favorite SET timestamp = ?1 WHERE source = ?2 AND id = ?3",
+        rusqlite::params![Utc::now().timestamp_millis(), source, id],
+    )
+    .map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 

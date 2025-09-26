@@ -22,8 +22,7 @@ pub const IS_DEV: bool = false;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     dotenv().ok();
-    if !IS_DEV {
-        println!("IS_DEV: {}", IS_DEV);
+    if IS_DEV {
         fmt()
             .with_max_level(Level::DEBUG)
             .with_thread_names(true)
@@ -89,6 +88,7 @@ pub fn run() {
 
             commands::favorite::add_favorite,
             commands::favorite::get_tag_from_favorite,
+            commands::favorite::get_item_from_favorite,
             commands::favorite::remove_favorite,
             /* === */
 

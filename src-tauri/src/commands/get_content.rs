@@ -9,7 +9,6 @@ use crate::commands::request_plugin::get_episode_list::get_episode_list;
 use crate::models::home::HomeData;
 use crate::models::search::SearchData;
 use crate::models::view::{ViewData, ManifestData};
-use crate::models::local_manifest::LocalManifest;
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 use crate::commands::favorite::get_tag_from_favorite;
 

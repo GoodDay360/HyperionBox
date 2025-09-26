@@ -1,6 +1,9 @@
 // Tauri API
 import { invoke } from '@tauri-apps/api/core';
 
+// Type Imports
+import { ItemFromFavorite } from '../types/manage_favorite_type';
+
 export const request_get_all_tag = (): Promise<string[]> => {
     return invoke<string[]>("get_all_tag")
 }
@@ -40,6 +43,12 @@ export const request_get_tag_from_favorite = (source:string, id:string): Promise
     return invoke<string[]>("get_tag_from_favorite", {
         source,
         id
+    })
+}
+
+export const request_get_item_from_favorite = (tagName:string): Promise<ItemFromFavorite[]> => {
+    return invoke<ItemFromFavorite[]>("get_item_from_favorite", {
+        tagName
     })
 }
 
