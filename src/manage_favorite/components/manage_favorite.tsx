@@ -1,10 +1,8 @@
 // Tauri API
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
-import { platform } from '@tauri-apps/plugin-os';
+
 
 // SolidJS Imports
-import { createSignal, onMount, For, onCleanup, createEffect, on, Index } from "solid-js";
+import { createSignal, onMount, For, Index } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
@@ -12,40 +10,29 @@ import { useSearchParams, useNavigate } from "@solidjs/router";
 
 // SUID Imports
 import { 
-    Button, IconButton, ButtonBase, CircularProgress, Checkbox, TextField,
+    IconButton, ButtonBase, Checkbox, TextField,
     FormControlLabel, FormGroup,
     Skeleton
 } from '@suid/material';
 
 // SUID Icon Imports
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
-import FileDownloadRoundedIcon from '@suid/icons-material/FileDownloadRounded';
-import DownloadDoneRoundedIcon from '@suid/icons-material/DownloadDoneRounded';
-import RemoveDoneRoundedIcon from '@suid/icons-material/RemoveDoneRounded';
-import RemoveCircleOutlineRoundedIcon from '@suid/icons-material/RemoveCircleOutlineRounded';
-import UpgradeRoundedIcon from '@suid/icons-material/UpgradeRounded';
 import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
-import LinkRoundedIcon from '@suid/icons-material/LinkRounded';
 import DriveFileRenameOutlineRoundedIcon from '@suid/icons-material/DriveFileRenameOutlineRounded';
-import CheckRoundedIcon from '@suid/icons-material/CheckRounded';
 import SaveAsRoundedIcon from '@suid/icons-material/SaveAsRounded';
 import DeleteForeverRoundedIcon from '@suid/icons-material/DeleteForeverRounded';
-import AddRoundedIcon from '@suid/icons-material/AddRounded';
 import AddBoxRoundedIcon from '@suid/icons-material/AddBoxRounded';
 import CloseRoundedIcon from '@suid/icons-material/CloseRounded';
 
 // Solid Toast
 import toast from 'solid-toast';
 
-// Semver Imports
-import semver from 'semver';
 
 // Component Imports
-import LazyLoadImage from '@src/app/components/lazyloadimage';
+
 
 // Style Imports
 import styles from "../styles/manage_favorite.module.css"
-import { create } from 'domain';
 
 // Script Imports
 import { 

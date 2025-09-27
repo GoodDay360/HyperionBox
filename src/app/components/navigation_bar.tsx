@@ -6,7 +6,6 @@ import { useNavigate, useLocation } from "@solidjs/router";
 
 // SUID Imports
 import { ButtonBase } from "@suid/material"
-import { BottomNavigation, BottomNavigationAction } from "@suid/material";
 
 
 
@@ -17,6 +16,9 @@ import HomeOutlinedIcon from '@suid/icons-material/HomeOutlined';
 
 import FavoriteBorderRoundedIcon from '@suid/icons-material/FavoriteBorderRounded';
 import FavoriteRoundedIcon from '@suid/icons-material/FavoriteRounded';
+
+import SettingsRoundedIcon from '@suid/icons-material/SettingsRounded';
+import SettingsOutlinedIcon from '@suid/icons-material/SettingsOutlined';
 
 
 // Corvu Imports
@@ -68,35 +70,40 @@ export default function NavigationBar({
 
         <>{type === "bottom" &&
             <div class={styles.container_bottom}>
-                <For each={NavigateItem}>{(item) => (
-                    <BottomNavigation
-                        sx={{ 
-                            width: "100%",
-                            height: "auto",
-                            background: "var(--background-2)",
-                        }}
-                        value={location.pathname}
-                        onChange={(_, newValue) => navigate(newValue)}
-                        >
-                        <BottomNavigationAction
-                            label={item.label}
-                            value={item.navigate}
+                <For each={NavigateItem}>
+                    {(item) => (
+                        <ButtonBase
                             sx={{
-                                color: "var(--color-1)",
-                                fontSize: "calc((100vw + 100vh)/2*0.0375)",
-                                ".MuiBottomNavigationAction-label": {
-                                    fontSize: "calc((100vw + 100vh)/2*0.0175)"
-                                }
+                                flex:1,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                padding: "8px",
+                                alignItems: 'center',
+                                gap: "5px",
                             }}
+                            onClick={() => {
+                                navigate(item.navigate)
+                            }}
+                        >
+                            <span class={styles.item_icon}
+                                style={{
+                                    background: "var(--background-1)",
+                                    ...(location.pathname === item.navigate && {
+                                        background: "var(--background-2)",
+                                    })
+                                }}
+                            >
+                                {location.pathname === item.navigate
+                                    ? <item.iconActive color="inherit" fontSize="inherit"/>
+                                    : <item.icon color="inherit" fontSize="inherit"/>
+                                }
+                                
+                            </span>
                             
-                            icon={
-                                item.navigate === location.pathname 
-                                ? <item.iconActive color="inherit" fontSize="inherit" /> 
-                                : <item.icon color="inherit" fontSize="inherit" />
-                            }
-                        />
-                        </BottomNavigation>
-                )}</For>
+                            <span class={styles.item_label}>{item.label}</span>                        
+                        </ButtonBase>
+                    )}
+                </For>
             </div>
         }</>
     </>)
@@ -117,9 +124,9 @@ const NavigateItem = [
         navigate: "/favorites"
     },
     {
-        icon: FavoriteBorderRoundedIcon,
-        iconActive: FavoriteRoundedIcon,
-        label: "Profile",
-        navigate: "/profile"
+        icon: SettingsOutlinedIcon,
+        iconActive: SettingsRoundedIcon,
+        label: "Settings",
+        navigate: "/settings"
     }
 ]

@@ -19,6 +19,7 @@ import {
 // SUID Icon Imports
 import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
+import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
 
 
 // Solid Toast
@@ -191,6 +192,24 @@ export default function Search() {
                         <SearchRoundedIcon color="inherit" fontSize='inherit' />
                     </ButtonBase>
                 </form>
+                {(context?.screen_size?.()?.width ?? 0) > 550 && 
+                    <IconButton disabled={is_loading()}
+                        sx={{
+                            color: 'var(--color-1)',
+                            fontSize: 'calc((100vw + 100vh)/2*0.035)'
+                        }}
+                        onClick={() => {
+                            if (is_loading() && !search()) return;
+                            (document.activeElement as HTMLElement)?.blur();
+                            set_is_loading(true);
+                            set_is_page_max(false);
+                            SET_DATA([]);
+                            get_data({page: 1, search: search()});
+                        }}
+                    >
+                        <RefreshRoundedIcon color="inherit" fontSize='inherit' />
+                    </IconButton>
+                }
             </div>
             
             <div class={styles.grid_box_container}>

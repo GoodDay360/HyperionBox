@@ -183,7 +183,7 @@ export default function View() {
                                         let current_episode_index = DATA()?.current_watch_episode_index ?? 0;
                                         navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index)}&episode_index=${encodeURIComponent(current_episode_index)}`);
                                     }}
-                                >{((DATA()?.current_watch_season_index ?? -1) >= 0 && (DATA()?.current_watch_episode_index ?? -1) >= 0) ? "Continue Watching" : "Watch Now" }</Button>
+                                >{((DATA()?.current_watch_season_index ?? -1) >= 0 && (DATA()?.current_watch_episode_index ?? -1) >= 0) ? "Continue" : "Watch Now" }</Button>
                             </div>
                             {DATA()?.manifest_data?.trailer?.embed_url && 
                                 <div
@@ -279,7 +279,7 @@ export default function View() {
                                             {(item)=>(
                                                 <ButtonBase
                                                     sx={{
-                                                        color: (current_season_index() === (DATA()?.current_watch_season_index ?? 0) && (DATA()?.current_watch_episode_index ?? 0) === item.index) ? "gray" : "var(--color-1)",
+                                                        color: (current_season_index() === (DATA()?.current_watch_season_index ?? -1) && (DATA()?.current_watch_episode_index ?? -1) === item.index) ? "gray" : "var(--color-1)",
                                                         textTransform: 'none',
                                                         fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                                         justifyContent:"flex-start",
@@ -288,7 +288,7 @@ export default function View() {
                                                         paddingLeft: "12px", paddingRight: "12px",
                                                         paddingBottom: "5px", paddingTop: "5px",
                                                         borderRadius: "8px",
-                                                        background: (current_season_index() === (DATA()?.current_watch_season_index ?? 0) && (DATA()?.current_watch_episode_index ?? 0) === item.index) ? "var(--background-3)" : "var(--background-2)",
+                                                        background: (current_season_index() === (DATA()?.current_watch_season_index ?? -1) && (DATA()?.current_watch_episode_index ?? -1) === item.index) ? "var(--background-3)" : "var(--background-2)",
                                                         boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
                                                         width: "100%",
                                                     }}
@@ -296,7 +296,7 @@ export default function View() {
                                                         navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(item.index)}`);
                                                     }}
                                                 >
-                                                    Episode {item.index}: {item.title}
+                                                    Episode {item.index+1}: {item.title}
                                                 </ButtonBase>
                                             )}
                                         </For>

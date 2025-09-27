@@ -76,9 +76,12 @@ pub fn run() {
             commands::request_plugin::get_episode_list::get_episode_list,
             commands::request_plugin::get_episode_server::get_episode_server,
             commands::request_plugin::get_server::get_server,
+            commands::link_plugin::link_plugin,
             /* === */
 
-            commands::link_plugin::link_plugin,
+            /* Local Manifest */
+            commands::local_manifest::get_local_manifest,
+            /* === */
 
             /* Favorite */
             commands::favorite::create_tag,

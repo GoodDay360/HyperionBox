@@ -249,6 +249,7 @@ export default function Watch() {
         const player = e.currentTarget as MediaPlayerElement;
 
         if (player) {
+            /* Apply Timeline */
             const track = new TextTrack({
                 kind: 'chapters',
                 label: 'Chapters',
@@ -267,6 +268,7 @@ export default function Watch() {
             }
 
             player.textTracks.add(track);
+            /* --- */
         }
     };
     
@@ -345,6 +347,11 @@ export default function Watch() {
                                         type:"application/x-mpegurl"
                                     }}
                                     on:provider-change={onProviderChange}
+                                    on:text-track-change={(e)=>{
+                                        if (is_loading()) return;
+                                        console.log(e)
+                                        localStorage.setItem("prefer_caption", (e?.detail?.label ?? "").toLowerCase());
+                                    }}
                                     
                                 >
                                     <media-provider>
@@ -353,7 +360,7 @@ export default function Watch() {
                                                 src={item.file}
                                                 kind={item.kind as JSX.TrackHTMLAttributes<HTMLTrackElement>['kind']}
                                                 label={item.label}
-                                                default
+                                                default={localStorage.getItem("prefer_caption") === item.label?.toLowerCase()}
                                             />
                                         }</For>
                                     </media-provider>
@@ -608,7 +615,7 @@ export default function Watch() {
                                             get_data();
                                         }}
                                     >
-                                        Episode {item.index}: {item.title}
+                                        Episode {item.index+1}: {item.title}
                                     </ButtonBase>
                                 )}
                             </For>
