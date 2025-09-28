@@ -17,14 +17,20 @@ pub struct RelevantContent {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Content {
+pub struct ContentData {
     pub id: String,
     pub title: String,
     pub poster: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Content {
+    pub label: String,
+    pub data: Vec<ContentData>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct HomeData {
     pub relevant_content: Vec<RelevantContent>,
-    pub content: HashMap<String, Vec<Content>>,
+    pub content: Vec<Content>,
 }

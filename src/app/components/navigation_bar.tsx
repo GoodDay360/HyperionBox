@@ -20,12 +20,15 @@ import FavoriteRoundedIcon from '@suid/icons-material/FavoriteRounded';
 import SettingsRoundedIcon from '@suid/icons-material/SettingsRounded';
 import SettingsOutlinedIcon from '@suid/icons-material/SettingsOutlined';
 
+import DownloadRoundedIcon from '@suid/icons-material/DownloadRounded';
+import DownloadOutlinedIcon from '@suid/icons-material/DownloadOutlined';
 
 // Corvu Imports
 
 
 // Style Imports
 import styles from "../styles/navigation_bar.module.css"
+import { DownloadOutlined } from "@suid/icons-material";
 
 
 
@@ -122,6 +125,12 @@ const NavigateItem = [
         iconActive: FavoriteRoundedIcon,
         label: "Favorites",
         navigate: "/favorites"
+    },
+    {
+        icon: DownloadOutlined,
+        iconActive: DownloadRoundedIcon,
+        label: "Downloads",
+        navigate: "/downloads"
     },
     {
         icon: SettingsOutlinedIcon,

@@ -179,6 +179,15 @@ export default function View() {
                                         fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                     }}
                                     onClick={() => {
+                                        if (DATA()?.manifest_data?.episode_list === null) {
+                                            toast.remove();
+                                            toast("Link plugin is required.",{
+                                                icon: '⚠️',
+                                                style: {color:"orange"}
+                                            });
+                                            return;
+                                        }
+
                                         let current_season_index = DATA()?.current_watch_season_index ?? 0;
                                         let current_episode_index = DATA()?.current_watch_episode_index ?? 0;
                                         navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index)}&episode_index=${encodeURIComponent(current_episode_index)}`);

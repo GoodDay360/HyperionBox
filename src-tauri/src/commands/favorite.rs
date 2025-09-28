@@ -93,6 +93,11 @@ pub async fn rename_tag(old_tag: String, new_tag: String) -> Result<(), String> 
         return Err(format!("Tag '{}' not found", old_tag));
     }
 
+    conn.execute(
+        "UPDATE favorite SET tag_name = ?1 WHERE tag_name = ?2",
+        [&new_tag, &old_tag],
+    ).map_err(|e| e.to_string())?;
+
     Ok(())
 }
 
@@ -141,6 +146,36 @@ pub async fn add_favorite(tag_name: String, source: String, id: String) -> Resul
 
     Ok(())
 }
+
+#[tauri::command]
+pub async fn get_recent_from_favorite(limit: usize) -> Result<Vec<ItemFromFavorite>, String> {
+    let conn = get_db()?;
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT source, id, MAX(timestamp) as timestamp
+                FROM favorite
+                GROUP BY source, id
+                ORDER BY timestamp DESC
+                LIMIT ?1",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let items = stmt
+        .query_map([limit], |row| {
+            Ok(ItemFromFavorite {
+                source: row.get(0)?,
+                id: row.get(1)?,
+                timestamp: row.get::<_, usize>(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(items)
+}
+
 
 #[tauri::command]
 pub async fn get_tag_from_favorite(source: String, id: String) -> Result<Vec<String>, String> {

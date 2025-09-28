@@ -1,11 +1,14 @@
 use reqwest::Client;
-use std::collections::HashMap;
+use tracing::error;
+use core::error;
 use std::time::Duration;
 use tokio;
 
 use crate::anime::models::ApiResponse;
-use crate::models::home::{Content, HomeData, RelevantContent, Trailer};
+use crate::models::home::{Content, ContentData, HomeData, RelevantContent, Trailer};
 use crate::utils::get_calendar;
+use crate::commands::favorite::get_recent_from_favorite;
+use crate::commands::local_manifest::get_local_manifest;
 
 async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
     let clinet = Client::new();
@@ -63,6 +66,8 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
                         youtube_id
                     );
                 }
+            }else if banner.is_empty() {
+                banner = poster.clone();
             }
 
             let relevant_content = RelevantContent {
@@ -87,7 +92,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
     }
 }
 
-async fn get_trending_content() -> Result<Vec<Content>, String> {
+async fn get_trending_content() -> Result<Vec<ContentData>, String> {
     let clinet = Client::new();
     let url = format!("https://kitsu.io/api/edge/trending/anime",);
     let res = clinet
@@ -98,7 +103,7 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
         .map_err(|e| e.to_string())?;
     if res.status().is_success() {
         let result = res.json::<ApiResponse>().await.map_err(|e| e.to_string())?;
-        let mut new_content_data: Vec<Content> = vec![];
+        let mut new_content_data: Vec<ContentData> = vec![];
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.id.as_ref().ok_or("no id")?;
             let atributes = item.attributes.as_ref().ok_or("no attributes")?;
@@ -112,7 +117,7 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
                 .as_ref()
                 .ok_or("no large poster")?;
 
-            let new_content = Content {
+            let new_content_item = ContentData {
                 id: id.to_string().clone(),
                 title: if title_en.is_some() {
                     title_en.unwrap().clone()
@@ -121,7 +126,7 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
                 },
                 poster: poster.clone(),
             };
-            new_content_data.push(new_content);
+            new_content_data.push(new_content_item);
         }
         return Ok(new_content_data);
     } else {
@@ -129,18 +134,77 @@ async fn get_trending_content() -> Result<Vec<Content>, String> {
     }
 }
 
+async fn get_recent_content() -> Result<Vec<ContentData>, String> {
+    
+    let mut new_content_data: Vec<ContentData> = vec![];
+
+    let recent_from_favorite = get_recent_from_favorite(15).await?;
+
+    for item in recent_from_favorite {
+        let local_manifest = get_local_manifest(item.source, item.id.to_string()).await?;
+        let manifest_data = local_manifest.manifest_data.ok_or("no manifest data")?;
+
+        let new_content = ContentData {
+            id: item.id.to_string().clone(),
+            title: manifest_data.title,
+            poster: manifest_data.poster,
+        };
+        new_content_data.push(new_content);
+    }
+
+    return Ok(new_content_data);
+}
+
 pub async fn new() -> Result<HomeData, String> {
-    let (task_get_relevant_content, task_get_trending_content) = tokio::join!(
-        get_relevant_content(), get_trending_content()
+    let (
+        task_get_relevant_content, 
+        task_get_trending_content,
+        task_get_recent_from_favorite,
+    ) = tokio::join!(
+        get_relevant_content(), 
+        get_trending_content(),
+        get_recent_content(),
     );
 
-    let relevant_content = task_get_relevant_content.map_err(|e| e.to_string())?;
+    let relevant_content = match task_get_relevant_content {
+        Ok(content) => content,
+        Err(_) => {  
+            error!("get_relevant_content error");
+            vec![]
+        },
+    };
 
-    let mut new_content: HashMap<String, Vec<Content>> = HashMap::new();
+    let mut new_content: Vec<Content> = vec![];
 
-    let trending_content = task_get_trending_content.map_err(|e| e.to_string())?;
+    let recent_from_favorite = task_get_recent_from_favorite?;
 
-    new_content.insert("Trending Anime".to_string(), trending_content);
+    if recent_from_favorite.len() > 0 {
+        new_content.push(Content {
+            label: "Continuous Watching".to_string(),
+            data: recent_from_favorite,
+        });
+    }
+    
+
+    match task_get_trending_content {
+        Ok(data) => {
+            if data.len() > 0 {
+                new_content.push(Content {
+                    label: "Trending Anime".to_string(),
+                    data: data,
+                });
+            }
+            
+        },
+        Err(_) => {  
+            error!("get_trending_content error")
+        },
+    };
+    
+    
+
+    
+    
 
     return Ok(HomeData {
         relevant_content: relevant_content,

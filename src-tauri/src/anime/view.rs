@@ -67,6 +67,8 @@ async fn get_content(id: &str) -> Result<ManifestData, String> {
                     youtube_id
                 );
             }
+        }else if banner.is_empty() {
+            banner = poster.clone();
         }
 
         /* Metadata */

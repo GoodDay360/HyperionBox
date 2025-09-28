@@ -40,28 +40,10 @@ import styles from "../styles/home.module.css"
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
 
+// Types Import
+import { Content, ContentData, RelevantContent, HomeData } from '../types/home_type';
 
-interface RELEVANT_CONTENT  {
-    id: string,
-    title: string,
-    poster: string,
-    banner: string,
-    trailer?: {
-        embed_url?: string,
-        url?: string
-    }
-}
 
-interface CONTENT {
-    id: string,
-    title: string,
-    poster: string,
-}
-
-interface HOME_DATA {
-    relevant_content: RELEVANT_CONTENT[]; // Replace `any` with actual type if known
-    content: Record<string, CONTENT[]>;
-}
 
 export default function Home() {
     const navigate = useNavigate();
@@ -74,14 +56,14 @@ export default function Home() {
     const [search, set_search] = createSignal<string>("");
     const [search_mode, set_search_mode] = createSignal<boolean>(false);
 
-    const [RELEVANT_DATA, SET_RELEVANT_DATA] = createSignal<RELEVANT_CONTENT[]>([]);
-    const [CONTENT_DATA, SET_CONTENT_DATA] = createSignal<Record<string, CONTENT[]>>({});
+    const [RELEVANT_DATA, SET_RELEVANT_DATA] = createSignal<RelevantContent[]>([]);
+    const [CONTENT_DATA, SET_CONTENT_DATA] = createSignal<Content[]>([]);
 
     const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
     
     const get_data = () => {
         set_is_loading(true);
-        invoke<HOME_DATA>('home', {source:"anime"})
+        invoke<HomeData>('home', {source:"anime"})
             .then((data) => {
                 console.log(data)
                 SET_RELEVANT_DATA(data.relevant_content);
@@ -353,14 +335,18 @@ export default function Home() {
                             </For>
                         </Swiper>
                     </div>
-                    <For each={Object.keys(CONTENT_DATA())}>
-                        {(key) => (
+                    <For each={CONTENT_DATA()}>
+                        {(item) => (
                             <div class={styles.content_container}>
                                 <div class={styles.content_header_container}>
-                                    <h2 class={styles.content_header_title}>{key}</h2>
+                                    <h2 class={styles.content_header_title}>{item.label}</h2>
                                 </div>
                                 <div class={`${styles.content_data_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                     onWheel={(e) => {
+                                        const el = e.currentTarget;
+                                        const hasOverflow = el.scrollWidth > el.clientWidth;
+                                        if (!hasOverflow) return;
+
                                         e.preventDefault();
                                         e.currentTarget.scrollBy({
                                             left: e.deltaY,
@@ -368,19 +354,19 @@ export default function Home() {
                                         });
                                     }}
                                 >
-                                    <For each={CONTENT_DATA()[key]}>
-                                        {(item) => <div class={styles.content_data_box}>
+                                    <For each={item.data}>
+                                        {(data_item) => <div class={styles.content_data_box}>
                                             <ButtonBase
                                                 sx={{
                                                     width: "100%",
                                                     height: "auto",
                                                 }}
                                                 onClick={() => {
-                                                    navigate(`/view?source=${"anime"}&id=${item.id}`);
+                                                    navigate(`/view?source=${"anime"}&id=${data_item.id}`);
                                                 }}
                                             >
                                                 <LazyLoadImage 
-                                                    src={item.poster}
+                                                    src={data_item.poster ?? ""}
                                                     className={styles.content_data_img}
 
                                                     skeleton_sx={{
@@ -391,7 +377,7 @@ export default function Home() {
                                                     }}
                                                 />
                                             </ButtonBase>
-                                            <span class={styles.content_data_title}>{item.title}</span>
+                                            <span class={styles.content_data_title}>{data_item.title ?? "?"}</span>
                                         </div>}
                                     </For>
                                 </div>
