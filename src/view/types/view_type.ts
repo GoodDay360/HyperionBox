@@ -1,3 +1,8 @@
+export type DownloadEpisode = Record<string, {
+    season_index: number,
+    episode_index: number,
+}>
+
 export interface ManifestData {
     id: string,
     title: string,

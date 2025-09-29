@@ -123,7 +123,7 @@ export default function App() {
                 toastOptions={{
                     duration: 5000,
                     style: {
-                        border:"2px solid var(--background-1)",
+                        border:"2px solid var(--background-3)",
                         background: 'var(--background-2)',
                         color: "var(--color-1)",
                         "font-family": "var(--font-family)",
@@ -138,10 +138,10 @@ export default function App() {
                     <TitleBar ref={TitleBarRef} />
                 }
                 <Router>
-                    <Route path="/" component={Home} />
+                    {/* <Route path="/" component={Home} /> */}
                     <Route path="/favorites" component={Favorites} />
                     <Route path="/search" component={Search} />
-                    <Route path="/view" component={View} />
+                    <Route path="/" component={View} />
                     <Route path="/watch" component={Watch} />
                     <Route path="/plugin" component={Plugin} />
                     <Route path="/manage_favorite" component={ManageFavorite} />

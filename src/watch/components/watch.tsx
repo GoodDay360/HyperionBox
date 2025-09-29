@@ -100,7 +100,6 @@ export default function Watch() {
     const [current_season_index, set_current_season_index] = createSignal<number>(season_index);
     const [current_episode_index, set_current_episode_index] = createSignal<number>(episode_index);
 
-    const [current_season_id, set_current_season_id] = createSignal<string>("");
     const [current_episode_id, set_current_episode_id] = createSignal<string>("");
     
     
@@ -134,8 +133,9 @@ export default function Watch() {
     const load_episode_server = async () => {
         const data = await get_episode_server(
             source, id, link_plugin_id, 
-            current_season_index(), current_episode_index(),
-            current_season_id(), current_episode_id()
+            current_season_index(), 
+            current_episode_index(),
+            current_episode_id()
         );
         console.log("Episode Server: ", data);
         SET_EPISODE_SERVER_DATA(data);
@@ -609,7 +609,6 @@ export default function Watch() {
                                             }
                                         }}
                                         onClick={() => {
-                                            set_current_season_id(current_season_index().toString());
                                             set_current_episode_id(item.id);
                                             set_current_episode_index(item.index);
                                             get_data();

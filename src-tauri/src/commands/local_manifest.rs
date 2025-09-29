@@ -19,22 +19,24 @@ pub async fn get_local_manifest(source: String, id: String) -> Result<LocalManif
 
     let manifest_path = item_dir.join("manifest.json");
 
-    if !manifest_path.exists() {
-        fs::write(&manifest_path, "{}").map_err(|e| e.to_string())?;
-    }
+    if manifest_path.exists() {
+        let file = fs::File::open(&manifest_path).map_err(|e| e.to_string())?;
+        let reader = BufReader::new(file);
 
-    let file = fs::File::open(&manifest_path).map_err(|e| e.to_string())?;
-    let reader = BufReader::new(file);
-
-    let manifest_data: LocalManifest;
-    match from_reader::<BufReader<std::fs::File>, LocalManifest>(reader).map_err(|e| e.to_string()) {
-        Ok(data) => manifest_data = data,
-        Err(_) => {
-            manifest_data = LocalManifest::default();
+        let manifest_data: LocalManifest;
+        match from_reader::<BufReader<std::fs::File>, LocalManifest>(reader).map_err(|e| e.to_string()) {
+            Ok(data) => manifest_data = data,
+            Err(_) => {
+                manifest_data = LocalManifest::default();
+            }
         }
+
+        return Ok(manifest_data);
+    }else{
+        return Ok(LocalManifest::default());
     }
 
-    return Ok(manifest_data);
+    
 }
 
 #[tauri::command]

@@ -1,16 +1,17 @@
 // Tauri API
 import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { platform } from '@tauri-apps/plugin-os';
 
 // SolidJS Imports
-import { createSignal, onMount, Index, For, useContext } from "solid-js";
+import { createSignal, onMount, Index, For, useContext, createEffect, on } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
 
 
 // SUID Imports
-import { Button, IconButton, ButtonBase, Skeleton, Pagination } from '@suid/material';
+import { Button, IconButton, ButtonBase, Skeleton, Pagination, Checkbox } from '@suid/material';
 
 // SUID Icon Imports
 import OndemandVideoRoundedIcon from '@suid/icons-material/OndemandVideoRounded';
@@ -19,6 +20,10 @@ import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
 import BookmarkAddOutlinedIcon from '@suid/icons-material/BookmarkAddOutlined';
 import ExtensionRoundedIcon from '@suid/icons-material/ExtensionRounded';
 import AddLinkRoundedIcon from '@suid/icons-material/AddLinkRounded';
+import DownloadRoundedIcon from '@suid/icons-material/DownloadRounded';
+import SelectAllRoundedIcon from '@suid/icons-material/SelectAllRounded';
+import DeselectRoundedIcon from '@suid/icons-material/DeselectRounded';
+
 
 // Solid Toast
 import toast from 'solid-toast';
@@ -28,34 +33,40 @@ import toast from 'solid-toast';
 // Component Imports
 import LazyLoadImage from '@src/app/components/lazyloadimage';
 import PullRefresh from '@src/app/components/pull_refresh';
+import Download from './download';
 
 // Style Imports
 import styles from "../styles/view.module.css"
 
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
-import { ViewData } from '../types/view_type';
+import { ViewData, DownloadEpisode } from '../types/view_type';
 
 
 export default function View() {
     const navigate = useNavigate();
     const context = useContext(ContextManager);
     const [queryParams] = useSearchParams();
-    const source = queryParams?.source as string ?? "";
-    const id = queryParams?.id as string ?? "";
+    const source = queryParams?.source as string ?? "anime";
+    const id = queryParams?.id as string ?? "1";
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
     const [is_loading, set_is_loading] = createSignal<boolean>(false);
 
     const [DATA, SET_DATA] = createSignal<ViewData>();
+    let DOWNLOAD_DATA: DownloadEpisode = {};
+
 
     const [show_more, set_show_more] = createSignal(false);
     const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
+    const [download, set_download] = createSignal<{mode:boolean, request:boolean}>({mode:false, request:false});
+    const [select_download_all, set_select_download_all] = createSignal(false);
 
     const [current_season_index, _] = createSignal<number>(0);
-    const [current_episode_index, set_current_episode_index] = createSignal<number>(0);
+    const [current_episode_page_index, set_current_episode_page_index] = createSignal<number>(0);
 
+    
 
     const get_data = () => {
         set_is_loading(true);
@@ -188,6 +199,15 @@ export default function View() {
                                             return;
                                         }
 
+                                        if (DATA()?.manifest_data?.episode_list?.length === 0) {
+                                            toast.remove();
+                                            toast("No episode found.",{
+                                                icon: '⚠️',
+                                                style: {color:"orange"}
+                                            });
+                                            return;
+                                        }
+
                                         let current_season_index = DATA()?.current_watch_season_index ?? 0;
                                         let current_episode_index = DATA()?.current_watch_episode_index ?? 0;
                                         navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index)}&episode_index=${encodeURIComponent(current_episode_index)}`);
@@ -264,50 +284,144 @@ export default function View() {
 
                     <div class={styles.episode_container}>
                         <div class={styles.episode_frame}>
-                            <div class={styles.episode_title_box}>
-                                <h2 class={styles.episode_title_box_text}>Episodes</h2>
-                                {DATA()?.manifest_data?.episode_list !== null && 
-                                    <IconButton
-                                        sx={{
-                                            color: 'var(--color-1)',
-                                            fontSize: 'calc((100vw + 100vh)/2*0.04)',
-                                        }}
-                                        onClick={() =>{
-                                            navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.manifest_data?.id}&link_title=${DATA()?.manifest_data?.title}`);
-                                        }}
-                                    >
-                                        <AddLinkRoundedIcon fontSize='inherit' color='inherit' />
-                                    </IconButton>
-                                }
-                                
-                            </div>
-                            {DATA()?.manifest_data?.episode_list !== null
-                                ? <div class={styles.episode_box}>
-                                    {(DATA()?.manifest_data?.episode_list?.length ?? 0) > 0 
-                                        ? <For each={DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_index()]}>
-                                            {(item)=>(
-                                                <ButtonBase
+                            <div class={styles.episode_header_box}>
+                                <h2 class={styles.episode_header_box_text}>Episodes</h2>
+                                <div class={styles.episode_header_button_box}>
+                                    {DATA()?.manifest_data?.episode_list !== null && <>
+                                        {!download().mode
+                                            ? <IconButton
+                                                sx={{
+                                                    color: 'var(--color-1)',
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.04)',
+                                                }}
+                                                onClick={() =>{
+                                                    navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.manifest_data?.id}&link_title=${DATA()?.manifest_data?.title}`);
+                                                }}
+                                            >
+                                                <AddLinkRoundedIcon fontSize='inherit' color='inherit' />
+                                            </IconButton>
+                                            : <>
+                                                <IconButton
                                                     sx={{
-                                                        color: (current_season_index() === (DATA()?.current_watch_season_index ?? -1) && (DATA()?.current_watch_episode_index ?? -1) === item.index) ? "gray" : "var(--color-1)",
-                                                        textTransform: 'none',
-                                                        fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                                                        justifyContent:"flex-start",
-                                                        textAlign:"left",
-                                                        margin: 0,
-                                                        paddingLeft: "12px", paddingRight: "12px",
-                                                        paddingBottom: "5px", paddingTop: "5px",
-                                                        borderRadius: "8px",
-                                                        background: (current_season_index() === (DATA()?.current_watch_season_index ?? -1) && (DATA()?.current_watch_episode_index ?? -1) === item.index) ? "var(--background-3)" : "var(--background-2)",
-                                                        boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-                                                        width: "100%",
+                                                        color: 'var(--color-1)',
+                                                        fontSize: 'calc((100vw + 100vh)/2*0.04)',
                                                     }}
-                                                    onClick={() => {
-                                                        navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(item.index)}`);
+                                                    onClick={() =>{
+                                                        set_select_download_all(!select_download_all());
+
+                                                        if (select_download_all()) {
+                                                            for (const item of DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()] ?? []) {
+                                                                DOWNLOAD_DATA[item.id] = {
+                                                                    season_index: current_season_index(),
+                                                                    episode_index: item.index,
+                                                                }
+                                                            }
+                                                        }else{
+                                                            for (const item of DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()] ?? []) {
+                                                                delete DOWNLOAD_DATA[item.id]
+                                                            }
+                                                        }
                                                     }}
                                                 >
-                                                    Episode {item.index+1}: {item.title}
-                                                </ButtonBase>
-                                            )}
+                                                    {select_download_all()
+                                                        ? <DeselectRoundedIcon fontSize='inherit' color='inherit' />
+                                                        : <SelectAllRoundedIcon fontSize='inherit' color='inherit' />
+                                                    }
+                                                    
+                                                </IconButton>
+                                            </>
+                                        }
+                                        
+
+
+                                        {((DATA()?.manifest_data?.episode_list?.length ?? 0) > 0) &&
+                                            <IconButton
+                                                sx={{
+                                                    color: download()?.mode ? 'red' : 'var(--color-1)',
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.04)',
+                                                }}
+                                                onClick={() =>{
+                                                    set_download({
+                                                        mode: !download()?.mode,
+                                                        request: false,
+                                                    });
+                                                    DOWNLOAD_DATA = {};
+                                                    set_select_download_all(false);
+                                                }}
+                                            >
+                                                {download()?.mode
+                                                    ? <CloseRoundedIcon fontSize='inherit' color='inherit' />
+                                                    : <DownloadRoundedIcon fontSize='inherit' color='inherit' />
+                                                }
+                                            </IconButton>
+                                        }
+                                    </>}
+                                    
+                                    
+                                </div>
+                            </div>
+                            {DATA()?.manifest_data?.episode_list !== null
+                                ? <div class={`${styles.episode_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}>
+                                    {(DATA()?.manifest_data?.episode_list?.length ?? 0) > 0 
+                                        ? <For each={DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()]}>
+                                            {(item)=>{
+
+                                                const [is_checked, set_is_checked] = createSignal<boolean>(Object.keys(DOWNLOAD_DATA).includes(item.id));
+                                                
+                                                createEffect(on(download, () => {
+                                                    if (!download().mode) {
+                                                        set_is_checked(false);
+                                                    }
+                                                }))
+
+                                                createEffect(on(select_download_all, () => {
+                                                    set_is_checked(select_download_all());
+                                                }))
+
+                                                return (<div class={styles.episode_item}>
+                                                    <ButtonBase
+                                                        sx={{
+                                                            flex:1,
+                                                            color: (current_season_index() === (DATA()?.current_watch_season_index ?? -1) && (DATA()?.current_watch_episode_index ?? -1) === item.index) ? "gray" : "var(--color-1)",
+                                                            textTransform: 'none',
+                                                            fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                                            justifyContent:"flex-start",
+                                                            textAlign:"left",
+                                                            margin: 0,
+                                                            paddingLeft: "12px", paddingRight: "12px",
+                                                            paddingBottom: "5px", paddingTop: "5px",
+                                                            borderRadius: "8px",
+                                                            background: (current_season_index() === (DATA()?.current_watch_season_index ?? -1) && (DATA()?.current_watch_episode_index ?? -1) === item.index) ? "var(--background-3)" : "var(--background-2)",
+                                                            boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+                                                            
+                                                        }}
+                                                        onClick={() => {
+                                                            navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(DATA()?.link_plugin?.plugin_id ?? " ")}&link_id=${encodeURIComponent(DATA()?.link_plugin?.id?? " ")}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(item.index)}`);
+                                                        }}
+                                                    >
+                                                        Episode {item.index+1}: {item.title}
+                                                    </ButtonBase>
+                                                    {download()?.mode &&
+                                                        <Checkbox  
+                                                            checked={is_checked()}
+                                                            sx={{
+                                                                color: "var(--color-1)",
+                                                            }}
+                                                            size='medium'
+                                                            onChange={(_, checked) => {
+                                                                set_is_checked(checked);
+                                                                if (checked) {
+                                                                    DOWNLOAD_DATA[item.id] = {
+                                                                        season_index: current_season_index(),
+                                                                        episode_index: item.index,
+                                                                        
+                                                                    }
+                                                                }
+                                                            }}
+                                                        />
+                                                    }
+                                                </div>)
+                                            }}
                                         </For>
                                             
                                         
@@ -340,10 +454,10 @@ export default function View() {
                             <Pagination 
                                 color="primary" variant="outlined" showFirstButton showLastButton 
                                 siblingCount={0}
-                                page={current_episode_index() + 1} 
+                                page={current_episode_page_index() + 1} 
                                 count={DATA()?.manifest_data?.episode_list?.[current_season_index()]?.length ?? 0} 
                                 onChange={(_, value)=> {
-                                    set_current_episode_index(value - 1);
+                                    set_current_episode_page_index(value - 1);
                                 }}
                                 size='large'
                                 sx={{
@@ -402,7 +516,7 @@ export default function View() {
                                     height: "auto"
                                 }}
                             >
-                                <div class={styles.episode_title_box}>
+                                <div class={styles.episode_header_box}>
                                     <Skeleton variant="text"
                                         sx={{
                                             width: "100%",
@@ -437,6 +551,60 @@ export default function View() {
                 </>
             }
         </div>
+        
+        {download()?.mode &&
+            <Button variant='contained' color='secondary'
+                sx={{
+                    position: "absolute",
+                    bottom: "24px",
+                    right: "24px",
+                    textTransform: 'none',
+                    fontSize: 'calc((100vw + 100vh)/2 * 0.025)',
+                    color: "var(--color-1)",
+                    borderRadius: "25px",
+                    padding: "6px 24px",
+                    marginBottom: "var(--safe-area-bottom, 0)",
+                    zIndex: 3
+                }}
+                onClick={() => {
+                    if (Object.keys(DOWNLOAD_DATA).length === 0) {
+                        toast.remove();
+                        toast("No episode selected.",{
+                            icon: "⚠️",
+                            style: {color: "orange"}
+                        })
+                        return;
+                    }
+                    set_download({
+                        mode: true,
+                        request: true
+                    })
+                }}
+            >
+                Request Download
+            </Button>
+        }
+        {download()?.request && <Download 
+            source={source}
+            id={id}
+            plugin_id={DATA()?.link_plugin?.plugin_id ?? ""}
+            data={DOWNLOAD_DATA}
+            onClose={() => {
+                set_download({
+                    mode: true,
+                    request: false
+                })
+            }}
+            onSuccess={() => {
+                DOWNLOAD_DATA = {};
+                set_download({
+                    mode: false,
+                    request: false
+                })
+            }}
+        
+        />}
+        
 
         {show_trailer().state && 
             <div class={styles.trailer_container}>

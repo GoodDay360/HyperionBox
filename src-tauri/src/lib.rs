@@ -99,6 +99,10 @@ pub fn run() {
             commands::watch_state::get_watch_state,
             commands::watch_state::save_watch_state,
             /* === */
+
+            /* Download */
+            commands::download::add_download,
+            /* === */
             
         ])
         .run(tauri::generate_context!())
