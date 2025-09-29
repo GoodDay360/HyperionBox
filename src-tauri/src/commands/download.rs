@@ -27,7 +27,9 @@ pub fn get_db() -> Result<Connection, String> {
             prefer_server_type TEXT NOT NULL,
             prefer_server_index INT NOT NULL,
             prefer_quality INT NOT NULL,
-            error INT NOT NULL DEFAULT 0
+            pause INT NOT NULL DEFAULT 0,
+            error INT NOT NULL DEFAULT 0,
+            done INT NOT NULL DEFAULT 0
         )
     ",[]).map_err(|e| e.to_string())?;
 

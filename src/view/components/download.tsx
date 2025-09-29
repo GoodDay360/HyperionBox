@@ -68,7 +68,7 @@ export default function Download({
 
 
     const [prefer_server_type, set_prefer_server_type] = createSignal<string>("");
-    const [prefer_server_index, set_prefer_server_index] = createSignal<number>(NaN);
+    const [prefer_server_index, set_prefer_server_index] = createSignal<number>(-1);
     const [prefer_quality, set_prefer_quality] = createSignal(QUALITY.length-1);
 
     onMount(()=>{
@@ -213,7 +213,7 @@ export default function Download({
                                 minWidth: "fit-content"
                             }}
                             onClick={()=>{(async ()=>{
-                                if (!prefer_server_type() || !prefer_server_index() || !prefer_quality()) {
+                                if (!prefer_server_type() || (prefer_server_index() < 0) || !prefer_quality()) {
                                     toast.remove();
                                     toast.error("Missing required options.",{style: {color:"red"}});
                                     return;
@@ -232,10 +232,9 @@ export default function Download({
                                         toast.remove();
                                         toast.error("Something went wrong while adding download.",{style: {color:"red"}});
                                         return;
-                                    }finally {
-                                        set_is_working(false);
                                     }
                                 }
+                                set_is_working(false);
                                 toast.remove();
                                 toast.success("Download added successfully.",{style: {color:"green"}});
                                 onSuccess();

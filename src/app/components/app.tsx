@@ -28,6 +28,7 @@ import Search from '@src/search/components/search';
 import View from '@src/view/components/view';
 import Watch from '@src/watch/components/watch';
 import ManageFavorite from '@src/manage_favorite/components/manage_favorite';
+import Downloads from '@src/downloads/components/downloads';
 
 
 
@@ -123,7 +124,7 @@ export default function App() {
                 toastOptions={{
                     duration: 5000,
                     style: {
-                        border:"2px solid var(--background-3)",
+                        border:"2px solid var(--background-1)",
                         background: 'var(--background-2)',
                         color: "var(--color-1)",
                         "font-family": "var(--font-family)",
@@ -140,8 +141,9 @@ export default function App() {
                 <Router>
                     {/* <Route path="/" component={Home} /> */}
                     <Route path="/favorites" component={Favorites} />
+                    <Route path="/" component={Downloads} />
                     <Route path="/search" component={Search} />
-                    <Route path="/" component={View} />
+                    <Route path="/view" component={View} />
                     <Route path="/watch" component={Watch} />
                     <Route path="/plugin" component={Plugin} />
                     <Route path="/manage_favorite" component={ManageFavorite} />

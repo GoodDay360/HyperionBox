@@ -179,7 +179,7 @@ export default function Favorites() {
                 <ButtonBase
                     sx={{
                         height:"100%",
-                        color: 'cyan',
+                        color: 'var(--color-1)',
                         fontSize: 'calc((100vw + 100vh)/2*0.035)',
                         padding: "8px",
                     }}

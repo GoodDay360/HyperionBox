@@ -310,11 +310,14 @@ export default function View() {
                                                         set_select_download_all(!select_download_all());
 
                                                         if (select_download_all()) {
-                                                            for (const item of DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()] ?? []) {
-                                                                DOWNLOAD_DATA[item.id] = {
-                                                                    season_index: current_season_index(),
-                                                                    episode_index: item.index,
+                                                            for (const ep_page of DATA()?.manifest_data?.episode_list?.[current_season_index()] ?? []) {
+                                                                for (const item of ep_page) {
+                                                                    DOWNLOAD_DATA[item.id] = {
+                                                                        season_index: current_season_index(),
+                                                                        episode_index: item.index,
+                                                                    }
                                                                 }
+                                                                
                                                             }
                                                         }else{
                                                             for (const item of DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()] ?? []) {
