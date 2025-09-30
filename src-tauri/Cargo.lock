@@ -7,10 +7,13 @@ name = "HyperionBox"
 version = "2.0.0"
 dependencies = [
  "anyhow",
+ "bytes",
  "chlaty-core",
  "chrono",
  "dotenv",
  "futures",
+ "futures-util",
+ "m3u8-rs",
  "parsidate",
  "reqwest",
  "rusqlite",
@@ -27,6 +30,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+ "url",
  "urlencoding",
  "visdom",
 ]
@@ -527,7 +531,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chlaty-core"
 version = "0.1.0"
-source = "git+https://github.com/chlaty/chlaty-core?branch=main#9f45405b80e4c4fca4f40898a02a7bdb87b5232c"
+source = "git+https://github.com/chlaty/chlaty-core?branch=main#a53366cefcd2a152a8027917e57c49e4ce99eae0"
 dependencies = [
  "dotenv",
  "indicatif",
@@ -2324,6 +2328,16 @@ name = "lru-slab"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
+
+[[package]]
+name = "m3u8-rs"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f03cd3335fb5f2447755d45cda9c70f76013626a9db44374973791b0926a86c3"
+dependencies = [
+ "chrono",
+ "nom",
+]
 
 [[package]]
 name = "mac"

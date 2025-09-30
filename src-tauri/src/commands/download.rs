@@ -29,6 +29,7 @@ pub fn get_db() -> Result<Connection, String> {
         CREATE TABLE IF NOT EXISTS download (
             source TEXT NOT NULL,
             id TEXT NOT NULL,
+            plugin_id TEXT NOT NULL,
             pause INT NOT NULL DEFAULT 0
         )
     ",[]).map_err(|e| e.to_string())?;
@@ -37,7 +38,6 @@ pub fn get_db() -> Result<Connection, String> {
         CREATE TABLE IF NOT EXISTS download_item (
             source TEXT NOT NULL,
             id TEXT NOT NULL,
-            plugin_id TEXT NOT NULL,
             season_index INT NOT NULL,
             episode_index INT NOT NULL,
             episode_id TEXT NOT NULL,
@@ -78,8 +78,8 @@ pub async fn add_download(
 
     if !exists {
         conn.execute(
-            "INSERT INTO download (source, id) VALUES (?1, ?2)",
-            params![source, id],
+            "INSERT INTO download (source, id, plugin_id) VALUES (?1, ?2, ?3)",
+            params![&source, &id, &plugin_id],
         ).map_err(|e| e.to_string())?;
     }
 
@@ -87,10 +87,10 @@ pub async fn add_download(
     let item_exists: bool = conn.query_row(
         "SELECT EXISTS(
             SELECT 1 FROM download_item
-            WHERE source = ?1 AND id = ?2 AND plugin_id = ?3
-            AND season_index = ?4 AND episode_index = ?5
+            WHERE source = ?1 AND id = ?2
+            AND season_index = ?3 AND episode_index = ?4
         )",
-        params![source, id, plugin_id, season_index, episode_index],
+        params![source, id, season_index, episode_index],
         |row| row.get(0),
     ).map_err(|e| e.to_string())?;
 
@@ -100,13 +100,12 @@ pub async fn add_download(
 
     conn.execute(
         "INSERT INTO download_item (
-            source, id, plugin_id, season_index, episode_index, episode_id,
+            source, id, season_index, episode_index, episode_id,
             prefer_server_type, prefer_server_index, prefer_quality
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
+        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
         params![
             source,
             id,
-            plugin_id,
             season_index,
             episode_index,
             episode_id,
@@ -132,6 +131,7 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
             SELECT
                 source,
                 id,
+                plugin_id,
                 pause
             FROM download
         ").map_err(|e| e.to_string())?;
@@ -141,7 +141,8 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
                 Ok(Download {
                     source: row.get(0)?,
                     id: row.get(1)?,
-                    pause: row.get(2)?
+                    plugin_id: row.get(2)?,
+                    pause: row.get(3)?
 
                 })
             })
@@ -183,7 +184,6 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
             SELECT
                 source,
                 id,
-                plugin_id,
                 season_index,
                 episode_index,
                 episode_id,
@@ -201,15 +201,14 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
                 Ok(DownloadItem {
                     source: row.get(0)?,
                     id: row.get(1)?,
-                    plugin_id: row.get(2)?,
-                    season_index: row.get(3)?,
-                    episode_index: row.get(4)?,
-                    episode_id: row.get(5)?,
-                    prefer_server_type: row.get(6)?,
-                    prefer_server_index: row.get(7)?,
-                    prefer_quality: row.get(8)?,
-                    error: row.get(9)?,
-                    done: row.get(10)?,
+                    season_index: row.get(2)?,
+                    episode_index: row.get(3)?,
+                    episode_id: row.get(4)?,
+                    prefer_server_type: row.get(5)?,
+                    prefer_server_index: row.get(6)?,
+                    prefer_quality: row.get(7)?,
+                    error: row.get(8)?,
+                    done: row.get(9)?,
                 })
             })
             .map_err(|e| e.to_string())?;
@@ -241,17 +240,6 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
     return Ok(results);
 }
 
-#[tauri::command]
-pub async fn set_pause_download(source: &str, id: &str, pause: bool) -> Result<(), String> {
-    let conn = get_db()?;
-
-    conn.execute(
-        "UPDATE download SET pause = ?1 WHERE source = ?2 AND id = ?3",
-        params![if pause == true { 1 } else { 0 }, source, id],
-    ).map_err(|e| e.to_string())?;
-
-    Ok(())
-}
 
 #[tauri::command]
 pub async fn remove_download(source: String, id: String) -> Result<(), String> {
@@ -271,3 +259,17 @@ pub async fn remove_download(source: String, id: String) -> Result<(), String> {
 
     Ok(())
 }
+
+#[tauri::command]
+pub async fn set_pause_download(source: &str, id: &str, pause: bool) -> Result<(), String> {
+    let conn = get_db()?;
+
+    conn.execute(
+        "UPDATE download SET pause = ?1 WHERE source = ?2 AND id = ?3",
+        params![if pause == true { 1 } else { 0 }, source, id],
+    ).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+

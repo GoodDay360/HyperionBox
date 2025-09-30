@@ -209,7 +209,7 @@ export default function Download() {
                                                         set_pause(!pause());
                                                     })
                                                     .catch((error) => {
-                                                        console.log(error);
+                                                        console.error(error);
                                                         toast.remove();
                                                         toast.error("Something went wrong while requesting pause.",{
                                                             style: {
@@ -246,7 +246,7 @@ export default function Download() {
                                                         })
                                                     })
                                                     .catch((error) => {
-                                                        console.log(error);
+                                                        console.error(error);
                                                         toast.remove();
                                                         toast.error("Something went wrong while removing download.",{
                                                             style: {

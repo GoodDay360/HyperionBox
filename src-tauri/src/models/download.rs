@@ -6,6 +6,7 @@ use std::collections::HashMap;
 pub struct Download {
     pub source: String,
     pub id: String,
+    pub plugin_id: String,
     pub pause: usize,
 }
 
@@ -13,7 +14,6 @@ pub struct Download {
 pub struct DownloadItem {
     pub source: String,
     pub id: String,
-    pub plugin_id: String,
     pub season_index: usize,
     pub episode_index: usize,
     pub episode_id: String,

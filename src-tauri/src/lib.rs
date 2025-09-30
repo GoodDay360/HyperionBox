@@ -10,6 +10,7 @@ pub mod anime;
 
 
 pub mod commands;
+pub mod worker;
 mod test;
 
 #[cfg(debug_assertions)]
@@ -41,10 +42,13 @@ pub fn run() {
         .setup(|app| {
             let app_handle = app.handle();
             let appdata_dir = app_handle.path().app_data_dir().map_err(|e| e.to_string())?;
-            
-            env::set_var("HYPERIONBOX_APPDATA", appdata_dir);
 
+            env::set_var("HYPERIONBOX_APPDATA", appdata_dir);
             utils::configs::init()?;
+
+            /* Spawn Worker */
+            worker::download::new();
+            /* --- */
             return Ok(());
         })
         .plugin(tauri_plugin_fs::init())

@@ -1,4 +1,5 @@
 export interface EpisodeServer {
+    index: number,
     id: string,
     title: string,
 } 

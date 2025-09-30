@@ -153,8 +153,8 @@ export default function Download({
                         }}
                     >
                         <For each={SERVER_DATA()[prefer_server_type()??""]}>
-                            {(server, index)=>(
-                                <MenuItem value={index()}
+                            {(server)=>(
+                                <MenuItem value={server.index}
                                     sx={{
                                         fontSize: 'calc((100vw + 100vh)/2*0.0175)',
                                     }}
