@@ -56,15 +56,19 @@
 }
 
 .item_img{
-	width: calc((100vw + 100vh)/2 * 0.18);
-	height: calc((100vw + 100vh)/2 * 0.25);
+	width: 100%;
+	height: 100%;
 	border-top-left-radius: 5px;
 	border-bottom-left-radius: 5px;
 }
 
 .info_box {
-	padding: 12px;
-	
+	padding: 18px;
+	flex: 1;
+	box-sizing: border-box;
+	justify-content: space-between;
+	display: flex;
+	flex-direction: column;
 }
 
 .info_box .item_title{
@@ -97,6 +101,7 @@
 	display: flex;
 	flex-direction: column;
 	padding: 12px;
+	overflow: auto;
 }
 
 .item_season_text{
@@ -106,7 +111,7 @@
 	font-weight: 800;
 	user-select: none;
 	width: 100%;
-	overflow: hidden;
+	height: auto;
 	text-overflow: ellipsis; 
 	display: -webkit-box;
 	line-clamp: 1;
@@ -138,4 +143,13 @@
     -webkit-box-orient: vertical;
 	white-space: normal;
 	word-break: keep-all;
+}
+
+.item_button_box{
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	gap: 12px;
+	padding: 12px;
 }

@@ -10,6 +10,7 @@ pub mod anime;
 
 
 pub mod commands;
+mod test;
 
 #[cfg(debug_assertions)]
 pub const IS_DEV: bool = true;
@@ -102,6 +103,9 @@ pub fn run() {
 
             /* Download */
             commands::download::add_download,
+            commands::download::get_download,
+            commands::download::set_pause_download,
+            commands::download::remove_download,
             /* === */
             
         ])
@@ -110,32 +114,3 @@ pub fn run() {
 
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::commands;
-    use crate::utils;
-    use tauri::async_runtime;
-
-    #[tokio::test]
-    async fn init() {
-        utils::configs::init().map_err(|e| e.to_string()).unwrap();
-    }
-
-    #[tokio::test]
-    async fn test() {
-        match commands::get_content::view("anime".to_string(), "1".to_string()).await {
-            Ok(d) => {
-                println!("Data: {:?}", d)
-            }
-            Err(_) => assert!(false),
-        }
-    }
-
-
-    use crate::utils::configs;
-
-    #[tokio::test]
-    async fn test_setting() {
-        let _ = configs::get();
-    }
-}

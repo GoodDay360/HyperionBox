@@ -1,26 +1,17 @@
-export interface RelevantContent {
+
+
+export interface Episode {
+    error: boolean,
+    done: boolean,
+}
+
+export interface GetDownload {
+    source: string,
     id: string,
     title: string,
     poster: string,
-    banner: string,
-    trailer?: {
-        embed_url?: string,
-        url?: string
-    }
-}
-
-export interface ContentData {
-    id: string,
-    title?: string,
-    poster?: string,
-}
-
-export interface Content {
-    label: string,
-    data: ContentData[]
-}
-
-export interface HomeData {
-    relevant_content: RelevantContent[]; // Replace `any` with actual type if known
-    content: Content[];
+    seasons: Record<number, Record<number, Episode>>, // Season Index -> Record<Episode Index, Episode>
+    pause: boolean,
+    max: number,
+    finished: number,
 }

@@ -1,7 +1,17 @@
 use rusqlite::{Connection, Result, params};
 use std::fs;
+use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+use tauri::async_runtime;
 
 use crate::utils::configs;
+use crate::models::download::{
+    Download, DownloadItem,GetDownload, Episode
+};
+
+use crate::commands::local_manifest::get_local_manifest;
+
+
 
 pub fn get_db() -> Result<Connection, String> {
     let config_data = configs::get()?;
@@ -15,9 +25,16 @@ pub fn get_db() -> Result<Connection, String> {
 
     let conn = Connection::open(&favorite_db_path).map_err(|e| e.to_string())?;
 
-
     conn.execute("
         CREATE TABLE IF NOT EXISTS download (
+            source TEXT NOT NULL,
+            id TEXT NOT NULL,
+            pause INT NOT NULL DEFAULT 0
+        )
+    ",[]).map_err(|e| e.to_string())?;
+
+    conn.execute("
+        CREATE TABLE IF NOT EXISTS download_item (
             source TEXT NOT NULL,
             id TEXT NOT NULL,
             plugin_id TEXT NOT NULL,
@@ -27,7 +44,6 @@ pub fn get_db() -> Result<Connection, String> {
             prefer_server_type TEXT NOT NULL,
             prefer_server_index INT NOT NULL,
             prefer_quality INT NOT NULL,
-            pause INT NOT NULL DEFAULT 0,
             error INT NOT NULL DEFAULT 0,
             done INT NOT NULL DEFAULT 0
         )
@@ -51,10 +67,26 @@ pub async fn add_download(
 ) -> Result<(), String> {
     let conn = get_db()?;
 
-    // Check if the record already exists
     let exists: bool = conn.query_row(
         "SELECT EXISTS(
             SELECT 1 FROM download
+            WHERE source = ?1 AND id = ?2
+        )",
+        params![source, id],
+        |row| row.get(0),
+    ).map_err(|e| e.to_string())?;
+
+    if !exists {
+        conn.execute(
+            "INSERT INTO download (source, id) VALUES (?1, ?2)",
+            params![source, id],
+        ).map_err(|e| e.to_string())?;
+    }
+
+
+    let item_exists: bool = conn.query_row(
+        "SELECT EXISTS(
+            SELECT 1 FROM download_item
             WHERE source = ?1 AND id = ?2 AND plugin_id = ?3
             AND season_index = ?4 AND episode_index = ?5
         )",
@@ -62,14 +94,12 @@ pub async fn add_download(
         |row| row.get(0),
     ).map_err(|e| e.to_string())?;
 
-    if exists {
-        // Skip insertion
+    if item_exists {
         return Ok(());
     }
 
-    // Insert new record
     conn.execute(
-        "INSERT INTO download (
+        "INSERT INTO download_item (
             source, id, plugin_id, season_index, episode_index, episode_id,
             prefer_server_type, prefer_server_index, prefer_quality
         ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)",
@@ -84,6 +114,159 @@ pub async fn add_download(
             prefer_server_index,
             prefer_quality
         ],
+    ).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+
+
+
+#[tauri::command]
+pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
+
+    /* Get download data from download table */
+    let download: Result<Vec<Download>, String> = async_runtime::spawn_blocking(|| {
+        let conn = get_db()?;
+        let mut stmt = conn.prepare("
+            SELECT
+                source,
+                id,
+                pause
+            FROM download
+        ").map_err(|e| e.to_string())?;
+
+        let rows = stmt
+            .query_map(params![], |row| {
+                Ok(Download {
+                    source: row.get(0)?,
+                    id: row.get(1)?,
+                    pause: row.get(2)?
+
+                })
+            })
+            .map_err(|e| e.to_string())?;
+            
+        let mut results: Vec<Download> = vec![];
+        for row in rows {
+            results.push(row.map_err(|e| e.to_string())?);
+        }
+        Ok(results)
+    }).await.map_err(|e| e.to_string())?;
+    /* --- */
+
+    /* Map through each source, id and get download_item data */
+    let mut results:HashMap<String, GetDownload> = HashMap::new();
+
+    for row_download in download? {
+        let local_manifest =  get_local_manifest(row_download.source.clone(), row_download.id.clone()).await?;
+
+        let mut title: String = "?".to_string();
+        let mut poster: String = "".to_string();
+        if let Some(manifest_data) = local_manifest.manifest_data {
+            title = manifest_data.title;
+            poster = manifest_data.poster;
+        }
+        results.insert(row_download.id.clone(), GetDownload {
+            source: row_download.source.clone(),
+            id: row_download.id.clone(),
+            title: title,
+            poster: poster,
+            seasons: HashMap::new(),
+            pause: if row_download.pause == 1 { true } else { false },
+            max: 0,
+            finished: 0
+        });
+
+        let conn = get_db()?;
+        let mut stmt = conn.prepare("
+            SELECT
+                source,
+                id,
+                plugin_id,
+                season_index,
+                episode_index,
+                episode_id,
+                prefer_server_type,
+                prefer_server_index,
+                prefer_quality,
+                error,
+                done
+            FROM download_item
+            WHERE source = ?1 AND id = ?2
+        ").map_err(|e| e.to_string())?;
+
+        let download_item_rows = stmt
+            .query_map(params![row_download.source, row_download.id], |row| {
+                Ok(DownloadItem {
+                    source: row.get(0)?,
+                    id: row.get(1)?,
+                    plugin_id: row.get(2)?,
+                    season_index: row.get(3)?,
+                    episode_index: row.get(4)?,
+                    episode_id: row.get(5)?,
+                    prefer_server_type: row.get(6)?,
+                    prefer_server_index: row.get(7)?,
+                    prefer_quality: row.get(8)?,
+                    error: row.get(9)?,
+                    done: row.get(10)?,
+                })
+            })
+            .map_err(|e| e.to_string())?;
+            
+        for row in download_item_rows {
+            let download_item_row = row.map_err(|e| e.to_string())?;
+            let item = results.get_mut(&download_item_row.id).ok_or("no seasons index even after insert.")?;
+
+            if !item.seasons.contains_key(&download_item_row.season_index) {
+                item.seasons.insert(download_item_row.season_index, HashMap::new());
+            }
+
+            let item_season = item.seasons.get_mut(&download_item_row.season_index).ok_or("no episodes index even after insert.")?;
+
+            if !item_season.contains_key(&download_item_row.episode_index) {
+                item_season.insert(download_item_row.episode_index, Episode {
+                    error: if download_item_row.error == 1 { true } else { false },
+                    done: if download_item_row.done == 1 { true } else { false },
+                });
+                item.max += 1;
+                if download_item_row.done == 1 {
+                    item.finished += 1;
+                }
+            }
+        }
+    }
+    /* --- */
+
+    return Ok(results);
+}
+
+#[tauri::command]
+pub async fn set_pause_download(source: &str, id: &str, pause: bool) -> Result<(), String> {
+    let conn = get_db()?;
+
+    conn.execute(
+        "UPDATE download SET pause = ?1 WHERE source = ?2 AND id = ?3",
+        params![if pause == true { 1 } else { 0 }, source, id],
+    ).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn remove_download(source: String, id: String) -> Result<(), String> {
+    let conn = get_db()?;
+
+    // Delete from download_item first to avoid foreign key constraint issues
+    conn.execute(
+        "DELETE FROM download_item WHERE source = ?1 AND id = ?2",
+        params![source, id],
+    ).map_err(|e| e.to_string())?;
+
+    // Then delete from download
+    conn.execute(
+        "DELETE FROM download WHERE source = ?1 AND id = ?2",
+        params![source, id],
     ).map_err(|e| e.to_string())?;
 
     Ok(())
