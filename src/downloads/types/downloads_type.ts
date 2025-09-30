@@ -15,3 +15,12 @@ export interface GetDownload {
     max: number,
     finished: number,
 }
+
+export interface CurrentDownloadStatus {
+    source: string,
+    id: string,
+    season_index: number,
+    episode_index: number,
+    current: number,
+    total: number,
+}

@@ -3,6 +3,7 @@ use std::fs;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use tauri::async_runtime;
+use std::path::PathBuf;
 
 use crate::utils::configs;
 use crate::models::download::{
@@ -10,6 +11,7 @@ use crate::models::download::{
 };
 
 use crate::commands::local_manifest::get_local_manifest;
+use crate::worker::download::{CURRENT_DOWNLOAD_STATUS, CurrentDownloadStatus};
 
 
 
@@ -243,7 +245,55 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
 
 #[tauri::command]
 pub async fn remove_download(source: String, id: String) -> Result<(), String> {
+    let configs_data = configs::get()?;
+    let storage_dir = configs_data.storage_dir;
+    
+
     let conn = get_db()?;
+
+    /* Delete all local download */
+    let mut stmt = conn.prepare("
+        SELECT
+            source,
+            id,
+            season_index,
+            episode_index,
+            episode_id,
+            prefer_server_type,
+            prefer_server_index,
+            prefer_quality,
+            error,
+            done
+        FROM download_item
+        WHERE source = ?1 AND id = ?2
+    ").map_err(|e| e.to_string())?;
+
+    let download_item_rows = stmt
+        .query_map(params![&source, &id], |row| {
+            Ok(DownloadItem {
+                source: row.get(0)?,
+                id: row.get(1)?,
+                season_index: row.get(2)?,
+                episode_index: row.get(3)?,
+                episode_id: row.get(4)?,
+                prefer_server_type: row.get(5)?,
+                prefer_server_index: row.get(6)?,
+                prefer_quality: row.get(7)?,
+                error: row.get(8)?,
+                done: row.get(9)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    for row in download_item_rows {
+        let row_data = row.map_err(|e| e.to_string())?;
+        let download_dir = storage_dir.join(&row_data.source).join(&row_data.id)
+            .join(&row_data.season_index.to_string()).join(&row_data.episode_index.to_string()).join("download");
+        
+        if download_dir.exists() {
+            fs::remove_dir_all(download_dir).map_err(|e| e.to_string())?;
+        }
+    }
+    /* --- */
 
     // Delete from download_item first to avoid foreign key constraint issues
     conn.execute(
@@ -261,7 +311,34 @@ pub async fn remove_download(source: String, id: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn set_pause_download(source: &str, id: &str, pause: bool) -> Result<(), String> {
+pub async fn remove_download_item(source: String, id: String, season_index: usize, episode_index: usize) -> Result<(), String> {
+    let configs_data = configs::get()?;
+    let storage_dir = configs_data.storage_dir;
+    
+
+    let conn = get_db()?;
+
+    let download_dir = storage_dir.join(&source).join(&id)
+        .join(&season_index.to_string()).join(&episode_index.to_string()).join("download");
+    
+    if download_dir.exists() {
+        fs::remove_dir_all(download_dir).map_err(|e| e.to_string())?;
+    }
+    
+    /* --- */
+
+    conn.execute(
+        "DELETE FROM download_item WHERE source = ?1 AND id = ?2 AND season_index = ?3 AND episode_index = ?4",
+        params![source, id, season_index, episode_index],
+    ).map_err(|e| e.to_string())?;
+
+
+    Ok(())
+}
+
+
+#[tauri::command]
+pub async fn set_pause_download(source: String, id: String, pause: bool) -> Result<(), String> {
     let conn = get_db()?;
 
     conn.execute(
@@ -272,4 +349,36 @@ pub async fn set_pause_download(source: &str, id: &str, pause: bool) -> Result<(
     Ok(())
 }
 
+#[tauri::command]
+pub async fn set_error_download(source: String, id: String, season_index: usize, episode_index: usize, error: bool) -> Result<(), String> {
+    let conn = get_db()?;
+
+    conn.execute("
+        UPDATE download_item SET error = ?1 
+        WHERE source = ?2 AND id = ?3 AND season_index = ?4 AND episode_index = ?5
+    ", params![if error == true { 1 } else { 0 }, source, id, season_index, episode_index],
+    ).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+pub async fn set_done_download(source: &str, id: &str, season_index: usize, episode_index: usize, done: bool) -> Result<(), String> {
+    let conn = get_db()?;
+
+    conn.execute(
+        "UPDATE download_item SET done = ?1 WHERE source = ?2 AND id = ?3 AND season_index = ?4 AND episode_index = ?5",
+        params![if done == true { 1 } else { 0 }, source, id, season_index, episode_index],
+    ).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_current_download_status() -> Result<Option<CurrentDownloadStatus>, String> {
+    if let Some(current_download_status) = CURRENT_DOWNLOAD_STATUS.get(&1) {
+        return Ok(Some(current_download_status.clone()));
+    }else{
+        return Ok(None);
+    }
+}
 

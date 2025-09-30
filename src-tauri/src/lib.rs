@@ -47,7 +47,7 @@ pub fn run() {
             utils::configs::init()?;
 
             /* Spawn Worker */
-            worker::download::new();
+            worker::download::new(app_handle.clone());
             /* --- */
             return Ok(());
         })
@@ -109,7 +109,10 @@ pub fn run() {
             commands::download::add_download,
             commands::download::get_download,
             commands::download::set_pause_download,
+            commands::download::set_error_download,
             commands::download::remove_download,
+            commands::download::remove_download_item,
+            commands::download::get_current_download_status,
             /* === */
             
         ])

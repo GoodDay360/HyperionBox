@@ -2,10 +2,11 @@
 import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { platform } from '@tauri-apps/plugin-os';
+import { listen } from '@tauri-apps/api/event';
 
 
 // SolidJS Imports
-import { createSignal, onMount, For, Index, useContext } from "solid-js";
+import { createSignal, onMount, For, Index, useContext, onCleanup } from "solid-js";
 import { createStore } from "solid-js/store"
 
 // SolidJS Router Imports
@@ -23,6 +24,8 @@ import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
 import ArrowRightRoundedIcon from '@suid/icons-material/ArrowRightRounded';
 import CheckRoundedIcon from '@suid/icons-material/CheckRounded';
+import ReplayRoundedIcon from '@suid/icons-material/ReplayRounded';
+import RemoveCircleOutlineRoundedIcon from '@suid/icons-material/RemoveCircleOutlineRounded';
 
 
 // Solid Toast
@@ -44,8 +47,13 @@ import styles from "../styles/downloads.module.css"
 import { ContextManager } from '@src/app/components/app';
 
 // Types Import
-import { request_get_download, request_set_pause_download, request_remove_download } from '../scripts/downloads';
-import { GetDownload } from '../types/downloads_type';
+import { 
+    request_get_download, 
+    request_set_pause_download, request_set_error_download, 
+    request_remove_download, request_remove_download_item,
+    request_get_current_download_status 
+} from '../scripts/downloads';
+import { GetDownload, CurrentDownloadStatus } from '../types/downloads_type';
 
 
 
@@ -58,15 +66,12 @@ export default function Download() {
 
     const [is_loading, set_is_loading] = createSignal<boolean>(false);
     const [DOWNLOAD_DATA, SET_DOWNLOAD_DATA] = createStore<Record<string,GetDownload>>({});
+    const [CURRENT_DOWNLOAD_STATUS, SET_CURRENT_DOWNLOAD_STATUS] = createSignal<CurrentDownloadStatus|null>(null);
 
     const get_data = () => {
         // set_is_loading(true);
-        
-    }
-
-    onMount(() => {
-        
-        get_data();
+        SET_DOWNLOAD_DATA({});
+        SET_CURRENT_DOWNLOAD_STATUS(null);
 
         request_get_download()
             .then((data) => {
@@ -76,12 +81,34 @@ export default function Download() {
             .catch((e) => {
                 console.error(e);
                 toast.remove();
-                toast.error("Something went wrong.",{
+                toast.error("Something went wrong while getting downloads.",{
                     style: {
                         color:"red",
                     }
                 })
             })
+        
+        request_get_current_download_status()
+            .then((data) => {
+                console.log(data);
+                SET_CURRENT_DOWNLOAD_STATUS(data);
+            })
+            .catch((e) => {
+                console.error(e);
+                toast.remove();
+                toast.error("Something went wrong while getting current download status.",{
+                    style: {
+                        color:"red",
+                    }
+                })
+            })
+    }
+
+    onMount(() => {
+        
+        get_data();
+
+        
     })
     
     return (<>
@@ -131,6 +158,7 @@ export default function Download() {
                     <For each={Object.keys(DOWNLOAD_DATA)}>
                         {(id)=> {
                             const max:number = DOWNLOAD_DATA[id].max;
+                            const source:string = DOWNLOAD_DATA[id].source;
 
                             const [finished, set_finished] = createSignal<number>(DOWNLOAD_DATA[id].finished);
                             const [pause, set_pause] = createSignal<boolean>(DOWNLOAD_DATA[id].pause);
@@ -145,7 +173,9 @@ export default function Download() {
                                                 width: 'calc((100vw + 100vh)/2 * 0.18)',
                                                 height: 'calc((100vw + 100vh)/2 * 0.25)',
                                                 borderTopLeftRadius: '5px',
-                                                borderBottomLeftRadius: '5px',
+                                            }}
+                                            onClick={() => {
+                                                navigate(`/view/?source=${source}&id=${id}`);
                                             }}
                                         >
                                             <LazyLoadImage 
@@ -169,23 +199,146 @@ export default function Download() {
                                                         <span class={styles.item_season_text}>Season: {season_index+1}</span>
                                                     }
                                                     <For each={Object.keys(DOWNLOAD_DATA[id].seasons[season_index]).map(Number)}>
-                                                        {(episode_index) => (
-                                                            <div class={styles.item_episode_box}>
-                                                                <span class={styles.item_episode_text}><ArrowRightRoundedIcon color='inherit' fontSize='inherit'/>Episodes: {episode_index+1}</span>
-                                                                {DOWNLOAD_DATA[id].seasons[season_index][episode_index].done
-                                                                    ? <CheckRoundedIcon color='success'
-                                                                        sx={{
-                                                                            fontSize: 'calc((100vw + 100vh)/2*0.0325)',
-                                                                        }}
-                                                                    />
-                                                                    : <CircularProgress color='secondary' variant='determinate'
-                                                                        value={10}
-                                                                        size={"calc((100vw + 100vh)/2*0.0325)"}        
-                                                                    />
-                                                                }
-                                                                
-                                                            </div>
-                                                        )}
+                                                        {(episode_index) => {
+                                                            const source = DOWNLOAD_DATA[id].source;
+                                                            
+                                                            const [is_done, set_is_done] = createSignal<boolean>(DOWNLOAD_DATA[id].seasons[season_index][episode_index]?.done);
+                                                            const [is_error, set_is_error] = createSignal<boolean>(DOWNLOAD_DATA[id].seasons[season_index][episode_index]?.error);
+
+                                                            const [current_progress, set_current_progress] = createSignal(0);
+
+                                                            onMount(() => {
+                                                                let unlisten: () => void;
+                                                                (async () => {
+                                                                    unlisten = await listen<CurrentDownloadStatus>(`download-status-${source}-${id}-${season_index}-${episode_index}`, (event) => {
+                                                                        const current_status =  event.payload;
+
+                                                                        set_current_progress(current_status.current/current_status.total*100);
+                                                                    });
+                                                                })();
+                                                                onCleanup(() => {
+                                                                    unlisten(); 
+                                                                });
+                                                            })
+
+                                                            onMount(() => {
+                                                                let unlisten: () => void;
+                                                                (async () => {
+                                                                    unlisten = await listen<boolean>(`download-finish-${source}-${id}-${season_index}-${episode_index}`, (event) => {
+                                                                        const done =  event.payload;
+                                                                        set_is_done(done);
+                                                                        set_finished(finished()+1);
+                                                                    });
+                                                                })();
+                                                                onCleanup(() => {
+                                                                    unlisten(); 
+                                                                });
+                                                            })
+
+                                                            onMount(() => {
+                                                                let unlisten: () => void;
+                                                                (async () => {
+                                                                    unlisten = await listen<boolean>(`download-error-${source}-${id}-${season_index}-${episode_index}`, (event) => {
+                                                                        const error =  event.payload;
+                                                                        set_is_error(error);
+                                                                    });
+                                                                })();
+                                                                onCleanup(() => {
+                                                                    unlisten(); 
+                                                                });
+                                                            })
+
+                                                            return (
+                                                                <div class={styles.item_episode_box}>
+                                                                    
+                                                                    <span class={styles.item_episode_text}><ArrowRightRoundedIcon color='inherit' fontSize='inherit'/>Episodes: {episode_index+1}</span>
+                                                                    
+                                                                    {!is_error()
+                                                                        ? <>
+                                                                            {is_done()
+                                                                                ? <CheckRoundedIcon color='success'
+                                                                                    sx={{
+                                                                                        fontSize: 'calc((100vw + 100vh)/2*0.0325)',
+                                                                                    }}
+                                                                                />
+                                                                                : <CircularProgress color='secondary' variant='determinate'
+                                                                                    value={current_progress()}
+                                                                                    size={"calc((100vw + 100vh)/2*0.0325)"}        
+                                                                                />
+                                                                            }
+                                                                        </>
+                                                                        : <>
+                                                                            <IconButton
+                                                                                sx={{
+                                                                                    color: "cyan",
+                                                                                    fontSize: 'calc((100vw + 100vh)/2*0.0325)',
+                                                                                }}
+                                                                                onClick={() => {
+                                                                                    request_set_error_download(
+                                                                                        source, id, season_index, episode_index, false
+                                                                                    )
+                                                                                        .then(() => {
+                                                                                            set_is_error(false);
+                                                                                            toast.remove();
+                                                                                            toast.success("Request retry successful.",{
+                                                                                                style: {
+                                                                                                    color:"green",
+                                                                                                }
+                                                                                            })
+                                                                                        })
+                                                                                        .catch((error) => {
+                                                                                            console.error(error);
+                                                                                            toast.remove();
+                                                                                            toast.error("Something went wrong while requesting retry.",{
+                                                                                                style: {
+                                                                                                    color:"red",
+                                                                                                }
+                                                                                            })
+                                                                                        });
+                                                                                }}
+                                                                            >
+                                                                                <ReplayRoundedIcon/>
+                                                                            </IconButton>
+                                                                        </>
+                                                                    }
+
+                                                                    {(is_error() || is_done()) &&
+                                                                        <IconButton
+                                                                            sx={{
+                                                                                color: "red",
+                                                                                fontSize: 'calc((100vw + 100vh)/2*0.0325)',
+                                                                            }}
+                                                                            onClick={() => {
+                                                                                request_remove_download_item(
+                                                                                    source, id, season_index, episode_index
+                                                                                )
+                                                                                    .then(() => {
+                                                                                        get_data();
+                                                                                        toast.remove();
+                                                                                        toast.success("Episode removed successfully.",{
+                                                                                            style: {
+                                                                                                color:"green",
+                                                                                            }
+                                                                                        })
+                                                                                    })
+                                                                                    .catch((error) => {
+                                                                                        console.error(error);
+                                                                                        toast.remove();
+                                                                                        toast.error("Something went wrong while removing episode.",{
+                                                                                            style: {
+                                                                                                color:"red",
+                                                                                            }
+                                                                                        })
+                                                                                    });
+                                                                            }}
+                                                                        >
+                                                                            <RemoveCircleOutlineRoundedIcon/>
+                                                                        </IconButton>
+                                                                    }
+                                                                    
+                                                                </div>
+                                                            )
+                                                        }}
                                                     </For>
                                                 </>)}
                                                 
@@ -259,7 +412,7 @@ export default function Download() {
                                                     });
                                             }}
                                         >
-                                            Cancel
+                                            {max == finished() ? "Remove" : "Cancel"}
                                         </Button>
 
                                     </div>
