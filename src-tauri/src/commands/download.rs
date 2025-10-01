@@ -4,6 +4,9 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use tauri::async_runtime;
 use std::path::PathBuf;
+use serde_json::{from_reader};
+
+use chlaty_core::request_plugin::get_server::ServerResult;
 
 use crate::utils::configs;
 use crate::models::download::{
@@ -382,3 +385,27 @@ pub async fn get_current_download_status() -> Result<Option<CurrentDownloadStatu
     }
 }
 
+#[tauri::command]
+pub async fn get_local_download_manifest(source: String, id: String, season_index: usize, episode_index: usize) -> Result<Option<ServerResult>, String> {
+    let configs_data = configs::get()?;
+    let storage_dir = configs_data.storage_dir;
+
+    let download_dir = storage_dir.join(&source).join(&id)
+        .join(&season_index.to_string()).join(&episode_index.to_string()).join("download");
+    
+    let manifest_path = download_dir.join("manifest.json");
+    if !manifest_path.exists() {
+        return Ok(None);
+    }
+
+    let manifest_file = fs::File::open(&manifest_path).map_err(|e| e.to_string())?;
+    
+    let manifest_data: ServerResult = match serde_json::from_reader(manifest_file).map_err(|e| e.to_string()) {
+        Ok(data) => data,
+        Err(_) => {
+            return Ok(None);
+        }
+    };
+
+    return Ok(Some(manifest_data));
+}

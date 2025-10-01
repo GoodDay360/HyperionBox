@@ -7,6 +7,8 @@ import { createSignal, onMount, For, Index, useContext, onCleanup } from "solid-
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
 
+// SolidJS Types Imports
+import type { JSX } from 'solid-js';
 
 // SUID Imports
 import { 
@@ -19,7 +21,8 @@ import {
 // SUID Icon Imports
 import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
-import type { JSX } from 'solid-js';
+import SaveRoundedIcon from '@suid/icons-material/SaveRounded';
+
 
 // Solid Toast
 import toast from 'solid-toast';
@@ -43,7 +46,8 @@ import MODIFY_PLOADER from '../scripts/modify_ploader';
 import MODIFY_FLOADER from '../scripts/modify_floader';
 import { 
     get_episode_list, get_episode_server, get_server,
-    get_watch_state, save_watch_state
+    get_watch_state, save_watch_state,
+    request_get_local_download_manifest
 
 
 } from '../scripts/watch';
@@ -589,34 +593,60 @@ export default function Watch() {
                                 (item) => search() === "" || item.index.toString().includes(search().trim()) 
                                     || item.id.includes(search().trim()) || item.title.toLowerCase().includes(search().trim().toLowerCase())
                             )}>
-                                {(item)=>(
-                                    <ButtonBase
-                                        sx={{
-                                            color: 'var(--color-1)',
-                                            fontSize: 'calc((100vw + 100vh)/2*0.025)',
-                                            fontWeight: '500',
-                                            padding: '8px',
-                                            justifyContent: 'flex-start',
-                                            background: 'var(--background-2)',
-                                            textAlign: 'left',
-                                            boxShadow: "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
-                                            ...((item.id === current_episode_id()) && {
-                                                background: 'var(--background-3)',
-                                                color: 'gray',
-                                            }),
-                                            "&:hover": {
-                                                background: 'var(--background-3)',
-                                            }
-                                        }}
-                                        onClick={() => {
-                                            set_current_episode_id(item.id);
-                                            set_current_episode_index(item.index);
-                                            get_data();
-                                        }}
-                                    >
-                                        Episode {item.index+1}: {item.title}
-                                    </ButtonBase>
-                                )}
+                                {(item)=>{
+                                    const [available_local, set_available_local] = createSignal(false);
+
+                                    onMount(() => {
+                                        request_get_local_download_manifest(source,id,current_season_index(),item.index)
+                                            .then((data) => {
+                                                console.log("Local Download Manifest: ", data);
+                                                if (data !== null) {
+                                                    set_available_local(true);
+                                                }
+                                            })
+                                            .catch((e) => {
+                                                console.error(e);
+                                            })
+                                    })
+
+                                    return (<div class={styles.episode_item_box}>
+                                        <ButtonBase
+                                            sx={{
+                                                flex:1,
+                                                color: 'var(--color-1)',
+                                                fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                                fontWeight: '500',
+                                                padding: '8px',
+                                                justifyContent: 'flex-start',
+                                                background: 'var(--background-2)',
+                                                textAlign: 'left',
+                                                boxShadow: "rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px",
+                                                ...((item.id === current_episode_id()) && {
+                                                    background: 'var(--background-3)',
+                                                    color: 'gray',
+                                                }),
+                                                "&:hover": {
+                                                    background: 'var(--background-3)',
+                                                }
+                                            }}
+                                            onClick={() => {
+                                                set_current_episode_id(item.id);
+                                                set_current_episode_index(item.index);
+                                                get_data();
+                                            }}
+                                        >
+                                            Episode {item.index+1}: {item.title}
+                                        </ButtonBase>
+                                        {available_local() &&
+                                            <SaveRoundedIcon
+                                                sx={{
+                                                    color: "cyan",
+                                                    fontSize: 'calc((100vw + 100vh)/2*0.0325)',
+                                                }}
+                                            />
+                                        }
+                                    </div>)
+                                }}
                             </For>
                         </div>
                     </div>

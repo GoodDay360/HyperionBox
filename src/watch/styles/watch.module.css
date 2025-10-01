@@ -144,3 +144,11 @@
 	box-sizing: border-box;
 
 }
+
+.episode_item_box{
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}

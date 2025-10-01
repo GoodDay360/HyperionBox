@@ -23,6 +23,7 @@ import AddLinkRoundedIcon from '@suid/icons-material/AddLinkRounded';
 import DownloadRoundedIcon from '@suid/icons-material/DownloadRounded';
 import SelectAllRoundedIcon from '@suid/icons-material/SelectAllRounded';
 import DeselectRoundedIcon from '@suid/icons-material/DeselectRounded';
+import SaveRoundedIcon from '@suid/icons-material/SaveRounded';
 
 
 // Solid Toast
@@ -41,6 +42,7 @@ import styles from "../styles/view.module.css"
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
 import { ViewData, DownloadEpisode } from '../types/view_type';
+import { request_get_local_download_manifest } from '@src/watch/scripts/watch';
 
 
 export default function View() {
@@ -370,7 +372,7 @@ export default function View() {
                                             {(item)=>{
 
                                                 const [is_checked, set_is_checked] = createSignal<boolean>(Object.keys(DOWNLOAD_DATA).includes(item.id));
-                                                
+                                                const [available_local, set_available_local] = createSignal<boolean>(false);
                                                 createEffect(on(download, () => {
                                                     if (!download().mode) {
                                                         set_is_checked(false);
@@ -380,6 +382,19 @@ export default function View() {
                                                 createEffect(on(select_download_all, () => {
                                                     set_is_checked(select_download_all());
                                                 }))
+
+                                                onMount(() => {
+                                                    request_get_local_download_manifest(source,id,current_season_index(),item.index)
+                                                        .then((data) => {
+                                                            console.log("Local Download Manifest: ", data);
+                                                            if (data !== null) {
+                                                                set_available_local(true);
+                                                            }
+                                                        })
+                                                        .catch((e) => {
+                                                            console.error(e);
+                                                        })
+                                                })
 
                                                 return (<div class={styles.episode_item}>
                                                     <ButtonBase
@@ -404,7 +419,16 @@ export default function View() {
                                                     >
                                                         Episode {item.index+1}: {item.title}
                                                     </ButtonBase>
-                                                    {download()?.mode &&
+                                                    {available_local() &&
+                                                        <SaveRoundedIcon
+                                                            sx={{
+                                                                color: "cyan",
+                                                                fontSize: 'calc((100vw + 100vh)/2*0.0325)',
+                                                            }}
+                                                        />
+                                                    }
+                                                    
+                                                    {(download()?.mode && !available_local) &&
                                                         <Checkbox  
                                                             checked={is_checked()}
                                                             sx={{

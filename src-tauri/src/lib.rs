@@ -113,6 +113,7 @@ pub fn run() {
             commands::download::remove_download,
             commands::download::remove_download_item,
             commands::download::get_current_download_status,
+            commands::download::get_local_download_manifest,
             /* === */
             
         ])

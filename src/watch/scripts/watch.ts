@@ -27,3 +27,10 @@ export function get_watch_state(source: string, id: string, seasonIndex: number,
 export function save_watch_state(source: string, id: string, seasonIndex: number, episodeIndex: number, watchState: WatchState): Promise<void> {
     return invoke('save_watch_state', {source, id, seasonIndex, episodeIndex, watchState});
 }
+
+
+export const request_get_local_download_manifest = async (source:string, id:string, seasonIndex: number, episodeIndex: number): Promise<ServerData|null> => {
+    return invoke<ServerData|null>('get_local_download_manifest',{
+        source, id, seasonIndex, episodeIndex
+    });
+}
