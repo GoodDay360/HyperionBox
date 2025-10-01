@@ -5,6 +5,7 @@ use reqwest::Client;
 use futures_util::StreamExt;
 use reqwest::header::{HeaderMap, HeaderValue};
 use url::Url;
+use tokio::time::Duration;
 
 pub async fn new<F>(
     url: &str,
@@ -20,10 +21,12 @@ where
     loop {
         let client = Client::new();
         let response = client.get(current_url.clone())
+            .timeout(Duration::from_secs(30))
             .headers(new_headers.clone())
             .send().await.map_err(|e| format!("Request failed: {}", e))?;
 
         if response.url().to_string() != current_url {
+            
             let parsed_url = Url::parse(&current_url).map_err(|e| e.to_string())?;
             let new_host = parsed_url.host_str().ok_or_else(|| "Host not found from parsed URL.")?;
             new_headers.insert("Host", HeaderValue::from_str(new_host).map_err(|e| e.to_string())?);

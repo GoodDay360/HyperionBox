@@ -4,11 +4,11 @@ use rusqlite::{
     Result, params,
     Error::QueryReturnedNoRows
 };
-use tracing::error;
+use tracing::{error,info};
 use tauri::async_runtime;
 use reqwest::{header, Client};
 use reqwest::header::{HeaderMap, HeaderValue};
-use m3u8_rs::Playlist;
+use m3u8_rs::{Playlist};
 use std::str::{from_utf8};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
@@ -211,7 +211,7 @@ async fn get_media_hls(
         source, plugin_id, server_id
     ).map_err(|e| e.to_string())?;
 
-    println!("server_data: {:?}", server_data);
+    
 
     let mut hls_file: String = "".to_string();
 
@@ -233,11 +233,12 @@ async fn get_media_hls(
     headers.insert("Referer", HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?);
     headers.insert("Origin", HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?);
     
-
+    info!("[worker:download] Downloading HLS... | {}", hls_file);
     let response = client.get(&hls_file)
+        .timeout(Duration::from_secs(10))
         .headers(headers)
         .send().await.map_err(|e| format!("Request failed: {}", e))?;
-
+    info!("[worker:download] Download done with status: {}", response.status());
 
     if response.status().is_success() {
         let hls_data = response.bytes().await.map_err(|e| e.to_string())?;
@@ -296,6 +297,7 @@ async fn get_media_hls(
                 }
 
                 let response = client.get(_url)
+                    .timeout(Duration::from_secs(10))
                     .headers(headers)
                     .send().await.map_err(|e| format!("Request failed: {}", e))?;
 
@@ -308,7 +310,7 @@ async fn get_media_hls(
                 }
 
             },
-            Result::Ok((_, Playlist::MediaPlaylist(pl))) => {
+            Result::Ok((_, Playlist::MediaPlaylist(_))) => {
                 return Ok(MediaHLS {
                     data: from_utf8(&hls_data).map_err(|e| e.to_string())?.to_string(),
                     server: server_data
@@ -399,7 +401,7 @@ async fn download_episode(
                 if !check_current_download(source, id, season_index, episode_index)? {
                     return Ok(());
                 }
-                if index <= last_download_index {
+                if (index as isize) <= last_download_index {
                     continue;
                 }
                 /* Set current download status. This is required to prevent unkown behavior on frontend. */
@@ -427,7 +429,7 @@ async fn download_episode(
                 }
                 /* --- */
 
-                println!("segment: {}", segment.uri);
+                
                 
 
                 let mut _url:String = "".to_string();
@@ -461,7 +463,7 @@ async fn download_episode(
                     }
                 };
 
-                download_status_mannifest_data.current = index;
+                download_status_mannifest_data.current = index as isize;
                 let download_status_manifest_data_json = to_string(&download_status_mannifest_data).map_err(|e| e.to_string())?;
                 fs::write(&download_status_manifest_path, &download_status_manifest_data_json).map_err(|e| e.to_string())?;
                 /* --- */
@@ -497,7 +499,10 @@ async fn download_episode(
 
             /* Map Segments URI to local and save to player.m3u8. */
             for (index, segment) in pl.segments.iter_mut().enumerate() {
-                segment.uri = format!("segment-{}", index);
+                let new_segment_file = PathBuf::from(source).join(id)
+                    .join(&season_index.to_string()).join(&episode_index.to_string())
+                    .join("download").join("segments").join(&format!("segment-{}", index)).display().to_string();
+                segment.uri = new_segment_file;
             }
 
             let player_path = download_dir.join("player.m3u8");
@@ -520,6 +525,7 @@ async fn download_episode(
             let captions = &mut server.data.tracks;
 
             for (index, caption) in captions.iter_mut().enumerate() {
+                
                 let caption_file_name = format!("{}.vtt", if let Some(label) = &caption.label { label.clone() } else { index.to_string() });
                 let caption_path = captions_dir.join(&caption_file_name);
                 download_file::new(
@@ -528,18 +534,29 @@ async fn download_episode(
                     headers.clone(), 
                     |_,_| {}
                 ).await.map_err(|e| e.to_string())?;
-                caption.file = caption_file_name;
+
+                let new_caption_file = PathBuf::from(source).join(id)
+                    .join(&season_index.to_string()).join(&episode_index.to_string())
+                    .join("download").join("captions").join(&caption_file_name).display().to_string();
+                caption.file = new_caption_file;
             }
             /* --- */
 
 
             /* Modify Sources before save manifest */
             let sources = &mut server.data.sources;
+
+            let new_source_file = PathBuf::from(source).join(id)
+                .join(&season_index.to_string()).join(&episode_index.to_string())
+                .join("download").join("player.m3u8").display().to_string();
+
             for source in sources.iter_mut() {
                 if source._type == "hls" {
-                    source.file = "player.m3u8".to_string();
+                    source.file = new_source_file;
+                    break;
                 }
             }
+            /* --- */
 
             /* Reset Config */
             let config = &mut server.config;
@@ -611,7 +628,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
         
 
         if let Some(current_download_item) = current_download_item_result {
-            println!("current_download_item: {:?}", current_download_item);
+            
             
             let source = current_download.source;
             let id = current_download.id;
@@ -664,7 +681,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                 }
             }
 
-            println!("selected_server_id: {}", selected_server_id);
+            
 
             let media_hls = match get_media_hls(
                 &source, 
@@ -678,6 +695,8 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                     return Err(e.to_string());
                 }
             };
+
+            println!("Media HLS: {:?}", media_hls);
 
             match download_episode(app.clone(), &source, &id, season_index, episode_index, media_hls).await {
                 Ok(_) => {},

@@ -39,13 +39,13 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
             let atributes = item.attributes.as_ref().ok_or("no attributes")?;
             let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
             let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
-            let poster = atributes
-                .posterImage
-                .as_ref()
-                .ok_or("no poster")?
-                .large
-                .as_ref()
-                .ok_or("no large poster")?;
+            let mut poster: String = "".to_string();
+            if let Some(poster_image) = atributes.posterImage.as_ref() {
+                poster = poster_image.large.as_ref().unwrap_or(&"".to_string()).clone();
+                if poster.is_empty() {
+                    poster = poster_image.original.as_ref().unwrap_or(&"".to_string()).clone();
+                }
+            }
 
             let mut banner: String = String::new();
 
@@ -109,13 +109,13 @@ async fn get_trending_content() -> Result<Vec<ContentData>, String> {
             let atributes = item.attributes.as_ref().ok_or("no attributes")?;
             let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
             let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
-            let poster = atributes
-                .posterImage
-                .as_ref()
-                .ok_or("no poster")?
-                .large
-                .as_ref()
-                .ok_or("no large poster")?;
+            let mut poster: String = "".to_string();
+            if let Some(poster_image) = atributes.posterImage.as_ref() {
+                poster = poster_image.large.as_ref().unwrap_or(&"".to_string()).clone();
+                if poster.is_empty() {
+                    poster = poster_image.original.as_ref().unwrap_or(&"".to_string()).clone();
+                }
+            }
 
             let new_content_item = ContentData {
                 id: id.to_string().clone(),
@@ -124,7 +124,7 @@ async fn get_trending_content() -> Result<Vec<ContentData>, String> {
                 } else {
                     title.clone()
                 },
-                poster: poster.clone(),
+                poster: poster,
             };
             new_content_data.push(new_content_item);
         }
@@ -134,57 +134,25 @@ async fn get_trending_content() -> Result<Vec<ContentData>, String> {
     }
 }
 
-async fn get_recent_content() -> Result<Vec<ContentData>, String> {
-    
-    let mut new_content_data: Vec<ContentData> = vec![];
-
-    let recent_from_favorite = get_recent_from_favorite(15).await?;
-
-    for item in recent_from_favorite {
-        let local_manifest = get_local_manifest(item.source, item.id.to_string()).await?;
-        let manifest_data = local_manifest.manifest_data.ok_or("no manifest data")?;
-
-        let new_content = ContentData {
-            id: item.id.to_string().clone(),
-            title: manifest_data.title,
-            poster: manifest_data.poster,
-        };
-        new_content_data.push(new_content);
-    }
-
-    return Ok(new_content_data);
-}
 
 pub async fn new() -> Result<HomeData, String> {
     let (
         task_get_relevant_content, 
         task_get_trending_content,
-        task_get_recent_from_favorite,
     ) = tokio::join!(
         get_relevant_content(), 
         get_trending_content(),
-        get_recent_content(),
     );
 
     let relevant_content = match task_get_relevant_content {
         Ok(content) => content,
-        Err(_) => {  
-            error!("get_relevant_content error");
+        Err(e) => {  
+            error!("get_relevant_content error: {}", e);
             vec![]
         },
     };
 
     let mut new_content: Vec<Content> = vec![];
-
-    let recent_from_favorite = task_get_recent_from_favorite?;
-
-    if recent_from_favorite.len() > 0 {
-        new_content.push(Content {
-            label: "Continuous Watching".to_string(),
-            data: recent_from_favorite,
-        });
-    }
-    
 
     match task_get_trending_content {
         Ok(data) => {
@@ -201,11 +169,6 @@ pub async fn new() -> Result<HomeData, String> {
         },
     };
     
-    
-
-    
-    
-
     return Ok(HomeData {
         relevant_content: relevant_content,
         content: new_content,

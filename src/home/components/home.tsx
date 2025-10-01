@@ -268,9 +268,9 @@ export default function Home() {
                                                 src={item.poster}
 
                                                 skeleton_sx={{
-                                                    width: "100%",
-                                                    height: "calc((100vw + 100vh)/2*0.18)",
-                                                    background: "calc((100vw + 100vh)/2*0.25)",
+                                                    width: "calc((100vw + 100vh)/2*0.18)",
+                                                    height: "calc((100vw + 100vh)/2*0.25)",
+                                                    background: "var(--background-2)",
                                                     borderRadius: "5px",
                                                 }}
                                             />

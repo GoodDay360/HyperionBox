@@ -386,10 +386,11 @@ export default function View() {
                                                 onMount(() => {
                                                     request_get_local_download_manifest(source,id,current_season_index(),item.index)
                                                         .then((data) => {
-                                                            console.log("Local Download Manifest: ", data);
+                                                            console.log(data)
                                                             if (data !== null) {
                                                                 set_available_local(true);
                                                             }
+                                                            console.log(available_local())
                                                         })
                                                         .catch((e) => {
                                                             console.error(e);
@@ -428,7 +429,7 @@ export default function View() {
                                                         />
                                                     }
                                                     
-                                                    {(download()?.mode && !available_local) &&
+                                                    {(download()?.mode && !available_local()) &&
                                                         <Checkbox  
                                                             checked={is_checked()}
                                                             sx={{

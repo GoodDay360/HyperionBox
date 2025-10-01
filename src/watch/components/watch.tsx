@@ -1,5 +1,7 @@
 // Tauri API
 import { platform } from '@tauri-apps/plugin-os';
+import { join } from '@tauri-apps/api/path';
+import { convertFileSrc } from '@tauri-apps/api/core';
 
 // SolidJS Imports
 import { createSignal, onMount, For, Index, useContext, onCleanup } from "solid-js";
@@ -48,9 +50,9 @@ import {
     get_episode_list, get_episode_server, get_server,
     get_watch_state, save_watch_state,
     request_get_local_download_manifest
-
-
 } from '../scripts/watch';
+
+import { get_configs } from '@src/app/scripts/configs';
 
 // Type Imports
 import { EpisodeList } from '../types/episode_list_type';
@@ -93,10 +95,10 @@ export default function Watch() {
     const [EPISODE_LIST, SET_EPISODE_LIST] = createSignal<EpisodeList[][][]>();
     
     const [EPISIDE_SERVER_DATA, SET_EPISODE_SERVER_DATA] = createSignal<EpisodeServerData>();
-    const [SERVER_DATA, SET_SERVER_DATA] = createSignal<ServerData>();
+    const [SERVER_DATA, SET_SERVER_DATA] = createSignal<ServerData|null>();
 
 
-
+    const [mode, set_mode] = createSignal<{current: "online"|"offline", force_online: boolean}>({current:"online", force_online:false});
     const [search, set_search] = createSignal<string>("");
     const [selected_server_id, set_selected_server_id] = createSignal<string>("");
     const [current_episode_page_index, set_current_episode_page_index] = createSignal<number>(0);
@@ -143,8 +145,9 @@ export default function Watch() {
         );
         console.log("Episode Server: ", data);
         SET_EPISODE_SERVER_DATA(data);
-
-        const prefer_server_type = localStorage.getItem("prefer_server_type");
+        /* Loading prefer server from local storage */
+        const prefer_server_type:string = localStorage.getItem("prefer_server_type") ?? "";
+        const prefer_server_index:number = parseInt(localStorage.getItem("prefer_server_index") ?? "-1", 10);
 
         let selected_server_type:string;
 
@@ -153,14 +156,33 @@ export default function Watch() {
         }else{
             selected_server_type = Object.keys(data)[0];
         }
+        
 
-        const selected_server_id = data[selected_server_type]?.[0].id;
+        let selected_server_index:number = 0;
+        let selected_server_id:string = "";
+        for (const server of data[selected_server_type]) {
+            if (server.index === prefer_server_index) {
+                selected_server_index = server.index;
+                selected_server_id = server.id;
+                break;
+            }
+        }
+        
+        if (!selected_server_id) {
+            selected_server_id = data[selected_server_type][0].id;
+            selected_server_index = data[selected_server_type][0].index;
+        }
+
         if (selected_server_type && selected_server_id) {
-            console.log("Selected Server ID: ", selected_server_id);
+
             localStorage.setItem("prefer_server_type", selected_server_type);
+            localStorage.setItem("prefer_server_index", selected_server_index.toString());
 
             set_selected_server_id(selected_server_id);
         }
+
+
+        /* --- */
     }
 
     const load_server = async () => {
@@ -174,14 +196,50 @@ export default function Watch() {
 
     const get_data = async () => {
         set_is_loading(true);
+        SET_EPISODE_SERVER_DATA({});
+        SET_SERVER_DATA(null);
         current_watch_time = 0;
         set_is_loading_server(true);
         try {
+            
             await load_episode_list();
-            await load_episode_server();
 
-            load_server();
+            let local_download_manifest = null;
+            
+            if (mode().force_online === false){
+                local_download_manifest = await request_get_local_download_manifest(source, id, current_season_index(), current_episode_index());
+                
+                
+                if (local_download_manifest !== null){
+                    /* Modify Tracks URL */
+                    const tracks = local_download_manifest?.data?.tracks;
+                    const app_configs = await get_configs();
+                    const storage_dir = app_configs.storage_dir;
+                    for (const track of tracks?? []){
+                        const new_url = await convertFileSrc(await join(storage_dir, track.file));
+                        track.file = new_url;
+                    }
 
+                    /* --- */
+
+                    SET_SERVER_DATA(local_download_manifest);
+                    set_mode({
+                        current: "offline",
+                        force_online: false
+                    });
+                    set_is_loading_server(false);
+                }
+            }
+            
+            if (local_download_manifest === null){
+                set_mode({
+                    current: "online",
+                    force_online: false
+                });
+                await load_episode_server();
+                load_server();
+                
+            }
             set_is_loading(false);
         }catch(e){
             console.error(e);
@@ -239,13 +297,19 @@ export default function Watch() {
                 fLoader: MODIFY_FLOADER({
                     host: SERVER_DATA()?.config.host,
                     origin: SERVER_DATA()?.config.origin,
-                    referer: SERVER_DATA()?.config.referer
+                    referer: SERVER_DATA()?.config.referer,
+                    source,
+                    id,
+                    season_index: current_season_index(),
+                    episode_index: current_episode_index(),
+                    mode: mode().current,
                 }),
                 // Apply loader for loading playlists.
                 pLoader: MODIFY_PLOADER({
                     host: SERVER_DATA()?.config.host,
                     origin: SERVER_DATA()?.config.origin,
-                    referer: SERVER_DATA()?.config.referer
+                    referer: SERVER_DATA()?.config.referer,
+                    mode: mode().current,
                 })
             };
         }
@@ -416,6 +480,7 @@ export default function Watch() {
                                                             }}
                                                             onClick={() => {
                                                                 localStorage.setItem("prefer_server_type", server_type);
+                                                                localStorage.setItem("prefer_server_index", server_item.index.toString());
                                                                 set_selected_server_id(server_item.id);
                                                                 load_server();
                                                             }}
@@ -424,11 +489,46 @@ export default function Watch() {
                                                         </Button>
                                                     )}
                                                 </For>
-                                                
                                             </div>
                                         </div>
                                     )}
                                 </For>
+
+                                {mode().current === "offline" &&
+                                    <div class={styles.server_box}>
+                                        <span class={styles.server_label}>SERVER:</span>
+                                        <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
+                                            onWheel={(e) => {
+                                                e.preventDefault();
+                                                e.currentTarget.scrollBy({
+                                                    left: e.deltaY,
+                                                    behavior: "smooth",
+                                                });
+                                            }}
+                                        >
+                                            <Button  color='primary'
+                                                variant={'outlined'}
+                                                sx={{
+                                                    color: "var(--color-1)",
+                                                    fontSize: "calc((100vw + 100vh)/2*0.015)",
+                                                    minWidth: 0,
+                                                    width: "fit-content",
+                                                    margin:0,
+                                                    padding: "8px 12px",
+                                                }}
+                                                onClick={() => {
+                                                    set_mode({
+                                                        current: "online",
+                                                        force_online: true
+                                                    });
+                                                    get_data();
+                                                }}
+                                            >
+                                                SWITCH ONLINE
+                                            </Button>
+                                        </div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -599,7 +699,6 @@ export default function Watch() {
                                     onMount(() => {
                                         request_get_local_download_manifest(source,id,current_season_index(),item.index)
                                             .then((data) => {
-                                                console.log("Local Download Manifest: ", data);
                                                 if (data !== null) {
                                                     set_available_local(true);
                                                 }
@@ -630,9 +729,11 @@ export default function Watch() {
                                                 }
                                             }}
                                             onClick={() => {
+                                                set_mode({current: "online", force_online: false});
                                                 set_current_episode_id(item.id);
                                                 set_current_episode_index(item.index);
                                                 get_data();
+                                                navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(link_plugin_id)}&link_id=${encodeURIComponent(link_id)}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(current_episode_index())}`, {replace: true});
                                             }}
                                         >
                                             Episode {item.index+1}: {item.title}

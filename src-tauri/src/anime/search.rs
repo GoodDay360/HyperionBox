@@ -36,13 +36,13 @@ async fn get_content(page: usize, search: &str) -> Result<SearchData, String> {
 
             let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
             let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
-            let poster = atributes
-                .posterImage
-                .as_ref()
-                .ok_or("no poster")?
-                .large
-                .as_ref()
-                .ok_or("no large poster")?;
+            let mut poster: String = "".to_string();
+            if let Some(poster_image) = atributes.posterImage.as_ref() {
+                poster = poster_image.large.as_ref().unwrap_or(&"".to_string()).clone();
+                if poster.is_empty() {
+                    poster = poster_image.original.as_ref().unwrap_or(&"".to_string()).clone();
+                }
+            }
 
             let new_content = Content {
                 id: id.to_string().clone(),

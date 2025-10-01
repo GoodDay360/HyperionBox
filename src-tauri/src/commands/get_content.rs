@@ -4,26 +4,70 @@ use tracing::{warn, error};
 
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
-use crate::anime;
+use crate::anime::{self, home};
 use crate::commands::request_plugin::get_episode_list::get_episode_list;
-use crate::models::home::HomeData;
+use crate::models::home::{HomeData, ContentData, Content};
 use crate::models::search::SearchData;
 use crate::models::view::{ViewData, ManifestData};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
-use crate::commands::favorite::get_tag_from_favorite;
+use crate::commands::favorite::{get_tag_from_favorite, get_recent_from_favorite};
+
 
 #[tauri::command]
 pub async fn home(source: String) -> Result<HomeData, String> {
+    let mut home_data: HomeData = HomeData { relevant_content: vec![], content: vec![] };
     if source == "anime" {
         match anime::home::new().await {
-            Ok(data) => return Ok(data),
+            Ok(data) => home_data = data,
             Err(e) => {
-                error!("Error: {}", e);
-                return Err(e);
+                error!("[HOME] Error: {}", e);
+                return Err(e)?;
             }
         }
     }
-    return Err("Unkown Source".to_string());
+    else{
+        return Err("Unkown Source".to_string());
+    }
+
+    /* Load Recent Watch */
+    let content_data = &mut home_data.content;
+    
+    let mut recent_content_data: Vec<ContentData> = vec![];
+    let recent_from_favorite = get_recent_from_favorite(15).await?;
+    for item in recent_from_favorite {
+        let local_manifest = get_local_manifest(item.source, item.id.to_string()).await?;
+        match local_manifest.manifest_data {
+            Some(data) => {
+                let new_content = ContentData {
+                    id: item.id.to_string().clone(),
+                    title: data.title,
+                    poster: data.poster,
+                };
+                recent_content_data.push(new_content);
+            }
+            None => {
+                let new_content = ContentData {
+                    id: item.id.to_string().clone(),
+                    title: "?".to_string(),
+                    poster: "".to_string(),
+                };
+                recent_content_data.push(new_content);
+            }
+        }
+
+        
+    }
+
+    if recent_content_data.len() > 0 {
+        content_data.insert(0, Content {
+            label: "Continuous Watching".to_string(),
+            data: recent_content_data,
+        });
+    }
+    /* --- */
+
+    return Ok(home_data);
+    
 }
 
 

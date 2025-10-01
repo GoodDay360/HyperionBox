@@ -47,13 +47,13 @@ pub struct GetDownload {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DownloadStatusManifest{
-    pub current: usize,
+    pub current: isize,
 }
 
 impl DownloadStatusManifest {
     pub fn default() -> Self {
         DownloadStatusManifest {
-            current: 0,
+            current: -1,
         }
     }
     
