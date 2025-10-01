@@ -124,6 +124,7 @@ export default function App() {
                 toastOptions={{
                     duration: 5000,
                     style: {
+                        "min-width": "fit-content",
                         border:"2px solid var(--background-1)",
                         background: 'var(--background-2)',
                         color: "var(--color-1)",

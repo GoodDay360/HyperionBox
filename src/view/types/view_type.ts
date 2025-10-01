@@ -35,5 +35,6 @@ export interface ViewData {
     manifest_data?: ManifestData,
     link_plugin?: LinkPlugin,
     current_watch_season_index?: number,
-    current_watch_episode_index?: number
+    current_watch_episode_index?: number,
+    favorites: string[],
 }

@@ -33,4 +33,5 @@ pub struct ViewData {
     pub link_plugin: Option<LinkPlugin>,
     pub current_watch_season_index: Option<usize>,
     pub current_watch_episode_index: Option<usize>,
+    pub favorites: Vec<String>,
 }

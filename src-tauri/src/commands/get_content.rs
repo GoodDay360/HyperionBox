@@ -104,9 +104,9 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
     let mut link_plugin_id: String = String::new();
     let mut link_id: String = String::new();
 
-    if let Some(link_plugin) = local_manifest.link_plugin.clone() {
-        link_plugin_id = link_plugin.plugin_id.unwrap_or("".to_string());
-        link_id = link_plugin.id.unwrap_or("".to_string());
+    if let Some(link_plugin) = &local_manifest.link_plugin {
+        link_plugin_id = link_plugin.plugin_id.clone().unwrap_or("".to_string());
+        link_id = link_plugin.id.clone().unwrap_or("".to_string());
     }
 
     let mut view_data: ViewData;
@@ -132,7 +132,8 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
             manifest_data: Some(manifest_data), 
             link_plugin: local_manifest.link_plugin.clone(),
             current_watch_episode_index: None,
-            current_watch_season_index: None
+            current_watch_season_index: None,
+            favorites: vec![]
         };
     }else {
         match task_get_view_manifest_data.await {
@@ -141,7 +142,8 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                     manifest_data: Some(data), 
                     link_plugin: None,
                     current_watch_episode_index: None,
-                    current_watch_season_index: None
+                    current_watch_season_index: None,
+                    favorites: vec![]
                 };
             },
             Err(e) => {
@@ -154,15 +156,18 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
     view_data.current_watch_season_index = local_manifest.current_watch_season_index;
     view_data.current_watch_episode_index = local_manifest.current_watch_episode_index;
     
+    
 
-    let favoriate_tag = get_tag_from_favorite(source.clone(), id.clone()).await?;
-    if favoriate_tag.len() > 0 {
+    let favoriate_tags = get_tag_from_favorite(source.clone(), id.clone()).await?;
+    view_data.favorites = favoriate_tags.clone();
+
+    if favoriate_tags.len() > 0 {
         local_manifest.manifest_data = view_data.manifest_data.clone();
         save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
         
         /* Insert Plugin Info */
         if let Some(mut manifest_data) = view_data.manifest_data {
-            manifest_data.meta_data.insert(0, format!("Favorite: {}", favoriate_tag.join(", ")));
+            manifest_data.meta_data.insert(0, format!("Favorite: {}", favoriate_tags.join(", ")));
             view_data.manifest_data = Some(manifest_data);
         }
         /* --- */

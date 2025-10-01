@@ -346,6 +346,19 @@ export default function View() {
                                                     fontSize: 'calc((100vw + 100vh)/2*0.04)',
                                                 }}
                                                 onClick={() =>{
+                                                    if (DATA()?.favorites?.length == 0) {
+                                                        toast.remove();
+                                                        toast("Required to add this content to favorites.",
+                                                            {
+                                                                icon: "⚠️",
+                                                                style: {
+                                                                    color:"orange",
+                                                                }
+                                                            }
+                                                        )
+                                                        return;
+                                                    }
+
                                                     set_download({
                                                         mode: !download()?.mode,
                                                         request: false,
