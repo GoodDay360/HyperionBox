@@ -1,5 +1,5 @@
 // SolidJS Type Imports
-import type { JSX, Accessor } from 'solid-js';
+import type { JSX } from 'solid-js';
 
 // SUID Imports
 import { 

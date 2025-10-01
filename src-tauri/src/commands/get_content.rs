@@ -4,7 +4,7 @@ use tracing::{warn, error};
 
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
-use crate::anime::{self, home};
+use crate::anime;
 use crate::commands::request_plugin::get_episode_list::get_episode_list;
 use crate::models::home::{HomeData, ContentData, Content};
 use crate::models::search::SearchData;
@@ -15,10 +15,10 @@ use crate::commands::favorite::{get_tag_from_favorite, get_recent_from_favorite}
 
 #[tauri::command]
 pub async fn home(source: String) -> Result<HomeData, String> {
-    let mut home_data: HomeData = HomeData { relevant_content: vec![], content: vec![] };
+    let mut _home_data: HomeData = HomeData { relevant_content: vec![], content: vec![] };
     if source == "anime" {
         match anime::home::new().await {
-            Ok(data) => home_data = data,
+            Ok(data) => _home_data = data,
             Err(e) => {
                 error!("[HOME] Error: {}", e);
                 return Err(e)?;
@@ -30,7 +30,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
     }
 
     /* Load Recent Watch */
-    let content_data = &mut home_data.content;
+    let content_data = &mut _home_data.content;
     
     let mut recent_content_data: Vec<ContentData> = vec![];
     let recent_from_favorite = get_recent_from_favorite(15).await?;
@@ -66,7 +66,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
     }
     /* --- */
 
-    return Ok(home_data);
+    return Ok(_home_data);
     
 }
 

@@ -1,10 +1,7 @@
 use rusqlite::{Connection, Result, params};
 use std::fs;
 use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
 use tauri::async_runtime;
-use std::path::PathBuf;
-use serde_json::{from_reader};
 
 use chlaty_core::request_plugin::get_server::ServerResult;
 
@@ -254,7 +251,7 @@ pub async fn remove_download(source: String, id: String) -> Result<(), String> {
 
     let conn = get_db()?;
 
-    /* Delete all local download */
+    /* Delete all local download files */
     let mut stmt = conn.prepare("
         SELECT
             source,
@@ -332,13 +329,28 @@ pub async fn remove_download_item(source: String, id: String, season_index: usiz
 
     conn.execute(
         "DELETE FROM download_item WHERE source = ?1 AND id = ?2 AND season_index = ?3 AND episode_index = ?4",
-        params![source, id, season_index, episode_index],
+        params![&source, &id, season_index, episode_index],
     ).map_err(|e| e.to_string())?;
 
+    let count = count_download_item(source.clone(), id.clone()).await?;
+
+    if count == 0 {
+        remove_download(source, id).await?;
+    }
 
     Ok(())
 }
 
+#[tauri::command]
+pub async fn count_download_item(source: String, id: String) -> Result<usize, String> {
+    let conn = get_db()?;
+    conn.query_row(
+        "SELECT COUNT(*) FROM download_item WHERE source = ?1 AND id = ?2",
+        params![source, id],
+        |row| row.get(0),
+    )
+    .map_err(|e| e.to_string())
+}
 
 #[tauri::command]
 pub async fn set_pause_download(source: String, id: String, pause: bool) -> Result<(), String> {

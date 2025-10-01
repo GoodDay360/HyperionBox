@@ -119,8 +119,7 @@
 .no_result_text{
 	color: var(--color-1);
 	padding: 8px;
-	font-size: calc((100vw + 100vh)/2*0.025);
-	border-radius: 8px;
+	font-size: calc((100vw + 100vh)/2*0.0425);
 	user-select: none;
 	font-weight: 600;
 }

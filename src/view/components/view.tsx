@@ -367,7 +367,7 @@ export default function View() {
                             </div>
                             {DATA()?.manifest_data?.episode_list !== null
                                 ? <div class={`${styles.episode_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}>
-                                    {(DATA()?.manifest_data?.episode_list?.length ?? 0) > 0 
+                                    {(DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()]?.length ?? 0) > 0 
                                         ? <For each={DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()]}>
                                             {(item)=>{
 

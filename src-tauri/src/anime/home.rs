@@ -1,14 +1,11 @@
 use reqwest::Client;
 use tracing::error;
-use core::error;
 use std::time::Duration;
 use tokio;
 
 use crate::anime::models::ApiResponse;
 use crate::models::home::{Content, ContentData, HomeData, RelevantContent, Trailer};
 use crate::utils::get_calendar;
-use crate::commands::favorite::get_recent_from_favorite;
-use crate::commands::local_manifest::get_local_manifest;
 
 async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
     let clinet = Client::new();

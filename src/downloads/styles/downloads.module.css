@@ -1,6 +1,5 @@
 .container{
 	width: 100%;
-	height: auto;
 	background: var(--background-1);
 	flex:1;
 	display: flex;
@@ -24,7 +23,9 @@
 
 .body_container{
 	display: flex;
+	flex:1;
 	flex-direction: column;
+	justify-content: flex-start;
 	gap: 12px;
 	box-sizing: border-box;
 }
@@ -32,6 +33,7 @@
 
 .content_container{
 	display: flex;
+	flex:1;
 	flex-direction: column;
 	gap: 25px;
 	padding: 18px;
@@ -153,4 +155,23 @@
 	justify-content: flex-end;
 	gap: 12px;
 	padding: 12px;
+}
+
+.feedback_box{
+	width: 100%;
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+}
+
+.feedback_text {
+	color: var(--color-1);
+	font-family: var(--font-family);
+	font-size: calc((100vw + 100vh)/2*0.0425);
+	user-select: none;
+	overflow: hidden;
+	white-space: nowrap;
+	font-weight: 600;
 }

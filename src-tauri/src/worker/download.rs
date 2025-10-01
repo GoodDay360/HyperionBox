@@ -1,4 +1,3 @@
-use chlaty_core::utils::download;
 use tokio::time::{sleep, Duration};
 use rusqlite::{
     Result, params,
@@ -6,11 +5,10 @@ use rusqlite::{
 };
 use tracing::{error,info};
 use tauri::async_runtime;
-use reqwest::{header, Client};
+use reqwest::{ Client };
 use reqwest::header::{HeaderMap, HeaderValue};
 use m3u8_rs::{Playlist};
 use std::str::{from_utf8};
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string, to_string_pretty};
 use std::path::PathBuf;
@@ -117,7 +115,7 @@ fn check_current_download(source: &str, id: &str, season_index: usize, episode_i
 }
 
 
-fn get_current_download() -> Result<Option<Download>, String> {
+fn get_current_download(source: &str, id: &str) -> Result<Option<Download>, String> {
      /* Get download data from download table */
     
     let conn = get_db()?;
@@ -128,11 +126,11 @@ fn get_current_download() -> Result<Option<Download>, String> {
             plugin_id,
             pause
         FROM download 
-        WHERE pause = 0
+        WHERE source = ?1 AND id = ?2 AND pause = 0
         LIMIT 1
     ").map_err(|e| e.to_string())?;
 
-    let result = stmt.query_row(params![], |row| {
+    let result = stmt.query_row(params![source, id], |row| {
         Ok(Download {
             source: row.get(0)?,
             id: row.get(1)?,
@@ -150,7 +148,7 @@ fn get_current_download() -> Result<Option<Download>, String> {
 }
 
 
-fn get_current_download_item(source: &str, id: &str) -> Result<Option<DownloadItem>, String> {
+fn get_current_download_item() -> Result<Option<DownloadItem>, String> {
      /* Get download item data from download_item table */
     
     let conn = get_db()?;
@@ -167,11 +165,11 @@ fn get_current_download_item(source: &str, id: &str) -> Result<Option<DownloadIt
             error,
             done
         FROM download_item
-        WHERE source = ?1 AND id = ?2 AND error = 0 AND done = 0
+        WHERE error = 0 AND done = 0
         LIMIT 1
     ").map_err(|e| e.to_string())?;
 
-    let result = stmt.query_row(params![source, id], |row| {
+    let result = stmt.query_row(params![], |row| {
         Ok(DownloadItem {
             source: row.get(0)?,
             id: row.get(1)?,
@@ -621,17 +619,19 @@ async fn set_current_download_error(
 
 
 async fn start_task(app: AppHandle) -> Result<(), String> {
-    let current_download_result = get_current_download()?;
-
-    if let Some(current_download) = current_download_result {
-        let current_download_item_result = get_current_download_item(&current_download.source, &current_download.id)?;
+    
+    let current_download_item_result = get_current_download_item()?;
+    
+    if let Some(current_download_item) = current_download_item_result {
         
+        let source = current_download_item.source;
+        let id = current_download_item.id;
 
-        if let Some(current_download_item) = current_download_item_result {
+        let current_download_result = get_current_download(&source, &id)?;
+        if let Some(current_download) = current_download_result {
+
             
-            
-            let source = current_download.source;
-            let id = current_download.id;
+
             let plugin_id = current_download.plugin_id;
             let season_index = current_download_item.season_index;
             let episode_index = current_download_item.episode_index;
@@ -640,6 +640,10 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
             let prefer_server_type = current_download_item.prefer_server_type;
             let prefer_server_index = current_download_item.prefer_server_index;
             let prefer_quality = current_download_item.prefer_quality;
+
+            info!("[worker:download] currently working on: \n-> source: {}, id: {}, season_index: {}, episode_index: {}",
+                &source, &id, season_index, episode_index
+            );
 
             CURRENT_DOWNLOAD_STATUS.insert(0, CurrentDownloadStatus { 
                 source: source.clone(), id: id.clone(), 
@@ -696,7 +700,6 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                 }
             };
 
-            println!("Media HLS: {:?}", media_hls);
 
             match download_episode(app.clone(), &source, &id, season_index, episode_index, media_hls).await {
                 Ok(_) => {},
@@ -705,10 +708,10 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                     return Err(e.to_string());
                 }
             }
-            
         }
-
     }
+
+    
 
     return Ok(());
 }

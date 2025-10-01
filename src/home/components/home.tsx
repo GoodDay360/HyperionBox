@@ -41,7 +41,7 @@ import styles from "../styles/home.module.css"
 import { ContextManager } from '@src/app/components/app';
 
 // Types Import
-import { Content, ContentData, RelevantContent, HomeData } from '../types/home_type';
+import { Content, RelevantContent, HomeData } from '../types/home_type';
 
 
 

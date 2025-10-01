@@ -26,7 +26,9 @@ pub fn run() {
     dotenv().ok();
     if IS_DEV {
         fmt()
-            .with_max_level(Level::DEBUG)
+            .with_max_level(Level::INFO)
+            .with_max_level(Level::ERROR)
+            .with_max_level(Level::WARN)
             .with_thread_names(true)
             .with_thread_ids(true)
             .with_target(true)

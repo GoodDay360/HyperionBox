@@ -28,7 +28,6 @@ import DownloadOutlinedIcon from '@suid/icons-material/DownloadOutlined';
 
 // Style Imports
 import styles from "../styles/navigation_bar.module.css"
-import { DownloadOutlined } from "@suid/icons-material";
 
 
 
@@ -127,7 +126,7 @@ const NavigateItem = [
         navigate: "/favorites"
     },
     {
-        icon: DownloadOutlined,
+        icon: DownloadOutlinedIcon,
         iconActive: DownloadRoundedIcon,
         label: "Downloads",
         navigate: "/downloads"

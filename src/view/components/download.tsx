@@ -1,30 +1,21 @@
 // Tauri API
-import { invoke } from '@tauri-apps/api/core';
-import { writeText } from '@tauri-apps/plugin-clipboard-manager';
-import { platform } from '@tauri-apps/plugin-os';
+
 
 // SolidJS Imports
-import { createSignal, onMount, Index, For, useContext } from "solid-js";
+import { createSignal, onMount, For } from "solid-js";
 
 // SolidJS Router Imports
-import { useSearchParams, useNavigate } from "@solidjs/router";
 
 
 // SUID Imports
 import { 
-    Button, IconButton, ButtonBase, Skeleton, Pagination,
+    Button,
     CircularProgress, MenuItem
 
 
 } from '@suid/material';
 
 // SUID Icon Imports
-import LinkRoundedIcon from '@suid/icons-material/LinkRounded';
-import CloseRoundedIcon from '@suid/icons-material/CloseRounded';
-import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
-import BookmarkAddOutlinedIcon from '@suid/icons-material/BookmarkAddOutlined';
-import ExtensionRoundedIcon from '@suid/icons-material/ExtensionRounded';
-import AddLinkRoundedIcon from '@suid/icons-material/AddLinkRounded';
 import DownloadRoundedIcon from '@suid/icons-material/DownloadRounded';
 
 // Solid Toast
@@ -213,7 +204,7 @@ export default function Download({
                                 minWidth: "fit-content"
                             }}
                             onClick={()=>{(async ()=>{
-                                if (!prefer_server_type() || (prefer_server_index() < 0) || !prefer_quality()) {
+                                if (!prefer_server_type() || (prefer_server_index() < 0) || (prefer_quality() < 0)) {
                                     toast.remove();
                                     toast.error("Missing required options.",{style: {color:"red"}});
                                     return;
