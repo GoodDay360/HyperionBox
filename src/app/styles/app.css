@@ -92,6 +92,29 @@ body{
 	padding-bottom: var(--safe-area-bottom, 0);
 }
 
+fieldset {
+    width: 100%;
+    height: auto;
+    border: 2px solid var(--color-1);
+    border-radius: 5px;
+    padding:8px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+legend {
+    margin-left: 12px;
+    padding:5px;
+    color: var(--color-1);
+    font-size: calc((100vw + 100vh)/2*0.0425);
+    text-align: start;
+    font-family: var(--font-family);
+    font-weight: 800;
+    font-style: normal;
+}
+
+
 .hide_scrollbar {
 	scrollbar-width: none !important;
 	-ms-overflow-style: none !important;
@@ -103,4 +126,5 @@ body{
 	height: 0 !important;
 	display: none !important;
 }
+
 

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
 use crate::models::local_manifest::LinkPlugin;
@@ -25,7 +24,6 @@ pub struct ManifestData {
     // Required: Season -> Episodes Page -> Episodes
     pub episode_list: Option<Vec<Vec<Vec<DataResult>>>>,
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ViewData {

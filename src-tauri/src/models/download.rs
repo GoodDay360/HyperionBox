@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Download {
     pub source: String,
@@ -28,9 +27,8 @@ pub struct DownloadItem {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Episode {
     pub error: bool,
-    pub done: bool
+    pub done: bool,
 }
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GetDownload {
@@ -46,15 +44,12 @@ pub struct GetDownload {
 /* --- */
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DownloadStatusManifest{
+pub struct DownloadStatusManifest {
     pub current: isize,
 }
 
 impl DownloadStatusManifest {
     pub fn default() -> Self {
-        DownloadStatusManifest {
-            current: -1,
-        }
+        DownloadStatusManifest { current: -1 }
     }
-    
 }

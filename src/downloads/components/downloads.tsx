@@ -49,7 +49,7 @@ import { GetDownload, CurrentDownloadStatus } from '../types/downloads_type';
 
 
 
-export default function Download() {
+export default function Downloads() {
     const navigate = useNavigate();
     const context = useContext(ContextManager);
 

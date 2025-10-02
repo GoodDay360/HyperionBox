@@ -52,7 +52,7 @@ import {
     request_get_local_download_manifest
 } from '../scripts/watch';
 
-import { get_configs } from '@src/app/scripts/configs';
+import { get_configs } from '@src/settings/scripts/settings';
 
 // Type Imports
 import { EpisodeList } from '../types/episode_list_type';

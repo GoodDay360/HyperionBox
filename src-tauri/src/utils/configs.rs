@@ -1,15 +1,11 @@
-
-use std::{env};
-use std::path::PathBuf;
-use std::fs;
-use std::io::BufReader;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, to_string_pretty};
+use std::env;
+use std::fs;
+use std::io::BufReader;
+use std::path::PathBuf;
 
 use crate::utils::get_appdata;
-
-
-
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Configs {
@@ -27,14 +23,11 @@ impl Configs {
         return Ok(Configs {
             plugin_dir: PathBuf::from(plugin_dir),
             storage_dir: PathBuf::from(storage_dir),
-        })
+        });
     }
 }
 
-
-
 pub fn get() -> Result<Configs, String> {
-    
     let appdata_dir = get_appdata::new()?;
 
     if !appdata_dir.exists() {
@@ -51,22 +44,21 @@ pub fn get() -> Result<Configs, String> {
             Ok(data) => config_data = data,
             Err(_) => {
                 config_data = Configs::default().map_err(|e| e.to_string())?;
-                let config_data_to_string = to_string_pretty(&config_data).map_err(|e| e.to_string())?;
+                let config_data_to_string =
+                    to_string_pretty(&config_data).map_err(|e| e.to_string())?;
                 fs::write(&config_file, config_data_to_string).map_err(|e| e.to_string())?;
             }
         }
-    }else{
+    } else {
         config_data = Configs::default().map_err(|e| e.to_string())?;
         let config_data_to_string = to_string_pretty(&config_data).map_err(|e| e.to_string())?;
         fs::write(&config_file, config_data_to_string).map_err(|e| e.to_string())?;
     }
 
-
     return Ok(config_data);
 }
 
 pub fn set(configs: Configs) -> Result<(), String> {
-    
     let appdata_dir = get_appdata::new()?;
 
     let config_file = appdata_dir.join("configs.json");
@@ -77,10 +69,9 @@ pub fn set(configs: Configs) -> Result<(), String> {
 }
 
 pub fn init() -> Result<(), String> {
-
     let config_data = get()?;
     env::set_var("CHLATY_PLUGIN_DIRECTORY", &config_data.plugin_dir);
     env::set_var("CHLATY_STORAGE_DIRECTORY", &config_data.storage_dir);
-    
+
     return Ok(());
 }

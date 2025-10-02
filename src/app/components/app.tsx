@@ -29,6 +29,7 @@ import View from '@src/view/components/view';
 import Watch from '@src/watch/components/watch';
 import ManageFavorite from '@src/manage_favorite/components/manage_favorite';
 import Downloads from '@src/downloads/components/downloads';
+import Settings from '@src/settings/components/settings';
 
 
 
@@ -143,6 +144,7 @@ export default function App() {
                     <Route path="/" component={Home} />
                     <Route path="/favorites" component={Favorites} />
                     <Route path="/downloads" component={Downloads} />
+                    <Route path="/settings" component={Settings} />
                     <Route path="/search" component={Search} />
                     <Route path="/view" component={View} />
                     <Route path="/watch" component={Watch} />

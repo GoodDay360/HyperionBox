@@ -1,5 +1,5 @@
 use crate::utils::configs;
-use crate::utils::configs::{Configs};
+use crate::utils::configs::Configs;
 
 #[tauri::command]
 pub fn get_configs() -> Result<Configs, String> {
@@ -8,8 +8,10 @@ pub fn get_configs() -> Result<Configs, String> {
 }
 
 #[tauri::command]
-pub fn set_configs(config_data: Configs) -> Result<(), String> {
-    configs::set(config_data)?;
+pub fn set_configs(configs: Configs) -> Result<(), String> {
+    configs::set(configs)?;
+
+    configs::init()?;
+
     return Ok(());
 }
-

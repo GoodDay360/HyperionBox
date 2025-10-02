@@ -7,8 +7,6 @@ pub struct WatchState {
 
 impl WatchState {
     pub fn default() -> WatchState {
-        WatchState {
-            current_time: None
-        }
+        WatchState { current_time: None }
     }
 }

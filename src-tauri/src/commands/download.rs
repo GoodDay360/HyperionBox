@@ -1,19 +1,15 @@
-use rusqlite::{Connection, Result, params};
-use std::fs;
+use rusqlite::{params, Connection, Result};
 use std::collections::HashMap;
+use std::fs;
 use tauri::async_runtime;
 
 use chlaty_core::request_plugin::get_server::ServerResult;
 
+use crate::models::download::{Download, DownloadItem, Episode, GetDownload};
 use crate::utils::configs;
-use crate::models::download::{
-    Download, DownloadItem,GetDownload, Episode
-};
 
 use crate::commands::local_manifest::get_local_manifest;
-use crate::worker::download::{CURRENT_DOWNLOAD_STATUS, CurrentDownloadStatus};
-
-
+use crate::worker::download::{CurrentDownloadStatus, CURRENT_DOWNLOAD_STATUS};
 
 pub fn get_db() -> Result<Connection, String> {
     let config_data = configs::get()?;
@@ -27,16 +23,21 @@ pub fn get_db() -> Result<Connection, String> {
 
     let conn = Connection::open(&favorite_db_path).map_err(|e| e.to_string())?;
 
-    conn.execute("
+    conn.execute(
+        "
         CREATE TABLE IF NOT EXISTS download (
             source TEXT NOT NULL,
             id TEXT NOT NULL,
             plugin_id TEXT NOT NULL,
             pause INT NOT NULL DEFAULT 0
         )
-    ",[]).map_err(|e| e.to_string())?;
+    ",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
 
-    conn.execute("
+    conn.execute(
+        "
         CREATE TABLE IF NOT EXISTS download_item (
             source TEXT NOT NULL,
             id TEXT NOT NULL,
@@ -49,11 +50,13 @@ pub fn get_db() -> Result<Connection, String> {
             error INT NOT NULL DEFAULT 0,
             done INT NOT NULL DEFAULT 0
         )
-    ",[]).map_err(|e| e.to_string())?;
+    ",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(conn)
 }
-
 
 #[tauri::command]
 pub async fn add_download(
@@ -69,32 +72,36 @@ pub async fn add_download(
 ) -> Result<(), String> {
     let conn = get_db()?;
 
-    let exists: bool = conn.query_row(
-        "SELECT EXISTS(
+    let exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(
             SELECT 1 FROM download
             WHERE source = ?1 AND id = ?2
         )",
-        params![source, id],
-        |row| row.get(0),
-    ).map_err(|e| e.to_string())?;
+            params![source, id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
 
     if !exists {
         conn.execute(
             "INSERT INTO download (source, id, plugin_id) VALUES (?1, ?2, ?3)",
             params![&source, &id, &plugin_id],
-        ).map_err(|e| e.to_string())?;
+        )
+        .map_err(|e| e.to_string())?;
     }
 
-
-    let item_exists: bool = conn.query_row(
-        "SELECT EXISTS(
+    let item_exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(
             SELECT 1 FROM download_item
             WHERE source = ?1 AND id = ?2
             AND season_index = ?3 AND episode_index = ?4
         )",
-        params![source, id, season_index, episode_index],
-        |row| row.get(0),
-    ).map_err(|e| e.to_string())?;
+            params![source, id, season_index, episode_index],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
 
     if item_exists {
         return Ok(());
@@ -115,28 +122,29 @@ pub async fn add_download(
             prefer_server_index,
             prefer_quality
         ],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-
-
-
 #[tauri::command]
 pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
-
     /* Get download data from download table */
     let download: Result<Vec<Download>, String> = async_runtime::spawn_blocking(|| {
         let conn = get_db()?;
-        let mut stmt = conn.prepare("
+        let mut stmt = conn
+            .prepare(
+                "
             SELECT
                 source,
                 id,
                 plugin_id,
                 pause
             FROM download
-        ").map_err(|e| e.to_string())?;
+        ",
+            )
+            .map_err(|e| e.to_string())?;
 
         let rows = stmt
             .query_map(params![], |row| {
@@ -144,25 +152,27 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
                     source: row.get(0)?,
                     id: row.get(1)?,
                     plugin_id: row.get(2)?,
-                    pause: row.get(3)?
-
+                    pause: row.get(3)?,
                 })
             })
             .map_err(|e| e.to_string())?;
-            
+
         let mut results: Vec<Download> = vec![];
         for row in rows {
             results.push(row.map_err(|e| e.to_string())?);
         }
         Ok(results)
-    }).await.map_err(|e| e.to_string())?;
+    })
+    .await
+    .map_err(|e| e.to_string())?;
     /* --- */
 
     /* Map through each source, id and get download_item data */
-    let mut results:HashMap<String, GetDownload> = HashMap::new();
+    let mut results: HashMap<String, GetDownload> = HashMap::new();
 
     for row_download in download? {
-        let local_manifest =  get_local_manifest(row_download.source.clone(), row_download.id.clone()).await?;
+        let local_manifest =
+            get_local_manifest(row_download.source.clone(), row_download.id.clone()).await?;
 
         let mut title: String = "?".to_string();
         let mut poster: String = "".to_string();
@@ -170,19 +180,24 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
             title = manifest_data.title;
             poster = manifest_data.poster;
         }
-        results.insert(row_download.id.clone(), GetDownload {
-            source: row_download.source.clone(),
-            id: row_download.id.clone(),
-            title: title,
-            poster: poster,
-            seasons: HashMap::new(),
-            pause: if row_download.pause == 1 { true } else { false },
-            max: 0,
-            finished: 0
-        });
+        results.insert(
+            row_download.id.clone(),
+            GetDownload {
+                source: row_download.source.clone(),
+                id: row_download.id.clone(),
+                title: title,
+                poster: poster,
+                seasons: HashMap::new(),
+                pause: if row_download.pause == 1 { true } else { false },
+                max: 0,
+                finished: 0,
+            },
+        );
 
         let conn = get_db()?;
-        let mut stmt = conn.prepare("
+        let mut stmt = conn
+            .prepare(
+                "
             SELECT
                 source,
                 id,
@@ -196,7 +211,9 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
                 done
             FROM download_item
             WHERE source = ?1 AND id = ?2
-        ").map_err(|e| e.to_string())?;
+        ",
+            )
+            .map_err(|e| e.to_string())?;
 
         let download_item_rows = stmt
             .query_map(params![row_download.source, row_download.id], |row| {
@@ -214,22 +231,39 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
                 })
             })
             .map_err(|e| e.to_string())?;
-            
+
         for row in download_item_rows {
             let download_item_row = row.map_err(|e| e.to_string())?;
-            let item = results.get_mut(&download_item_row.id).ok_or("no seasons index even after insert.")?;
+            let item = results
+                .get_mut(&download_item_row.id)
+                .ok_or("no seasons index even after insert.")?;
 
             if !item.seasons.contains_key(&download_item_row.season_index) {
-                item.seasons.insert(download_item_row.season_index, HashMap::new());
+                item.seasons
+                    .insert(download_item_row.season_index, HashMap::new());
             }
 
-            let item_season = item.seasons.get_mut(&download_item_row.season_index).ok_or("no episodes index even after insert.")?;
+            let item_season = item
+                .seasons
+                .get_mut(&download_item_row.season_index)
+                .ok_or("no episodes index even after insert.")?;
 
             if !item_season.contains_key(&download_item_row.episode_index) {
-                item_season.insert(download_item_row.episode_index, Episode {
-                    error: if download_item_row.error == 1 { true } else { false },
-                    done: if download_item_row.done == 1 { true } else { false },
-                });
+                item_season.insert(
+                    download_item_row.episode_index,
+                    Episode {
+                        error: if download_item_row.error == 1 {
+                            true
+                        } else {
+                            false
+                        },
+                        done: if download_item_row.done == 1 {
+                            true
+                        } else {
+                            false
+                        },
+                    },
+                );
                 item.max += 1;
                 if download_item_row.done == 1 {
                     item.finished += 1;
@@ -242,17 +276,17 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
     return Ok(results);
 }
 
-
 #[tauri::command]
 pub async fn remove_download(source: String, id: String) -> Result<(), String> {
     let configs_data = configs::get()?;
     let storage_dir = configs_data.storage_dir;
-    
 
     let conn = get_db()?;
 
     /* Delete all local download files */
-    let mut stmt = conn.prepare("
+    let mut stmt = conn
+        .prepare(
+            "
         SELECT
             source,
             id,
@@ -266,7 +300,9 @@ pub async fn remove_download(source: String, id: String) -> Result<(), String> {
             done
         FROM download_item
         WHERE source = ?1 AND id = ?2
-    ").map_err(|e| e.to_string())?;
+    ",
+        )
+        .map_err(|e| e.to_string())?;
 
     let download_item_rows = stmt
         .query_map(params![&source, &id], |row| {
@@ -286,9 +322,13 @@ pub async fn remove_download(source: String, id: String) -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     for row in download_item_rows {
         let row_data = row.map_err(|e| e.to_string())?;
-        let download_dir = storage_dir.join(&row_data.source).join(&row_data.id)
-            .join(&row_data.season_index.to_string()).join(&row_data.episode_index.to_string()).join("download");
-        
+        let download_dir = storage_dir
+            .join(&row_data.source)
+            .join(&row_data.id)
+            .join(&row_data.season_index.to_string())
+            .join(&row_data.episode_index.to_string())
+            .join("download");
+
         if download_dir.exists() {
             fs::remove_dir_all(download_dir).map_err(|e| e.to_string())?;
         }
@@ -299,32 +339,42 @@ pub async fn remove_download(source: String, id: String) -> Result<(), String> {
     conn.execute(
         "DELETE FROM download_item WHERE source = ?1 AND id = ?2",
         params![source, id],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     // Then delete from download
     conn.execute(
         "DELETE FROM download WHERE source = ?1 AND id = ?2",
         params![source, id],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[tauri::command]
-pub async fn remove_download_item(source: String, id: String, season_index: usize, episode_index: usize) -> Result<(), String> {
+pub async fn remove_download_item(
+    source: String,
+    id: String,
+    season_index: usize,
+    episode_index: usize,
+) -> Result<(), String> {
     let configs_data = configs::get()?;
     let storage_dir = configs_data.storage_dir;
-    
 
     let conn = get_db()?;
 
-    let download_dir = storage_dir.join(&source).join(&id)
-        .join(&season_index.to_string()).join(&episode_index.to_string()).join("download");
-    
+    let download_dir = storage_dir
+        .join(&source)
+        .join(&id)
+        .join(&season_index.to_string())
+        .join(&episode_index.to_string())
+        .join("download");
+
     if download_dir.exists() {
         fs::remove_dir_all(download_dir).map_err(|e| e.to_string())?;
     }
-    
+
     /* --- */
 
     conn.execute(
@@ -359,25 +409,47 @@ pub async fn set_pause_download(source: String, id: String, pause: bool) -> Resu
     conn.execute(
         "UPDATE download SET pause = ?1 WHERE source = ?2 AND id = ?3",
         params![if pause == true { 1 } else { 0 }, source, id],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
 #[tauri::command]
-pub async fn set_error_download(source: String, id: String, season_index: usize, episode_index: usize, error: bool) -> Result<(), String> {
+pub async fn set_error_download(
+    source: String,
+    id: String,
+    season_index: usize,
+    episode_index: usize,
+    error: bool,
+) -> Result<(), String> {
     let conn = get_db()?;
 
-    conn.execute("
+    conn.execute(
+        "
         UPDATE download_item SET error = ?1 
         WHERE source = ?2 AND id = ?3 AND season_index = ?4 AND episode_index = ?5
-    ", params![if error == true { 1 } else { 0 }, source, id, season_index, episode_index],
-    ).map_err(|e| e.to_string())?;
+    ",
+        params![
+            if error == true { 1 } else { 0 },
+            source,
+            id,
+            season_index,
+            episode_index
+        ],
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
 
-pub async fn set_done_download(source: &str, id: &str, season_index: usize, episode_index: usize, done: bool) -> Result<(), String> {
+pub async fn set_done_download(
+    source: &str,
+    id: &str,
+    season_index: usize,
+    episode_index: usize,
+    done: bool,
+) -> Result<(), String> {
     let conn = get_db()?;
 
     conn.execute(
@@ -392,32 +464,42 @@ pub async fn set_done_download(source: &str, id: &str, season_index: usize, epis
 pub async fn get_current_download_status() -> Result<Option<CurrentDownloadStatus>, String> {
     if let Some(current_download_status) = CURRENT_DOWNLOAD_STATUS.get(&1) {
         return Ok(Some(current_download_status.clone()));
-    }else{
+    } else {
         return Ok(None);
     }
 }
 
 #[tauri::command]
-pub async fn get_local_download_manifest(source: String, id: String, season_index: usize, episode_index: usize) -> Result<Option<ServerResult>, String> {
+pub async fn get_local_download_manifest(
+    source: String,
+    id: String,
+    season_index: usize,
+    episode_index: usize,
+) -> Result<Option<ServerResult>, String> {
     let configs_data = configs::get()?;
     let storage_dir = configs_data.storage_dir;
 
-    let download_dir = storage_dir.join(&source).join(&id)
-        .join(&season_index.to_string()).join(&episode_index.to_string()).join("download");
-    
+    let download_dir = storage_dir
+        .join(&source)
+        .join(&id)
+        .join(&season_index.to_string())
+        .join(&episode_index.to_string())
+        .join("download");
+
     let manifest_path = download_dir.join("manifest.json");
     if !manifest_path.exists() {
         return Ok(None);
     }
 
     let manifest_file = fs::File::open(&manifest_path).map_err(|e| e.to_string())?;
-    
-    let manifest_data: ServerResult = match serde_json::from_reader(manifest_file).map_err(|e| e.to_string()) {
-        Ok(data) => data,
-        Err(_) => {
-            return Ok(None);
-        }
-    };
+
+    let manifest_data: ServerResult =
+        match serde_json::from_reader(manifest_file).map_err(|e| e.to_string()) {
+            Ok(data) => data,
+            Err(_) => {
+                return Ok(None);
+            }
+        };
 
     return Ok(Some(manifest_data));
 }

@@ -1,8 +1,7 @@
-use rusqlite::{Connection, Result, params};
-use std::fs;
-use serde::{Deserialize, Serialize};
 use chrono::Utc;
-
+use rusqlite::{params, Connection, Result};
+use serde::{Deserialize, Serialize};
+use std::fs;
 
 use crate::utils::configs;
 
@@ -10,7 +9,7 @@ use crate::utils::configs;
 pub struct ItemFromFavorite {
     pub source: String,
     pub id: String,
-    pub timestamp: usize
+    pub timestamp: usize,
 }
 
 pub fn get_db() -> Result<Connection, String> {
@@ -31,7 +30,8 @@ pub fn get_db() -> Result<Connection, String> {
             tag_name TEXT NOT NULL UNIQUE
         )",
         [],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS favorite (
@@ -41,7 +41,8 @@ pub fn get_db() -> Result<Connection, String> {
             timestamp BIGINT NOT NULL
         )",
         [],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(conn)
 }
@@ -51,10 +52,8 @@ pub async fn create_tag(tag_name: String) -> Result<(), String> {
     let conn = get_db()?;
 
     // Insert the tag_name
-    conn.execute(
-        "INSERT INTO tag (tag_name) VALUES (?1)",
-        [&tag_name],
-    ).map_err(|e| e.to_string())?;
+    conn.execute("INSERT INTO tag (tag_name) VALUES (?1)", [&tag_name])
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -84,10 +83,12 @@ pub async fn rename_tag(old_tag: String, new_tag: String) -> Result<(), String> 
     let conn = get_db()?;
 
     // Update the tag name
-    let rows_updated = conn.execute(
-        "UPDATE tag SET tag_name = ?1 WHERE tag_name = ?2",
-        [&new_tag, &old_tag],
-    ).map_err(|e| e.to_string())?;
+    let rows_updated = conn
+        .execute(
+            "UPDATE tag SET tag_name = ?1 WHERE tag_name = ?2",
+            [&new_tag, &old_tag],
+        )
+        .map_err(|e| e.to_string())?;
 
     if rows_updated == 0 {
         return Err(format!("Tag '{}' not found", old_tag));
@@ -96,7 +97,8 @@ pub async fn rename_tag(old_tag: String, new_tag: String) -> Result<(), String> 
     conn.execute(
         "UPDATE favorite SET tag_name = ?1 WHERE tag_name = ?2",
         [&new_tag, &old_tag],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -106,19 +108,16 @@ pub async fn remove_tag(tag_name: String) -> Result<(), String> {
     let conn = get_db()?;
 
     // Delete the tag
-    let rows_deleted = conn.execute(
-        "DELETE FROM tag WHERE tag_name = ?1",
-        [&tag_name],
-    ).map_err(|e| e.to_string())?;
+    let rows_deleted = conn
+        .execute("DELETE FROM tag WHERE tag_name = ?1", [&tag_name])
+        .map_err(|e| e.to_string())?;
 
     if rows_deleted == 0 {
         return Err(format!("Tag '{}' not found", tag_name));
     }
 
-    conn.execute(
-        "DELETE FROM favorite WHERE tag_name = ?1",
-        [&tag_name],
-    ).map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM favorite WHERE tag_name = ?1", [&tag_name])
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -128,11 +127,13 @@ pub async fn add_favorite(tag_name: String, source: String, id: String) -> Resul
     let conn = get_db()?;
 
     // Check if the favorite already exists
-    let exists: bool = conn.query_row(
-        "SELECT EXISTS(SELECT 1 FROM favorite WHERE tag_name = ?1 AND source = ?2 AND id = ?3)",
-        params![tag_name, source, id],
-        |row| row.get(0),
-    ).map_err(|e| e.to_string())?;
+    let exists: bool = conn
+        .query_row(
+            "SELECT EXISTS(SELECT 1 FROM favorite WHERE tag_name = ?1 AND source = ?2 AND id = ?3)",
+            params![tag_name, source, id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
 
     if exists {
         return Err("Favorite already exists.".to_string());
@@ -142,7 +143,8 @@ pub async fn add_favorite(tag_name: String, source: String, id: String) -> Resul
     conn.execute(
         "INSERT INTO favorite (tag_name, source, id, timestamp) VALUES (?1, ?2, ?3, ?4)",
         params![tag_name, source, id, 0],
-    ).map_err(|e| e.to_string())?;
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -176,20 +178,19 @@ pub async fn get_recent_from_favorite(limit: usize) -> Result<Vec<ItemFromFavori
     Ok(items)
 }
 
-
 #[tauri::command]
 pub async fn get_tag_from_favorite(source: String, id: String) -> Result<Vec<String>, String> {
     let conn = get_db()?;
 
     // Prepare the query
-    let mut stmt = conn.prepare(
-        "SELECT tag_name FROM favorite WHERE source = ?1 AND id = ?2"
-    ).map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare("SELECT tag_name FROM favorite WHERE source = ?1 AND id = ?2")
+        .map_err(|e| e.to_string())?;
 
     // Collect matching tag names
-    let tags = stmt.query_map(params![source, id], |row| {
-        row.get(0)
-    }).map_err(|e| e.to_string())?
+    let tags = stmt
+        .query_map(params![source, id], |row| row.get(0))
+        .map_err(|e| e.to_string())?
         .collect::<Result<Vec<String>, _>>()
         .map_err(|e| e.to_string())?;
 
@@ -201,11 +202,13 @@ pub fn get_item_from_favorite(tag_name: String) -> Result<Vec<ItemFromFavorite>,
     let conn = get_db()?;
 
     let mut stmt = conn
-        .prepare("
+        .prepare(
+            "
             SELECT source, id, timestamp FROM favorite
             WHERE tag_name = ?1
             ORDER BY timestamp DESC
-        ")
+        ",
+        )
         .map_err(|e| e.to_string())?;
 
     let items = stmt
@@ -236,7 +239,6 @@ pub async fn update_timestamp_favorite(source: String, id: String) -> Result<(),
     Ok(())
 }
 
-
 #[tauri::command]
 pub async fn remove_favorite(tag_name: String, source: String, id: String) -> Result<(), String> {
     let conn = get_db()?;
@@ -245,9 +247,8 @@ pub async fn remove_favorite(tag_name: String, source: String, id: String) -> Re
     conn.execute(
         "DELETE FROM favorite WHERE tag_name = ?1 AND source = ?2 AND id = ?3",
         params![tag_name, source, id],
-    ).map_err(|e| e.to_string())?;
-
-    
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }

@@ -5,12 +5,12 @@ use std::vec;
 use urlencoding::encode;
 
 use crate::anime::models::Data;
-use crate::models::view::{Trailer, ManifestData};
+use crate::models::view::{ManifestData, Trailer};
 
 async fn get_content(id: &str) -> Result<ManifestData, String> {
     let clinet = Client::new();
     let url = format!("https://kitsu.io/api/edge/anime/{}", encode(&id));
-    
+
     let res = clinet
         .get(url)
         .timeout(Duration::from_secs(30))
@@ -31,20 +31,25 @@ async fn get_content(id: &str) -> Result<ManifestData, String> {
             .ok_or("unable to convert data")?;
 
         let id = data.id.as_ref().ok_or("no id")?;
-        
 
         let atributes = data.attributes.as_ref().ok_or("no attributes")?;
-
-        
 
         let description = atributes.description.as_ref().ok_or("no description")?;
         let title_en = atributes.titles.as_ref().ok_or("no title")?.en.as_ref();
         let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
         let mut poster: String = "".to_string();
         if let Some(poster_image) = atributes.posterImage.as_ref() {
-            poster = poster_image.large.as_ref().unwrap_or(&"".to_string()).clone();
+            poster = poster_image
+                .large
+                .as_ref()
+                .unwrap_or(&"".to_string())
+                .clone();
             if poster.is_empty() {
-                poster = poster_image.original.as_ref().unwrap_or(&"".to_string()).clone();
+                poster = poster_image
+                    .original
+                    .as_ref()
+                    .unwrap_or(&"".to_string())
+                    .clone();
             }
         }
 
@@ -67,7 +72,7 @@ async fn get_content(id: &str) -> Result<ManifestData, String> {
                     youtube_id
                 );
             }
-        }else if banner.is_empty() {
+        } else if banner.is_empty() {
             banner = poster.clone();
         }
 
@@ -75,7 +80,6 @@ async fn get_content(id: &str) -> Result<ManifestData, String> {
 
         let mut meta_data: Vec<String> = vec![];
 
-        
         let _type = data._type.as_ref();
         let show_type = atributes.showType.as_ref();
         let episode_count = atributes.episodeCount.as_ref();
@@ -105,21 +109,21 @@ async fn get_content(id: &str) -> Result<ManifestData, String> {
         /* --- */
 
         let view_data = ManifestData {
-                id: id.to_string().clone(),
-                title: if let Some(t) = title_en {
-                    t.clone()
-                } else {
-                    title.clone()
-                },
-                poster: poster.clone(),
-                banner: banner.clone(),
-                trailer: Trailer {
-                    embed_url: trailer_embed_url.clone(),
-                    url: trailer_url.clone(),
-                },
-                description: description.clone(),
-                meta_data,
-                episode_list: None,
+            id: id.to_string().clone(),
+            title: if let Some(t) = title_en {
+                t.clone()
+            } else {
+                title.clone()
+            },
+            poster: poster.clone(),
+            banner: banner.clone(),
+            trailer: Trailer {
+                embed_url: trailer_embed_url.clone(),
+                url: trailer_url.clone(),
+            },
+            description: description.clone(),
+            meta_data,
+            episode_list: None,
         };
 
         return Ok(view_data);
@@ -127,7 +131,6 @@ async fn get_content(id: &str) -> Result<ManifestData, String> {
         return Err("error request view_data".into());
     }
 }
-
 
 pub async fn new(id: &str) -> Result<ManifestData, String> {
     let get_content_result = get_content(id).await?;

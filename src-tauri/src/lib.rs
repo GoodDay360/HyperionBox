@@ -1,25 +1,22 @@
-use std::env;
 use dotenv::dotenv;
+use std::env;
+use tauri::Manager;
 use tracing::Level;
 use tracing_subscriber::fmt;
-use tauri::Manager;
 
+pub mod anime;
 pub mod models;
 pub mod utils;
-pub mod anime;
-
 
 pub mod commands;
-pub mod worker;
 mod test;
+pub mod worker;
 
 #[cfg(debug_assertions)]
 pub const IS_DEV: bool = true;
 
 #[cfg(not(debug_assertions))]
 pub const IS_DEV: bool = false;
-
-
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -36,14 +33,15 @@ pub fn run() {
             .with_line_number(true)
             .init();
     }
-    
-
-    
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let app_handle = app.handle();
-            let appdata_dir = app_handle.path().app_data_dir().map_err(|e| e.to_string())?;
+            let appdata_dir = app_handle
+                .path()
+                .app_data_dir()
+                .map_err(|e| e.to_string())?;
 
             env::set_var("HYPERIONBOX_APPDATA", appdata_dir);
             utils::configs::init()?;
@@ -58,10 +56,15 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_android_fs::init())
         .invoke_handler(tauri::generate_handler![
             /* Config */
             commands::configs::get_configs,
             commands::configs::set_configs,
+            /* === */
+
+            /* Dialog */
+            commands::dialog::pick_dir::pick_dir,
             /* === */
 
             /* Get Content */
@@ -95,7 +98,6 @@ pub fn run() {
             commands::favorite::get_all_tag,
             commands::favorite::rename_tag,
             commands::favorite::remove_tag,
-
             commands::favorite::add_favorite,
             commands::favorite::get_tag_from_favorite,
             commands::favorite::get_item_from_favorite,
@@ -117,10 +119,7 @@ pub fn run() {
             commands::download::get_current_download_status,
             commands::download::get_local_download_manifest,
             /* === */
-            
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-
 }
-

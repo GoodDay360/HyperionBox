@@ -1,7 +1,7 @@
 use reqwest::Client;
-use tracing::error;
 use std::time::Duration;
 use tokio;
+use tracing::error;
 
 use crate::anime::models::ApiResponse;
 use crate::models::home::{Content, ContentData, HomeData, RelevantContent, Trailer};
@@ -14,7 +14,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
         "https://kitsu.io/api/edge/anime?page[limit]=20&filter[season]={}&filter[seasonYear]={}",
         calendar.anime_season, calendar.year
     );
-    
+
     let res = clinet
         .get(url)
         .timeout(Duration::from_secs(30))
@@ -38,9 +38,17 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
             let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
             let mut poster: String = "".to_string();
             if let Some(poster_image) = atributes.posterImage.as_ref() {
-                poster = poster_image.large.as_ref().unwrap_or(&"".to_string()).clone();
+                poster = poster_image
+                    .large
+                    .as_ref()
+                    .unwrap_or(&"".to_string())
+                    .clone();
                 if poster.is_empty() {
-                    poster = poster_image.original.as_ref().unwrap_or(&"".to_string()).clone();
+                    poster = poster_image
+                        .original
+                        .as_ref()
+                        .unwrap_or(&"".to_string())
+                        .clone();
                 }
             }
 
@@ -63,7 +71,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
                         youtube_id
                     );
                 }
-            }else if banner.is_empty() {
+            } else if banner.is_empty() {
                 banner = poster.clone();
             }
 
@@ -108,9 +116,17 @@ async fn get_trending_content() -> Result<Vec<ContentData>, String> {
             let title = atributes.canonicalTitle.as_ref().ok_or("no title")?;
             let mut poster: String = "".to_string();
             if let Some(poster_image) = atributes.posterImage.as_ref() {
-                poster = poster_image.large.as_ref().unwrap_or(&"".to_string()).clone();
+                poster = poster_image
+                    .large
+                    .as_ref()
+                    .unwrap_or(&"".to_string())
+                    .clone();
                 if poster.is_empty() {
-                    poster = poster_image.original.as_ref().unwrap_or(&"".to_string()).clone();
+                    poster = poster_image
+                        .original
+                        .as_ref()
+                        .unwrap_or(&"".to_string())
+                        .clone();
                 }
             }
 
@@ -131,22 +147,16 @@ async fn get_trending_content() -> Result<Vec<ContentData>, String> {
     }
 }
 
-
 pub async fn new() -> Result<HomeData, String> {
-    let (
-        task_get_relevant_content, 
-        task_get_trending_content,
-    ) = tokio::join!(
-        get_relevant_content(), 
-        get_trending_content(),
-    );
+    let (task_get_relevant_content, task_get_trending_content) =
+        tokio::join!(get_relevant_content(), get_trending_content(),);
 
     let relevant_content = match task_get_relevant_content {
         Ok(content) => content,
-        Err(e) => {  
+        Err(e) => {
             error!("get_relevant_content error: {}", e);
             vec![]
-        },
+        }
     };
 
     let mut new_content: Vec<Content> = vec![];
@@ -159,13 +169,12 @@ pub async fn new() -> Result<HomeData, String> {
                     data: data,
                 });
             }
-            
-        },
-        Err(_) => {  
+        }
+        Err(_) => {
             error!("get_trending_content error")
-        },
+        }
     };
-    
+
     return Ok(HomeData {
         relevant_content: relevant_content,
         content: new_content,

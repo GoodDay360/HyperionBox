@@ -7,7 +7,6 @@ pub struct LinkPlugin {
     pub id: Option<String>,
 }
 
-
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct LocalManifest {
     pub manifest_data: Option<ManifestData>,
@@ -22,7 +21,7 @@ impl LocalManifest {
             manifest_data: None,
             link_plugin: None,
             current_watch_season_index: None,
-            current_watch_episode_index: None
+            current_watch_episode_index: None,
         }
     }
 }

@@ -4,7 +4,7 @@ import { readFile } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
 
 // Scripts Imorts
-import { get_configs } from '@src/app/scripts/configs';
+import { get_configs } from '@src/settings/scripts/settings';
 
 // HLS Imports
 import Hls from 'hls.js';

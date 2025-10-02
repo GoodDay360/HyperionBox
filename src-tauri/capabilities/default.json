@@ -14,27 +14,32 @@
     "core:window:allow-minimize",
     "core:window:allow-close",
     "core:window:allow-set-fullscreen",
-    
     "opener:default",
     {
       "identifier": "opener:allow-open-url",
       "allow": [
-        {"url": "https://*:*"},
-        {"url": "http://*:*"}
+        {
+          "url": "https://*:*"
+        },
+        {
+          "url": "http://*:*"
+        }
       ]
     },
     "os:default",
     {
       "identifier": "http:default",
       "allow": [
-        {"url": "https://*:*"},
-        {"url": "http://*:*"}
+        {
+          "url": "https://*:*"
+        },
+        {
+          "url": "http://*:*"
+        }
       ]
     },
-    
     "clipboard-manager:default",
     "clipboard-manager:allow-write-text",
-
     "fs:default",
     "fs:allow-write",
     "fs:write-files",
@@ -46,15 +51,26 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        {"path": "$APPDATA/**" },
-        {"path": "$APPDATA/*"},
-        {"path": "$APPDATA/"},
-
-        {"path": "$TEMP/**" },
-        {"path": "$TEMP/*"},
-        {"path": "$TEMP/"}
-
+        {
+          "path": "$APPDATA/**"
+        },
+        {
+          "path": "$APPDATA/*"
+        },
+        {
+          "path": "$APPDATA/"
+        },
+        {
+          "path": "$TEMP/**"
+        },
+        {
+          "path": "$TEMP/*"
+        },
+        {
+          "path": "$TEMP/"
+        }
       ]
-    }
+    },
+    "dialog:default"
   ]
 }
