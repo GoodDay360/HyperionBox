@@ -1,5 +1,5 @@
 # HyperionBox 
-⚠️ Next update will rewrite the whole app for better performance and cross-platform. Check development in this branch [v2.0.0](https://github.com/GoodDay360/HyperionBox/tree/v2.0.0)
+⚠️ Next update will rewrite the whole app for better performance and cross-platform. Check development in this branch [v2.0.0](https://github.com/GoodDay360/HyperionBox/tree/main)
 
 [![Download](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/GoodDay360/HyperionBox/releases/latest)    [<img src="https://github.com/GoodDay360/HyperionBox/blob/main/src/assets/images/icon.png?raw=true" align="right" title="HyperionBox" width="110" height="110"> ](https://github.com/GoodDay360/HyperionBox)
 
