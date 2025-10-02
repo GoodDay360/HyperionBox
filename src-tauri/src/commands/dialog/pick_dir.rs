@@ -15,14 +15,13 @@ async fn pick_dir_cross_platform(_app: tauri::AppHandle) -> Result<Option<String
     return Err("Not yet supported.".to_string())?;
 }
 
-
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 async fn pick_dir_cross_platform(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    let selected_dir =  app.dialog().file().blocking_pick_folder();
+    let selected_dir = app.dialog().file().blocking_pick_folder();
 
     if let Some(dir) = selected_dir {
         return Ok(Some(dir.to_string()));
-    }else{
+    } else {
         return Ok(None);
     }
 }

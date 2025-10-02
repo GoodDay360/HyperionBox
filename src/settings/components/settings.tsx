@@ -1,24 +1,19 @@
 // Tauri API
-import { listen } from '@tauri-apps/api/event';
 
 
 // SolidJS Imports
-import { createSignal, onMount, For, Index, useContext, onCleanup } from "solid-js";
+import { createSignal, onMount, Index, useContext } from "solid-js";
 
 // SolidJS Router Imports
-import { useNavigate } from '@solidjs/router';
+// import { useNavigate } from '@solidjs/router';
 
 
 // SUID Imports
-import { Button, IconButton, ButtonBase, Skeleton, CircularProgress, LinearProgress, Box } from '@suid/material';
+import { IconButton, ButtonBase, Skeleton} from '@suid/material';
 
 
 // SUID Icon Imports
 import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
-import ArrowRightRoundedIcon from '@suid/icons-material/ArrowRightRounded';
-import CheckRoundedIcon from '@suid/icons-material/CheckRounded';
-import ReplayRoundedIcon from '@suid/icons-material/ReplayRounded';
-import RemoveCircleOutlineRoundedIcon from '@suid/icons-material/RemoveCircleOutlineRounded';
 import FolderRoundedIcon from '@suid/icons-material/FolderRounded';
 
 
@@ -29,7 +24,6 @@ import toast from 'solid-toast';
 
 // Component Imports
 import NavigationBar from "@src/app/components/navigation_bar";
-import LazyLoadImage from '@src/app/components/lazyloadimage';
 import PullRefresh from '@src/app/components/pull_refresh';
 
 
@@ -48,21 +42,21 @@ import { Configs } from '../types/settings_type';
 
 
 export default function Settings() {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const context = useContext(ContextManager);
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
     const [CONFIGS_DATA, SET_CONFIGS_DATA] = createSignal<Configs>();
 
-    const [is_loading, set_is_loading] = createSignal<boolean>(false);
+    const [is_loading, set_is_loading] = createSignal<boolean>(true);
 
     const get_data = () => {
-        // set_is_loading(true);
+        set_is_loading(true);
         
         get_configs()
             .then((data) => {
                 SET_CONFIGS_DATA(data);
-                // set_is_loading(false);
+                set_is_loading(false);
             })
             .catch((e) => {
                 console.error(e);

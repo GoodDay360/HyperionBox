@@ -23,6 +23,7 @@
     "@tauri-apps/plugin-http": "~2",
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-os": "~2",
+    "@tauri-apps/plugin-updater": "~2",
     "@types/semver": "^7.7.1",
     "animate.css": "^4.1.1",
     "bootstrap": "^5.3.8",
