@@ -1,0 +1,28 @@
+.titlebar_container{
+    width: 100%;
+    height: auto;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+}
+
+.titlebar_draggable{
+    flex:1;
+    height: auto;
+}
+
+.titlebar_title{
+    font-family: var(--font-family);
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--color-1);
+    padding: 18px;
+    user-select: none;
+    pointer-events: none;
+}
+
+.titlebar_buttons{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}

@@ -1,44 +1,42 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "HyperionBox",
-  "version": "1.2.0",
-  "identifier": "com.hyperionbox.app",
+  "version": "2.0.0",
+  "identifier": "io.github.goodday360.hyperionbox",
   "build": {
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "bun run dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
+    "beforeBuildCommand": "bun run build",
     "frontendDist": "../dist"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "HyperionBox",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "backgroundColor": "#000000",
+        "decorations": false
       }
     ],
     "security": {
-      "csp": {
-        "default-src": "* customprotocol: asset:",
-        "script-src": "* 'unsafe-inline' 'unsafe-eval';",
-        "style-src": "* 'unsafe-inline' 'unsafe-eval';",
-        "script-src-elem": "* 'unsafe-inline' 'unsafe-eval';",
-        "connect-src": "* blob: data: asset: asset://localhost",
-        "frame-src": "* blob: data: asset: asset://localhost https://*.disqus.com https://disqus.com",
-        "img-src": "* blob: data: asset: asset://localhost",
-        "media-src": "* blob: data: asset: asset://localhost",
-        "object-src": "* blob: data: asset: asset://localhost"
-      },
+      "csp": null,
+
       "assetProtocol": {
         "enable": true,
-        "scope": ["**", "$APPDATA/**", "$APPDATA/.cache/**"]
-
+        "scope": ["**/*"]
       }
     }
   },
-  "plugins": {
-  },
+  
   "bundle": {
+    "createUpdaterArtifacts": true,
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": true
+      }
+    },
     "active": true,
     "targets": "all",
     "icon": [
@@ -48,6 +46,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE3MjMzMTk2OUY2RTUwNzEKUldSeFVHNmZsakVqRnk0a2R5bEoyRTVQd2hrZjRXNlI4S1g2UlV0LzM0RS9zUExGWnlDbGxHMXUK",
+      "endpoints": [
+        "https://github.com/GoodDay360/HyperionBox/blob/main/manifest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
-
 }

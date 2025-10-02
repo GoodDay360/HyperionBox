@@ -1,0 +1,130 @@
+:root {
+	touch-action: pan-x pan-y;
+	
+	--font-family: "Roboto", sans-serif;
+
+	--background-1: #000000;
+	--background-2: rgb(15,18,20);
+	--background-3: rgb(30,30,30);
+
+	--color-1: #f6f6f6;
+}
+
+
+* {
+	font-optical-sizing: auto;
+	box-sizing: border-box;
+}
+
+
+/* Custom Scrollbar */
+		/* Firefox */
+* {
+	scrollbar-width: 10px;
+	scrollbar-color: var(--background-2);
+}
+
+/* WebKit */
+*::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+	scrollbar-arrow-color: var(--background-3);
+}
+
+*::-webkit-scrollbar-track {
+	background: var(--background-1);
+}
+
+
+*::-webkit-scrollbar-thumb {
+	background-color: var(--background-2);
+	border-radius: 6px;
+	border: 3px solid var(--background-1); /* subtle inset */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background-color: var(--background-3);
+}
+/* ===== */
+
+
+html, body{
+	padding: 0;
+	margin: 0;
+	box-sizing: border-box;
+	height: 100%;
+}
+
+body{
+	display: flex;
+	flex-direction: column;
+	background: var(--background-1);
+	overscroll-behavior-y: contain;
+	touch-action: pan-y;
+	margin: 0;
+}
+
+#root{
+	display: flex;
+	flex:1;
+	box-sizing: border-box;
+	overflow: hidden;
+}
+#safe-area-probe{
+	position: fixed;
+	display: none;
+	padding-top: env(safe-area-inset-top);
+	padding-bottom: env(safe-area-inset-bottom);
+	padding-left: env(safe-area-inset-left);
+	padding-right: env(safe-area-inset-right);
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.app{
+	width: 100%;
+	display: flex;
+	flex: 1;
+	box-sizing: border-box;
+	background: var(--background-1);
+	flex-direction: column;
+	padding-top: var(--safe-area-top, 0);
+	padding-bottom: var(--safe-area-bottom, 0);
+}
+
+fieldset {
+    width: 100%;
+    height: auto;
+    border: 2px solid var(--color-1);
+    border-radius: 5px;
+    padding:8px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+legend {
+    margin-left: 12px;
+    padding:5px;
+    color: var(--color-1);
+    font-size: calc((100vw + 100vh)/2*0.0425);
+    text-align: start;
+    font-family: var(--font-family);
+    font-weight: 800;
+    font-style: normal;
+}
+
+
+.hide_scrollbar {
+	scrollbar-width: none !important;
+	-ms-overflow-style: none !important;
+}
+
+
+.hide_scrollbar::-webkit-scrollbar {
+	width: 0 !important;
+	height: 0 !important;
+	display: none !important;
+}
+
+

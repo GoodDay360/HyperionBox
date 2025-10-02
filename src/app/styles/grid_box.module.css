@@ -1,0 +1,13 @@
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.grid_box{
+    display: grid;
+    grid-auto-flow: row;
+    height: auto;
+    width: auto;
+}

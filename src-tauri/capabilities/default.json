@@ -8,104 +8,49 @@
   "permissions": [
     "core:default",
     "core:window:default",
-    "core:window:allow-set-maximizable",
-    "core:window:allow-set-resizable",
-    "core:window:allow-set-always-on-top",
-    "core:window:allow-set-size",
-    "core:window:allow-maximize",
-    "core:window:allow-set-fullscreen",
-    "core:window:allow-center",
-    "core:window:allow-destroy",
+    "core:window:allow-start-dragging",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-minimize",
     "core:window:allow-close",
+    "core:window:allow-set-fullscreen",
     "opener:default",
-    "opener:allow-open-path",
     {
-      "identifier": "opener:allow-open-path",
+      "identifier": "opener:allow-open-url",
       "allow": [
         {
-          "path": "**"
-        }
-      ]
-    },
-    "log:default",
-    "shell:default",
-    "shell:allow-kill",
-    {
-      "identifier": "shell:allow-spawn",
-      "allow": [
-        {
-          "name": "windows-shell",
-          "cmd": "powershell.exe",
-          "args": [
-            "-ExecutionPolicy",
-            "Bypass",
-            " -File",
-            {
-              "validator": "^.*$"
-            }
-          ]
+          "url": "https://*:*"
         },
         {
-          "name": "unix-shell",
-          "cmd": "sh",
-          "args": [
-            "-c",
-            {
-              "validator": "^.*$"
-            }
-          ]
+          "url": "http://*:*"
         }
       ]
     },
+    "os:default",
     {
-      "identifier": "shell:allow-execute",
+      "identifier": "http:default",
       "allow": [
         {
-          "name": "windows-shell",
-          "cmd": "powershell.exe",
-          "args": [
-            "-ExecutionPolicy",
-            "Bypass",
-            " -File",
-            {
-              "validator": "^.*$"
-            }
-          ]
+          "url": "https://*:*"
         },
         {
-          "name": "unix-shell",
-          "cmd": "sh",
-          "args": [
-            "-c",
-            {
-              "validator": "^.*$"
-            }
-          ]
+          "url": "http://*:*"
         }
       ]
     },
+    "clipboard-manager:default",
+    "clipboard-manager:allow-write-text",
     "fs:default",
-    "fs:write-files",
-    "fs:allow-fstat",
-    "fs:read-all",
-    "fs:read-dirs",
-    "fs:read-files",
-    "fs:read-meta",
-    "fs:allow-open",
     "fs:allow-write",
+    "fs:write-files",
     "fs:allow-read",
-    "fs:allow-rename",
+    "fs:read-files",
     "fs:allow-mkdir",
     "fs:allow-remove",
     "fs:allow-write-text-file",
-    "fs:scope-download-recursive",
-    "fs:scope-resource-recursive",
     {
       "identifier": "fs:scope",
       "allow": [
-        {
-          "path": "**"
-        },
         {
           "path": "$APPDATA/**"
         },
@@ -114,12 +59,6 @@
         },
         {
           "path": "$APPDATA/"
-        },
-        {
-          "path": "$APPDATA/.cache"
-        },
-        {
-          "path": "$APPDATA/.cache/**"
         },
         {
           "path": "$TEMP/**"
@@ -132,31 +71,6 @@
         }
       ]
     },
-    "os:default",
-    {
-      "identifier": "http:default",
-      "allow": [
-        {
-          "url": "https://*"
-        },
-        {
-          "url": "http://*"
-        },
-        {
-          "url": "http://localhost:**"
-        },
-        {
-          "url": "http://127.0.0.1:**"
-        }
-      ],
-      "deny": []
-    },
-    "sql:default",
-    "sql:allow-execute",
-    "http:default",
-    "process:default",
-    "process:allow-restart",
-    "dialog:default",
-    "opener:default"
+    "dialog:default"
   ]
 }

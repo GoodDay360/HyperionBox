@@ -2,6 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    hyperionbox_lib::run()
+    hyperionbox_lib::run();
 }
-
