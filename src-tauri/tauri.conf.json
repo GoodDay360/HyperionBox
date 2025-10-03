@@ -49,7 +49,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE3MjMzMTk2OUY2RTUwNzEKUldSeFVHNmZsakVqRnk0a2R5bEoyRTVQd2hrZjRXNlI4S1g2UlV0LzM0RS9zUExGWnlDbGxHMXUK",
+      "pubkey": "",
       "endpoints": [
         "https://github.com/GoodDay360/HyperionBox/releases/latest/download/latest.json"
       ],
