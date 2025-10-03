@@ -33,6 +33,13 @@ pub struct CurrentDownloadStatus {
     pub total: usize,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MediaHLS {
+    pub data: String,
+    pub server: ServerResult,
+}
+
+
 lazy_static! {
     pub static ref CURRENT_DOWNLOAD_STATUS: DashMap<usize, CurrentDownloadStatus> = DashMap::new(); // Tread Index, CurrentDownloadStatus
 }
@@ -115,7 +122,7 @@ fn check_current_download(
     /* --- */
 }
 
-fn get_current_download(source: &str, id: &str) -> Result<Option<Download>, String> {
+fn get_current_download(offset:usize) -> Result<Option<Download>, String> {
     /* Get download data from download table */
 
     let conn = get_db()?;
@@ -128,13 +135,13 @@ fn get_current_download(source: &str, id: &str) -> Result<Option<Download>, Stri
             plugin_id,
             pause
         FROM download 
-        WHERE source = ?1 AND id = ?2 AND pause = 0
-        LIMIT 1
+        WHERE pause = 0
+        LIMIT 1 OFFSET ?1
     ",
         )
         .map_err(|e| e.to_string())?;
 
-    let result = stmt.query_row(params![source, id], |row| {
+    let result = stmt.query_row(params![offset], |row| {
         Ok(Download {
             source: row.get(0)?,
             id: row.get(1)?,
@@ -151,7 +158,7 @@ fn get_current_download(source: &str, id: &str) -> Result<Option<Download>, Stri
     /* --- */
 }
 
-fn get_current_download_item() -> Result<Option<DownloadItem>, String> {
+fn get_current_download_item(source: &str, id: &str) -> Result<Option<DownloadItem>, String> {
     /* Get download item data from download_item table */
 
     let conn = get_db()?;
@@ -170,13 +177,13 @@ fn get_current_download_item() -> Result<Option<DownloadItem>, String> {
             error,
             done
         FROM download_item
-        WHERE error = 0 AND done = 0
+        WHERE source = ?1 AND id = ?2 AND error = 0 AND done = 0
         LIMIT 1
     ",
         )
         .map_err(|e| e.to_string())?;
 
-    let result = stmt.query_row(params![], |row| {
+    let result = stmt.query_row(params![&source, &id], |row| {
         Ok(DownloadItem {
             source: row.get(0)?,
             id: row.get(1)?,
@@ -199,11 +206,6 @@ fn get_current_download_item() -> Result<Option<DownloadItem>, String> {
     /* --- */
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MediaHLS {
-    pub data: String,
-    pub server: ServerResult,
-}
 
 async fn get_media_hls(
     source: &str,
@@ -687,121 +689,168 @@ async fn set_current_download_error(
     return Ok(());
 }
 
+
+pub fn is_available_download() -> Result<bool, String> {
+    let conn = get_db()?;
+
+    let count_download: usize = conn.query_row(
+        "SELECT COUNT(*) FROM download WHERE pause = 0",
+        params![],
+        |row| row.get(0),
+    )
+    .map_err(|e| e.to_string())?;
+
+    if count_download == 0 {
+        return Ok(false);
+    }
+
+    let count_download_item:usize = conn.query_row(
+        "SELECT COUNT(*) FROM download_item WHERE error = 0 AND done = 0",
+        params![],
+        |row| row.get(0),
+    )
+    .map_err(|e| e.to_string())?;
+
+    if count_download_item == 0 {
+        return Ok(false);
+    }
+
+    return Ok(true);
+}
+
 async fn start_task(app: AppHandle) -> Result<(), String> {
-    let current_download_item_result = get_current_download_item()?;
+    let mut offset:usize = 0;
 
-    if let Some(current_download_item) = current_download_item_result {
-        let source = current_download_item.source;
-        let id = current_download_item.id;
-
-        let current_download_result = get_current_download(&source, &id)?;
+    loop {
+        let current_download_result = get_current_download(offset)?;
         if let Some(current_download) = current_download_result {
+            let source = current_download.source;
+            let id = current_download.id;
             let plugin_id = current_download.plugin_id;
-            let season_index = current_download_item.season_index;
-            let episode_index = current_download_item.episode_index;
-            let episode_id = current_download_item.episode_id;
+            
+            let current_download_item_result = get_current_download_item(&source, &id)?;
+            if let Some(current_download_item) = current_download_item_result {
+                let season_index = current_download_item.season_index;
+                let episode_index = current_download_item.episode_index;
+                let episode_id = current_download_item.episode_id;
 
-            let prefer_server_type = current_download_item.prefer_server_type;
-            let prefer_server_index = current_download_item.prefer_server_index;
-            let prefer_quality = current_download_item.prefer_quality;
+                let prefer_server_type = current_download_item.prefer_server_type;
+                let prefer_server_index = current_download_item.prefer_server_index;
+                let prefer_quality = current_download_item.prefer_quality;
 
-            info!("[worker:download] currently working on: \n-> source: {}, id: {}, season_index: {}, episode_index: {}",
-                &source, &id, season_index, episode_index
-            );
+                info!("[worker:download] currently working on: \n-> source: {}, id: {}, season_index: {}, episode_index: {}",
+                    &source, &id, season_index, episode_index
+                );
 
-            CURRENT_DOWNLOAD_STATUS.insert(
-                0,
-                CurrentDownloadStatus {
-                    source: source.clone(),
-                    id: id.clone(),
-                    season_index: season_index,
-                    episode_index: episode_index,
-                    current: 0,
-                    total: 0,
-                },
-            );
+                CURRENT_DOWNLOAD_STATUS.insert(
+                    0,
+                    CurrentDownloadStatus {
+                        source: source.clone(),
+                        id: id.clone(),
+                        season_index: season_index,
+                        episode_index: episode_index,
+                        current: 0,
+                        total: 0,
+                    },
+                );
 
-            let ep_server_data = get_episode_server::new(
-                &source,
-                &plugin_id,
-                season_index,
-                episode_index,
-                &episode_id,
-            )
-            .map_err(|e| e.to_string())?;
+                let ep_server_data = get_episode_server::new(
+                    &source,
+                    &plugin_id,
+                    season_index,
+                    episode_index,
+                    &episode_id,
+                )
+                .map_err(|e| e.to_string())?;
 
-            let mut selected_server_id: String = "".to_string();
+                let mut selected_server_id: String = "".to_string();
 
-            match ep_server_data.get(&prefer_server_type) {
-                Some(server) => {
-                    if server.len() == 0 {
-                        set_current_download_error(app, &source, &id, season_index, episode_index)
-                            .await?;
-                        return Err("No server available".to_string());
-                    }
-                    for server in server {
-                        if server.index == prefer_server_index {
-                            selected_server_id = server.id.clone();
-                            break;
+                match ep_server_data.get(&prefer_server_type) {
+                    Some(server) => {
+                        if server.len() == 0 {
+                            set_current_download_error(app, &source, &id, season_index, episode_index)
+                                .await?;
+                            return Err("No server available".to_string());
+                        }
+                        for server in server {
+                            if server.index == prefer_server_index {
+                                selected_server_id = server.id.clone();
+                                break;
+                            }
+                        }
+
+                        if selected_server_id == "".to_string() {
+                            set_current_download_error(app, &source, &id, season_index, episode_index)
+                                .await?;
+                            return Err("Unable to find prefer server".to_string());
                         }
                     }
-
-                    if selected_server_id == "".to_string() {
+                    None => {
                         set_current_download_error(app, &source, &id, season_index, episode_index)
                             .await?;
-                        return Err("Unable to find prefer server".to_string());
+                        return Err("Unable to find prefer server type".to_string());
                     }
                 }
-                None => {
-                    set_current_download_error(app, &source, &id, season_index, episode_index)
-                        .await?;
-                    return Err("Unable to find prefer server type".to_string());
-                }
-            }
 
-            let media_hls =
-                match get_media_hls(&source, &plugin_id, &selected_server_id, prefer_quality).await
+                let media_hls =
+                    match get_media_hls(&source, &plugin_id, &selected_server_id, prefer_quality).await
+                    {
+                        Ok(media_hls) => media_hls,
+                        Err(e) => {
+                            set_current_download_error(app, &source, &id, season_index, episode_index)
+                                .await?;
+                            return Err(e.to_string());
+                        }
+                    };
+
+                match download_episode(
+                    app.clone(),
+                    &source,
+                    &id,
+                    season_index,
+                    episode_index,
+                    media_hls,
+                )
+                .await
                 {
-                    Ok(media_hls) => media_hls,
+                    Ok(_) => {}
                     Err(e) => {
                         set_current_download_error(app, &source, &id, season_index, episode_index)
                             .await?;
                         return Err(e.to_string());
                     }
-                };
-
-            match download_episode(
-                app.clone(),
-                &source,
-                &id,
-                season_index,
-                episode_index,
-                media_hls,
-            )
-            .await
-            {
-                Ok(_) => {}
-                Err(e) => {
-                    set_current_download_error(app, &source, &id, season_index, episode_index)
-                        .await?;
-                    return Err(e.to_string());
                 }
-            }
-        }
-    }
 
+                break;
+            }
+            
+        }else{
+            break;
+        }
+
+        offset += 1;
+    }
     return Ok(());
 }
 
 pub fn new(app: AppHandle) {
     async_runtime::spawn(async move {
         loop {
-            sleep(Duration::from_secs(5)).await;
-
-            match start_task(app.clone()).await {
-                Ok(_) => {}
-                Err(e) => error!("[Worker:Download]: {}", e),
+            
+            match is_available_download() {
+                Ok(available) => {
+                    if available {
+                        match start_task(app.clone()).await {
+                            Ok(_) => {}
+                            Err(e) => error!("[Worker:Download]: {}", e),
+                        }
+                        continue;
+                    }
+                }
+                Err(e) => error!("[Worker:Download] count available error: {}", e),
             }
+            
+            sleep(Duration::from_secs(5)).await;
         }
     });
     return;
