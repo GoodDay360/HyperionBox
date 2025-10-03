@@ -102,7 +102,7 @@ parts:
 
       bun install
       rm -f src-tauri/target/release/bundle/deb/*.deb
-      bun tauri build -- --bundles deb 
+      bun tauri build --bundles deb 
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
       mkdir -p $SNAPCRAFT_PART_INSTALL/meta
       cp $SNAPCRAFT_PROJECT_DIR/snap_config/snapshots.yaml $SNAPCRAFT_PART_INSTALL/meta/
