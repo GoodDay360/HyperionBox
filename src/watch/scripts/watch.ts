@@ -8,8 +8,8 @@ import { ServerData } from '../types/server_type';
 import { WatchState } from '../types/watch_state';
 
 
-export function get_episode_list(source: string, pluginId: string, id: string): Promise<EpisodeList[][][]> {
-    return invoke<EpisodeList[][][]>('get_episode_list', {source, pluginId, id});
+export function get_episode_list(source: string, id: string, pluginId: string, linkId: string): Promise<EpisodeList[][][]> {
+    return invoke<EpisodeList[][][]>('get_episode_list', {source, id, pluginId, linkId});
 }
 
 export function get_episode_server(source: string, id: string, pluginId: string, seasonIndex: number, episodeIndex: number, episodeId: string): Promise<EpisodeServerData> {

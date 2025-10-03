@@ -51,24 +51,15 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        {
-          "path": "$APPDATA/**"
-        },
-        {
-          "path": "$APPDATA/*"
-        },
-        {
-          "path": "$APPDATA/"
-        },
-        {
-          "path": "$TEMP/**"
-        },
-        {
-          "path": "$TEMP/*"
-        },
-        {
-          "path": "$TEMP/"
-        }
+        {"path": "$APPDATA/**"},
+        {"path": "$APPDATA/*"},
+        {"path": "$APPDATA/"},
+        {"path": "$TEMP/**"},
+        {"path": "$TEMP/*"},
+        {"path": "$TEMP/"},
+        {"path": "**/*"},
+        {"path": "*"}
+        
       ]
     },
     "dialog:default"

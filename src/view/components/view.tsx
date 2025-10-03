@@ -49,8 +49,8 @@ export default function View() {
     const navigate = useNavigate();
     const context = useContext(ContextManager);
     const [queryParams] = useSearchParams();
-    const source = queryParams?.source as string ?? "anime";
-    const id = queryParams?.id as string ?? "1";
+    const source = queryParams?.source as string ?? "";
+    const id = queryParams?.id as string ?? "";
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 

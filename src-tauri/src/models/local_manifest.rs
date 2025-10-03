@@ -13,6 +13,7 @@ pub struct LocalManifest {
     pub link_plugin: Option<LinkPlugin>,
     pub current_watch_season_index: Option<usize>,
     pub current_watch_episode_index: Option<usize>,
+    pub last_save_timestamp: Option<usize>
 }
 
 impl LocalManifest {
@@ -22,6 +23,7 @@ impl LocalManifest {
             link_plugin: None,
             current_watch_season_index: None,
             current_watch_episode_index: None,
+            last_save_timestamp: None
         }
     }
 }

@@ -15,7 +15,7 @@ import type { JSX } from 'solid-js';
 // SUID Imports
 import { 
     IconButton, ButtonBase, Skeleton, Button,
-    Select, MenuItem, FormControl, InputLabel
+    Select, MenuItem, FormControl, InputLabel, FormControlLabel, Checkbox
 } from '@suid/material';
 
 
@@ -59,6 +59,7 @@ import { EpisodeList } from '../types/episode_list_type';
 import { ServerData } from '../types/server_type';
 import { EpisodeServerData } from '../types/episode_server_type';
 import { WatchState } from '../types/watch_state';
+import { PlayerConfigs } from '../types/watch_type';
 
 // Vidstack Imports
 import 'vidstack/bundle';
@@ -92,10 +93,14 @@ export default function Watch() {
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [is_loading_server, set_is_loading_server] = createSignal<boolean>(true);
 
-    const [EPISODE_LIST, SET_EPISODE_LIST] = createSignal<EpisodeList[][][]>();
-    
+    const [EPISODE_LIST, SET_EPISODE_LIST] = createSignal<EpisodeList[][][]>([]);
     const [EPISIDE_SERVER_DATA, SET_EPISODE_SERVER_DATA] = createSignal<EpisodeServerData>();
     const [SERVER_DATA, SET_SERVER_DATA] = createSignal<ServerData|null>();
+
+    const [PLAYER_CONFIGS, SET_PLAYER_CONFIGS] = createSignal<PlayerConfigs>({
+        auto_next: true,
+        auto_skip_intro_outro: true
+    });
 
 
     const [mode, set_mode] = createSignal<{current: "online"|"offline", force_online: boolean}>({current:"online", force_online:false});
@@ -109,11 +114,15 @@ export default function Watch() {
     const [current_episode_id, set_current_episode_id] = createSignal<string>("");
     
     
-    
+    let max_duration:number = 0;
     let current_watch_time:number = 0;
+    let allow_instant_next = false;
+
+    let play_next_timeout:ReturnType<typeof setTimeout> | undefined;
+    let set_allow_instant_next_timeout:ReturnType<typeof setTimeout> | undefined;
 
     const load_episode_list = async () => {
-        const data = await get_episode_list(source, link_plugin_id, link_id);
+        const data = await get_episode_list(source, id, link_plugin_id, link_id);
         console.log("Episode List: ", data);
         SET_EPISODE_LIST(data);
 
@@ -186,6 +195,7 @@ export default function Watch() {
     }
 
     const load_server = async () => {
+        max_duration = 0;
         set_is_loading_server(true);
         const data = await get_server(source, link_plugin_id, selected_server_id());
         console.log("SERVER DATA: ", data);
@@ -195,10 +205,14 @@ export default function Watch() {
     }
 
     const get_data = async () => {
+        clearTimeout(set_allow_instant_next_timeout);
+        clearTimeout(play_next_timeout);
         set_is_loading(true);
         SET_EPISODE_SERVER_DATA({});
         SET_SERVER_DATA(null);
+        allow_instant_next = false;
         current_watch_time = 0;
+        max_duration = 0;
         set_is_loading_server(true);
         try {
             
@@ -252,12 +266,32 @@ export default function Watch() {
         }
     }
 
-    
+    /* Main Mount */
     onMount(() => {
         console.log(source, link_plugin_id, link_id, season_index, episode_index);
+
+        let player_configs:PlayerConfigs = {
+            auto_next: true,
+            auto_skip_intro_outro: true
+        }
+        /* Load player configs */
+        try {
+            const saved_player_configs = localStorage.getItem("player_configs") ?? "{}";
+            const configs:PlayerConfigs = JSON.parse(saved_player_configs);
+            player_configs = configs;
+        }catch(e){
+            console.error(e);
+        };
+        SET_PLAYER_CONFIGS(player_configs);
+        /* --- */
+        
+        /* --- */
+
         get_data();
     })
+    /* --- */
 
+    /* Save Watch State */
     onMount(() => {
         let save_watch_state_interval: ReturnType<typeof setInterval> | undefined;
 
@@ -284,6 +318,7 @@ export default function Watch() {
             clearInterval(save_watch_state_interval);
         })
     })
+    /* --- */
 
     const onProviderChange = async (e: MediaProviderChangeEvent) => {
         if (!CONTAINER_REF()) return;
@@ -378,8 +413,17 @@ export default function Watch() {
                                     style={{ 
                                         "border-radius": '0',
                                     }}
+                                    
+
                                     on:loaded-data={async (e) => {
+                                        clearTimeout(set_allow_instant_next_timeout);
+                                        set_allow_instant_next_timeout = setTimeout(() => {
+                                            allow_instant_next = true;
+                                        },5000);
+
                                         const player = e.target;
+                                        max_duration = player.duration;
+                                        
                                         player.volume = parseFloat(localStorage.getItem("volume") || "1") || 1;
                                         let watch_state: WatchState | undefined;
                                         try{
@@ -404,7 +448,50 @@ export default function Watch() {
                                     volume={parseFloat(localStorage.getItem("volume") || "1") || 1}
                                     on:time-update={(e)=>{
                                         if (is_loading()) return;
+                                        const player = e.target;
                                         current_watch_time = e.detail.currentTime;
+
+                                        /* Setup Auto Play Next */
+                                        if ((current_watch_time >= max_duration) && current_watch_time && max_duration && PLAYER_CONFIGS().auto_next){
+                                            console.log(current_watch_time, max_duration);
+                                            let max_ep_len = EPISODE_LIST()?.[current_season_index()][current_episode_index()].length - 1;
+                                            const next_ep_index = current_episode_index() + 1;
+                                            
+                                            if (next_ep_index <= max_ep_len){
+                                                clearTimeout(play_next_timeout);
+                                                play_next_timeout = setTimeout(() => {
+                                                    set_mode({current: "online", force_online: false});
+                                                    const next_epi_id = EPISODE_LIST()?.[current_season_index()][current_episode_index()][next_ep_index].id;
+                                                    set_current_episode_id(next_epi_id);
+                                                    set_current_episode_index(next_ep_index);
+                                                    get_data();
+                                                    navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(link_plugin_id)}&link_id=${encodeURIComponent(link_id)}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(current_episode_index())}`, {replace: true});
+                                                }, allow_instant_next ? 0 : 5000);
+                                            }
+                                        }else{
+                                            clearTimeout(play_next_timeout);
+                                        }
+                                        /* --- */
+
+                                        /* Setup auto skip intro/outro */
+                                        if (PLAYER_CONFIGS().auto_skip_intro_outro){
+                                            let intro_start = SERVER_DATA()?.data.intro?.start || 0;
+                                            let intro_end = SERVER_DATA()?.data.intro?.end || 0;
+                                            if (intro_start && intro_end) {
+                                                if (current_watch_time >= intro_start && current_watch_time <= intro_end){
+                                                    player.currentTime = intro_end;
+                                                }
+                                            }
+
+                                            let outro_start = SERVER_DATA()?.data.outro?.start || 0;
+                                            let outro_end = SERVER_DATA()?.data.outro?.end || 0;
+                                            if (outro_start && outro_end) {
+                                                if (current_watch_time >= outro_start && current_watch_time <= outro_end){
+                                                    player.currentTime = outro_end;
+                                                }
+                                            }
+                                        }
+                                        /* --- */
                                     }}
                                     on:volume-change={(e) => {
                                         if (is_loading()) return;
@@ -452,11 +539,88 @@ export default function Watch() {
                             }
                         </div>
                         <div class={styles.tool_box}>
-                            <div class={styles.server_container}>
-                                <For each={Object.keys(EPISIDE_SERVER_DATA() || {})}>
-                                    {(server_type)=>(
+                            <div class={styles.player_options_container}>
+                                <FormControlLabel control={<Checkbox sx={{ color:"var(--color-1)" }} size="small"
+                                    checked={PLAYER_CONFIGS()?.auto_skip_intro_outro ?? true}
+                                    onChange={(_,value) => {
+                                        SET_PLAYER_CONFIGS({
+                                            ...PLAYER_CONFIGS(),
+                                            auto_skip_intro_outro: value
+                                        });
+                                        localStorage.setItem("player_configs", JSON.stringify(PLAYER_CONFIGS()));
+                                    }}
+                                />} label="Auto Skip Intro/Outro" 
+                                    sx={{
+                                        color:"var(--color-1)",
+                                        userSelect:"none"
+                                    }}
+                                />
+                                <FormControlLabel control={<Checkbox sx={{ color:"var(--color-1)" }} size="small"
+                                    checked={PLAYER_CONFIGS()?.auto_next ?? true}
+                                    onChange={(_,value) => {
+                                        SET_PLAYER_CONFIGS({
+                                            ...PLAYER_CONFIGS(),
+                                            auto_next: value
+                                        });
+                                        localStorage.setItem("player_configs", JSON.stringify(PLAYER_CONFIGS()));
+                                    }}
+                                />} label="Auto Next" 
+                                    sx={{
+                                        color:"var(--color-1)",
+                                        userSelect:"none"
+                                    }}
+                                />
+                            </div>
+                            <div
+                                style={{
+                                    padding: "18px",
+                                }}
+                            >
+                                <div class={styles.server_container}>
+                                    <For each={Object.keys(EPISIDE_SERVER_DATA() || {})}>
+                                        {(server_type)=>(
+                                            <div class={styles.server_box}>
+                                                <span class={styles.server_label}>{server_type.toUpperCase()}:</span>
+                                                <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
+                                                    onWheel={(e) => {
+                                                        e.preventDefault();
+                                                        e.currentTarget.scrollBy({
+                                                            left: e.deltaY,
+                                                            behavior: "smooth",
+                                                        });
+                                                    }}
+                                                >
+                                                    <For each={EPISIDE_SERVER_DATA()?.[server_type]}>
+                                                        {(server_item)=>(
+                                                            <Button  color='primary'
+                                                                variant={selected_server_id() === server_item.id ? 'contained' : 'outlined'}
+                                                                sx={{
+                                                                    color: "var(--color-1)",
+                                                                    fontSize: "calc((100vw + 100vh)/2*0.015)",
+                                                                    minWidth: 0,
+                                                                    width: "fit-content",
+                                                                    margin:0,
+                                                                    padding: "8px 12px",
+                                                                }}
+                                                                onClick={() => {
+                                                                    localStorage.setItem("prefer_server_type", server_type);
+                                                                    localStorage.setItem("prefer_server_index", server_item.index.toString());
+                                                                    set_selected_server_id(server_item.id);
+                                                                    load_server();
+                                                                }}
+                                                            >
+                                                                {server_item.title.toUpperCase()}
+                                                            </Button>
+                                                        )}
+                                                    </For>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </For>
+
+                                    {mode().current === "offline" &&
                                         <div class={styles.server_box}>
-                                            <span class={styles.server_label}>{server_type.toUpperCase()}:</span>
+                                            <span class={styles.server_label}>SERVER:</span>
                                             <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                 onWheel={(e) => {
                                                     e.preventDefault();
@@ -466,69 +630,30 @@ export default function Watch() {
                                                     });
                                                 }}
                                             >
-                                                <For each={EPISIDE_SERVER_DATA()?.[server_type]}>
-                                                    {(server_item)=>(
-                                                        <Button  color='primary'
-                                                            variant={selected_server_id() === server_item.id ? 'contained' : 'outlined'}
-                                                            sx={{
-                                                                color: "var(--color-1)",
-                                                                fontSize: "calc((100vw + 100vh)/2*0.015)",
-                                                                minWidth: 0,
-                                                                width: "fit-content",
-                                                                margin:0,
-                                                                padding: "8px 12px",
-                                                            }}
-                                                            onClick={() => {
-                                                                localStorage.setItem("prefer_server_type", server_type);
-                                                                localStorage.setItem("prefer_server_index", server_item.index.toString());
-                                                                set_selected_server_id(server_item.id);
-                                                                load_server();
-                                                            }}
-                                                        >
-                                                            {server_item.title.toUpperCase()}
-                                                        </Button>
-                                                    )}
-                                                </For>
+                                                <Button  color='primary'
+                                                    variant={'outlined'}
+                                                    sx={{
+                                                        color: "var(--color-1)",
+                                                        fontSize: "calc((100vw + 100vh)/2*0.015)",
+                                                        minWidth: 0,
+                                                        width: "fit-content",
+                                                        margin:0,
+                                                        padding: "8px 12px",
+                                                    }}
+                                                    onClick={() => {
+                                                        set_mode({
+                                                            current: "online",
+                                                            force_online: true
+                                                        });
+                                                        get_data();
+                                                    }}
+                                                >
+                                                    SWITCH ONLINE
+                                                </Button>
                                             </div>
                                         </div>
-                                    )}
-                                </For>
-
-                                {mode().current === "offline" &&
-                                    <div class={styles.server_box}>
-                                        <span class={styles.server_label}>SERVER:</span>
-                                        <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
-                                            onWheel={(e) => {
-                                                e.preventDefault();
-                                                e.currentTarget.scrollBy({
-                                                    left: e.deltaY,
-                                                    behavior: "smooth",
-                                                });
-                                            }}
-                                        >
-                                            <Button  color='primary'
-                                                variant={'outlined'}
-                                                sx={{
-                                                    color: "var(--color-1)",
-                                                    fontSize: "calc((100vw + 100vh)/2*0.015)",
-                                                    minWidth: 0,
-                                                    width: "fit-content",
-                                                    margin:0,
-                                                    padding: "8px 12px",
-                                                }}
-                                                onClick={() => {
-                                                    set_mode({
-                                                        current: "online",
-                                                        force_online: true
-                                                    });
-                                                    get_data();
-                                                }}
-                                            >
-                                                SWITCH ONLINE
-                                            </Button>
-                                        </div>
-                                    </div>
-                                }
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>

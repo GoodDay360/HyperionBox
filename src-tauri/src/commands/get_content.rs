@@ -1,5 +1,8 @@
 use tokio;
 use tracing::{error, warn};
+use reqwest::header::HeaderMap;
+use std::fs;
+use chrono::Utc;
 
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
@@ -10,6 +13,9 @@ use crate::commands::request_plugin::get_episode_list::get_episode_list;
 use crate::models::home::{Content, ContentData, HomeData};
 use crate::models::search::SearchData;
 use crate::models::view::{ManifestData, ViewData};
+use crate::utils::{configs, download_file, convert_file_src};
+
+const CACHE_DELAY:usize = 1 * 60 * 60 * 1000;
 
 #[tauri::command]
 pub async fn home(source: String) -> Result<HomeData, String> {
@@ -105,23 +111,40 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
         link_id = link_plugin.id.clone().unwrap_or("".to_string());
     }
 
+    let storage_dir = configs::get()?.storage_dir;
+
+    let item_dir = storage_dir.join(&source).join(&id);
+    if !item_dir.exists(){
+        fs::create_dir_all(&item_dir).map_err(|e| e.to_string())?;
+    }
+    let poster_path = item_dir.join("poster.png");
+    let banner_path = item_dir.join("banner.png");
+
     let mut view_data: ViewData;
 
     if !link_plugin_id.is_empty() && !link_id.is_empty() {
         let (task_get_view_manifest_data, task_get_episode_list) = tokio::join!(
             task_get_view_manifest_data,
-            get_episode_list(source.clone(), link_plugin_id.clone(), link_id)
+            get_episode_list(source.clone(), id.clone(), link_plugin_id.clone(), link_id)
         );
-        let mut manifest_data: ManifestData = task_get_view_manifest_data?;
+        let mut manifest_data: ManifestData = match task_get_view_manifest_data {
+            Ok(data) => data,
+            Err(e) => {
+                warn!("[View] Failed to load remote manifest: {}\n=> Loading local manifest.", e);
+                local_manifest.manifest_data.ok_or("[View] Error: Local manifest data not exists.".to_string())?
+            }
+        };
+
 
         let episode_list: Vec<Vec<Vec<DataResult>>>;
         match task_get_episode_list {
             Ok(data) => episode_list = data,
             Err(e) => {
-                warn!("[Get Episode List] Error: {}", e);
-                episode_list = vec![];
+                warn!("[View] Failed to load remote episode list: {}\n=> Loading local episode list.", e);
+                episode_list = manifest_data.episode_list.unwrap_or(vec![]);
             }
         };
+
         manifest_data.episode_list = Some(episode_list);
         manifest_data
             .meta_data
@@ -146,8 +169,14 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                 };
             }
             Err(e) => {
-                error!("[Get View Data] Error: {}", e);
-                return Err(e);
+                warn!("[View] Failed to load remote manifest: {}\n=> Loading local manifest.", e);
+                view_data = ViewData {
+                    manifest_data: Some(local_manifest.manifest_data.ok_or("[View] Error: Local manifest data not exists.".to_string())?),
+                    link_plugin: None,
+                    current_watch_episode_index: None,
+                    current_watch_season_index: None,
+                    favorites: vec![],
+                };
             }
         }
     }
@@ -160,17 +189,64 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
 
     if favoriate_tags.len() > 0 {
         local_manifest.manifest_data = view_data.manifest_data.clone();
-        save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
-
-        /* Insert Plugin Info */
-        if let Some(mut manifest_data) = view_data.manifest_data {
+        
+        if let Some(manifest_data) = &mut view_data.manifest_data {
+            /* Insert Plugin Info */
             manifest_data
                 .meta_data
                 .insert(0, format!("Favorite: {}", favoriate_tags.join(", ")));
-            view_data.manifest_data = Some(manifest_data);
+             /* --- */
+
+            /* Load and save local poster and banner if exist */
+            let poster_url = &manifest_data.poster;
+            let banner_url = &manifest_data.banner;
+
+            let headers = HeaderMap::new();
+
+            let mut should_cache = false;
+
+            let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
+
+            if !poster_path.exists() || !banner_path.exists(){
+                should_cache = true;
+            }else{
+                let local_timestamp: usize = local_manifest.last_save_timestamp.unwrap_or(0);
+                if (current_timestamp - local_timestamp) >= CACHE_DELAY {
+                    should_cache = true;
+                }
+            }
+
+            if should_cache {
+                match download_file::new(poster_url, &poster_path, headers.clone(),|_,_|{}).await{
+                    Ok(_) => {},
+                    Err(e) => {
+                        warn!("[View] Failed to save remote poster: {}\n=> Loading local poster.", e);
+                    }
+                }
+
+                match download_file::new(banner_url, &banner_path, headers.clone(),|_,_|{}).await{
+                    Ok(_) => {},
+                    Err(e) => {
+                        warn!("[View] Failed to save remote banner: {}\n=> Loading local banner.", e);
+                    }
+                }
+                local_manifest.last_save_timestamp = Some(current_timestamp);
+            }
+
+            if poster_path.exists() {
+                manifest_data.poster = convert_file_src::new(&poster_path)?;
+            }
+
+            if banner_path.exists() {
+                manifest_data.banner = convert_file_src::new(&banner_path)?;
+            }
+            /* --- */
         }
-        /* --- */
+
+        save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
     }
+
+
 
     return Ok(view_data);
 }
