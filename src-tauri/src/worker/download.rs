@@ -470,9 +470,7 @@ async fn download_episode(
                     _url = segment.uri.clone();
                 }
 
-                let segment_path = segments_dir
-                    .join(format!("segment-{}", index));
-                    
+                let segment_path = segments_dir.join(format!("segment-{}", index));
 
                 download_file::new(&_url, &segment_path, headers.clone(), |_, _| {})
                     .await
@@ -577,14 +575,9 @@ async fn download_episode(
                     }
                 );
                 let caption_path = captions_dir.join(&caption_file_name);
-                download_file::new(
-                    &caption.file,
-                    &caption_path,
-                    headers.clone(),
-                    |_, _| {},
-                )
-                .await
-                .map_err(|e| e.to_string())?;
+                download_file::new(&caption.file, &caption_path, headers.clone(), |_, _| {})
+                    .await
+                    .map_err(|e| e.to_string())?;
 
                 let new_caption_file = PathBuf::from(source)
                     .join(id)

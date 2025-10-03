@@ -4,9 +4,9 @@ use reqwest::Client;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use std::path::PathBuf;
 use tokio::time::Duration;
 use url::Url;
-use std::path::PathBuf;
 
 pub async fn new<F>(
     url: &str,

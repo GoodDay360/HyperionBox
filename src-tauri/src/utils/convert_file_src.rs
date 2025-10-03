@@ -1,4 +1,3 @@
-
 use std::path::PathBuf;
 
 pub fn new(file_path: &PathBuf) -> Result<String, String> {

@@ -4,7 +4,7 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateProgress {
     pub current: usize,
-    pub total: usize
+    pub total: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

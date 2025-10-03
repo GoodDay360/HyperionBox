@@ -46,9 +46,7 @@ pub async fn get_local_manifest(source: String, id: String) -> Result<LocalManif
             if banner_path.exists() {
                 manifest_data.banner = convert_file_src::new(&banner_path)?;
             }
-        }   
-
-        
+        }
 
         return Ok(local_manifest_data);
     } else {
