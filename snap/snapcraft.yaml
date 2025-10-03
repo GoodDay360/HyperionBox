@@ -66,6 +66,8 @@ package-repositories:
 parts:
   build-app:
     plugin: dump
+    build-environment:
+      - TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5YVg1aWxZSDhCWUJjWituZm1EOFJ4ckh4L0luWWJBejljb1ZCSzYrQXdMTUFBQkFBQUFBQUFBQUFBQUlBQUFBQWd4M1lZT1IvZ3pzMGVlOVVsU3lmK2dXNjFpYVhnOFFHVW9KOEdqUitMYStUTHpZZWQrUkkzQzcwMkZ2MG9iWmV2cGNjbTJYOVFuNlFUYStRbUNRUmZZbVRLS1lzMVNsTFphcEJraUlZSGxjTDdneHdwYVNBWmZrNCtyMUJmdUtwd2RCOG9PRUZLQUk9Cg=="
     build-snaps:
       - node/20/stable
       - rustup/latest/stable
@@ -93,12 +95,6 @@ parts:
     override-build: |
       set -eu
       rustup default stable
-
-      # Install Bun
-      curl -fsSL https://bun.sh/install | bash
-      export BUN_INSTALL="$HOME/.bun"
-      export PATH="$BUN_INSTALL/bin:$PATH"
-      # ---
 
       bun install
       rm -f src-tauri/target/release/bundle/deb/*.deb

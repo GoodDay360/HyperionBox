@@ -221,7 +221,7 @@ export default function Watch() {
             let local_download_manifest = null;
             
             if (mode().force_online === false){
-                local_download_manifest = await request_get_local_download_manifest(source, id, current_season_index(), current_episode_index());
+                local_download_manifest = await request_get_local_download_manifest(source, id, current_season_index(), current_episode_index(), true);
                 
                 
                 if (local_download_manifest !== null){
@@ -822,7 +822,7 @@ export default function Watch() {
                                     const [available_local, set_available_local] = createSignal(false);
 
                                     onMount(() => {
-                                        request_get_local_download_manifest(source,id,current_season_index(),item.index)
+                                        request_get_local_download_manifest(source,id,current_season_index(),item.index, false)
                                             .then((data) => {
                                                 if (data !== null) {
                                                     set_available_local(true);

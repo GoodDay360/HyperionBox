@@ -397,7 +397,7 @@ export default function View() {
                                                 }))
 
                                                 onMount(() => {
-                                                    request_get_local_download_manifest(source,id,current_season_index(),item.index)
+                                                    request_get_local_download_manifest(source,id,current_season_index(),item.index, false)
                                                         .then((data) => {
                                                             console.log(data)
                                                             if (data !== null) {

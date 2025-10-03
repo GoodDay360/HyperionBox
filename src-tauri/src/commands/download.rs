@@ -8,7 +8,7 @@ use chlaty_core::request_plugin::get_server::ServerResult;
 use crate::models::download::{Download, DownloadItem, Episode, GetDownload};
 use crate::utils::configs;
 
-use crate::commands::local_manifest::get_local_manifest;
+use crate::commands::local_manifest::{ get_local_manifest, save_local_manifest };
 use crate::worker::download::{CurrentDownloadStatus, CURRENT_DOWNLOAD_STATUS};
 
 pub fn get_db() -> Result<Connection, String> {
@@ -475,6 +475,7 @@ pub async fn get_local_download_manifest(
     id: String,
     season_index: usize,
     episode_index: usize,
+    update_state: bool
 ) -> Result<Option<ServerResult>, String> {
     let configs_data = configs::get()?;
     let storage_dir = configs_data.storage_dir;
@@ -500,6 +501,12 @@ pub async fn get_local_download_manifest(
                 return Ok(None);
             }
         };
+    if update_state {
+        let mut local_manifest = get_local_manifest(source.clone(), id.clone()).await?;
+        local_manifest.current_watch_season_index = Some(season_index);
+        local_manifest.current_watch_episode_index = Some(episode_index);
+        save_local_manifest(source, id, local_manifest).await?;
+    }
 
     return Ok(Some(manifest_data));
 }
