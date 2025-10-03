@@ -12,6 +12,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@kingsword/tauri-plugin-android-package-install": "npm:@jsr/kingsword__tauri-plugin-android-package-install@2.0.1",
     "@solidjs/router": "^0.15.3",
     "@suid/icons-material": "^0.9.0",
     "@suid/material": "^0.19.0",
@@ -24,9 +25,9 @@
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-os": "~2",
     "@tauri-apps/plugin-updater": "~2",
-    "@types/semver": "^7.7.1",
     "animate.css": "^4.1.1",
     "bootstrap": "^5.3.8",
+    "bun": "^1.2.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "eslint": "^9.35.0",
@@ -45,6 +46,7 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2",
     "@types/node": "^24.3.3",
+    "@types/semver": "^7.7.1",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.44.0",
     "eslint-plugin-solid": "^0.14.5",

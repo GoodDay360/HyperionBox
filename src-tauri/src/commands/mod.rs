@@ -9,3 +9,4 @@ pub mod request_plugin;
 pub mod watch_state;
 
 pub mod dialog;
+pub mod update;

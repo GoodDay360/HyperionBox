@@ -54,7 +54,7 @@ export default function View() {
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
-    const [is_loading, set_is_loading] = createSignal<boolean>(false);
+    const [is_loading, set_is_loading] = createSignal<boolean>(true);
 
     const [DATA, SET_DATA] = createSignal<ViewData>();
     let DOWNLOAD_DATA: DownloadEpisode = {};

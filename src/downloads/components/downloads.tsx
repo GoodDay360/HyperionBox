@@ -56,7 +56,7 @@ export default function Downloads() {
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
 
-    const [is_loading, set_is_loading] = createSignal<boolean>(false);
+    const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [DOWNLOAD_DATA, SET_DOWNLOAD_DATA] = createSignal<Record<string,GetDownload>>({});
     const [CURRENT_DOWNLOAD_STATUS, SET_CURRENT_DOWNLOAD_STATUS] = createSignal<CurrentDownloadStatus|null>(null);
 

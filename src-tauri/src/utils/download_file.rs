@@ -6,10 +6,11 @@ use std::io::Write;
 use std::path::Path;
 use tokio::time::Duration;
 use url::Url;
+use std::path::PathBuf;
 
 pub async fn new<F>(
     url: &str,
-    output_file: &str,
+    output_file: &PathBuf,
     headers: HeaderMap,
     callback: F,
 ) -> Result<(), String>

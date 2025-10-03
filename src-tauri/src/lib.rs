@@ -35,10 +35,21 @@ pub fn run() {
     }
 
     tauri::Builder::default()
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_http::init())
+        .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_android_fs::init())
         .setup(|app| {
-            let app_handle = app.handle();
+            let app_handle = app.handle().clone();
+            #[cfg(target_os = "android")]
+            app_handle.plugin(tauri_plugin_android_package_install::init())?;
+            #[cfg(not(target_os = "android"))]
+            app_handle.plugin(tauri_plugin_updater::Builder::new().build())?;
+
             let appdata_dir = app_handle
                 .path()
                 .app_data_dir()
@@ -52,13 +63,10 @@ pub fn run() {
             /* --- */
             return Ok(());
         })
-        .plugin(tauri_plugin_fs::init())
-        .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_http::init())
-        .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_android_fs::init())
         .invoke_handler(tauri::generate_handler![
+            /* Update */
+            commands::update::update,
+            /* === */
             /* Config */
             commands::configs::get_configs,
             commands::configs::set_configs,

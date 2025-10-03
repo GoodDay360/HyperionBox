@@ -1,0 +1,14 @@
+{
+    "$schema": "../gen/schemas/mobile-schema.json",
+    "identifier": "android-package-install-capability",
+    "description": "Permissions for android-package-install plugin",
+    "platforms": ["android"],
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "android-package-install:default",
+        "android-package-install:allow-check-permissions",
+        "android-package-install:allow-install"
+    ]
+}

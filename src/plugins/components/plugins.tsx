@@ -27,7 +27,9 @@ import LinkRoundedIcon from '@suid/icons-material/LinkRounded';
 import toast from 'solid-toast';
 
 // Semver Imports
-import semver from 'semver';
+import semver from "semver";
+
+
 
 // Component Imports
 import LazyLoadImage from '@src/app/components/lazyloadimage';

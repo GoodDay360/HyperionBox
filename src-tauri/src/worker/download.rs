@@ -471,9 +471,8 @@ async fn download_episode(
                 }
 
                 let segment_path = segments_dir
-                    .join(format!("segment-{}", index))
-                    .display()
-                    .to_string();
+                    .join(format!("segment-{}", index));
+                    
 
                 download_file::new(&_url, &segment_path, headers.clone(), |_, _| {})
                     .await
@@ -580,7 +579,7 @@ async fn download_episode(
                 let caption_path = captions_dir.join(&caption_file_name);
                 download_file::new(
                     &caption.file,
-                    &caption_path.display().to_string(),
+                    &caption_path,
                     headers.clone(),
                     |_, _| {},
                 )
