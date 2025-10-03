@@ -221,7 +221,7 @@ export default function Watch() {
             let local_download_manifest = null;
             
             if (mode().force_online === false){
-                local_download_manifest = await request_get_local_download_manifest(source, id, current_season_index(), current_episode_index());
+                local_download_manifest = await request_get_local_download_manifest(source, id, current_season_index(), current_episode_index(), true);
                 
                 
                 if (local_download_manifest !== null){
@@ -477,7 +477,7 @@ export default function Watch() {
                                         if (PLAYER_CONFIGS().auto_skip_intro_outro){
                                             let intro_start = SERVER_DATA()?.data.intro?.start || 0;
                                             let intro_end = SERVER_DATA()?.data.intro?.end || 0;
-                                            if (intro_start && intro_end) {
+                                            if (intro_start || intro_end) {
                                                 if (current_watch_time >= intro_start && current_watch_time <= intro_end){
                                                     player.currentTime = intro_end;
                                                 }
@@ -485,7 +485,7 @@ export default function Watch() {
 
                                             let outro_start = SERVER_DATA()?.data.outro?.start || 0;
                                             let outro_end = SERVER_DATA()?.data.outro?.end || 0;
-                                            if (outro_start && outro_end) {
+                                            if (outro_start || outro_end) {
                                                 if (current_watch_time >= outro_start && current_watch_time <= outro_end){
                                                     player.currentTime = outro_end;
                                                 }
@@ -822,7 +822,7 @@ export default function Watch() {
                                     const [available_local, set_available_local] = createSignal(false);
 
                                     onMount(() => {
-                                        request_get_local_download_manifest(source,id,current_season_index(),item.index)
+                                        request_get_local_download_manifest(source,id,current_season_index(),item.index, false)
                                             .then((data) => {
                                                 if (data !== null) {
                                                     set_available_local(true);

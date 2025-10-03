@@ -29,8 +29,8 @@ export function save_watch_state(source: string, id: string, seasonIndex: number
 }
 
 
-export const request_get_local_download_manifest = async (source:string, id:string, seasonIndex: number, episodeIndex: number): Promise<ServerData|null> => {
+export const request_get_local_download_manifest = async (source:string, id:string, seasonIndex: number, episodeIndex: number, updateState: boolean): Promise<ServerData|null> => {
     return invoke<ServerData|null>('get_local_download_manifest',{
-        source, id, seasonIndex, episodeIndex
+        source, id, seasonIndex, episodeIndex, updateState
     });
 }

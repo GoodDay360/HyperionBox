@@ -66,6 +66,8 @@ package-repositories:
 parts:
   build-app:
     plugin: dump
+    build-environment:
+      - TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5YVg1aWxZSDhCWUJjWituZm1EOFJ4ckh4L0luWWJBejljb1ZCSzYrQXdMTUFBQkFBQUFBQUFBQUFBQUlBQUFBQWd4M1lZT1IvZ3pzMGVlOVVsU3lmK2dXNjFpYVhnOFFHVW9KOEdqUitMYStUTHpZZWQrUkkzQzcwMkZ2MG9iWmV2cGNjbTJYOVFuNlFUYStRbUNRUmZZbVRLS1lzMVNsTFphcEJraUlZSGxjTDdneHdwYVNBWmZrNCtyMUJmdUtwd2RCOG9PRUZLQUk9Cg=="
     build-snaps:
       - node/20/stable
       - rustup/latest/stable
@@ -102,7 +104,7 @@ parts:
 
       bun install
       rm -f src-tauri/target/release/bundle/deb/*.deb
-      bun tauri build -- --bundles deb 
+      bun tauri build --bundles deb 
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
       mkdir -p $SNAPCRAFT_PART_INSTALL/meta
       cp $SNAPCRAFT_PROJECT_DIR/snap_config/snapshots.yaml $SNAPCRAFT_PART_INSTALL/meta/
