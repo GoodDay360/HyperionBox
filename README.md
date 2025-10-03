@@ -28,7 +28,7 @@
 
 
 # What's HyperionBox?
-An open-source anime and movie streaming desktop app that supports many sources through plugins.
+An open-source anime and movie streaming app that supports many sources through plugins.
 
 # ✨ Features
 - 🎬 **Stream anime and movies** seamlessly from various sources.
