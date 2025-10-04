@@ -3,6 +3,9 @@ use std::env;
 use tauri::Manager;
 use tracing::Level;
 use tracing_subscriber::fmt;
+use tauri::async_runtime;
+
+use chlaty_core;
 
 pub mod anime;
 pub mod models;
@@ -71,7 +74,10 @@ pub fn run() {
             utils::configs::init()?;
 
             /* Spawn Worker */
-            worker::download::new(app_handle.clone());
+            async_runtime::spawn(async move {
+                chlaty_core::init();
+                worker::download::new(app_handle.clone()).await;
+            });
             /* --- */
             return Ok(());
         })
