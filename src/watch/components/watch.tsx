@@ -88,6 +88,7 @@ export default function Watch() {
     const episode_index:number = parseInt(queryParams.episode_index as string) ?? 0;
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
+    let PLAYER_REF!: MediaPlayerElement;
     
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
@@ -113,13 +114,18 @@ export default function Watch() {
 
     const [current_episode_id, set_current_episode_id] = createSignal<string>("");
     
-    
+    let hls_instance:Hls|null = null;
+
     let max_duration:number = 0;
     let current_watch_time:number = 0;
     let allow_instant_next = false;
+    
+    let set_hls_instance_interval:ReturnType<typeof setInterval> | undefined;
 
     let play_next_timeout:ReturnType<typeof setTimeout> | undefined;
     let set_allow_instant_next_timeout:ReturnType<typeof setTimeout> | undefined;
+    
+    
 
     const load_episode_list = async () => {
         const data = await get_episode_list(source, id, link_plugin_id, link_id);
@@ -289,6 +295,15 @@ export default function Watch() {
 
         get_data();
     })
+    onCleanup(() => {
+        clearInterval(set_hls_instance_interval);
+        clearTimeout(play_next_timeout);
+        clearTimeout(set_allow_instant_next_timeout);
+        
+        if (hls_instance){
+            hls_instance.destroy();
+        }
+    })
     /* --- */
 
     /* Save Watch State */
@@ -326,7 +341,12 @@ export default function Watch() {
         let provider = e.target.provider;
         if (isHLSProvider(provider) && Hls.isSupported()) {
             provider.library = Hls;
-            
+
+            clearInterval(set_hls_instance_interval);
+            set_hls_instance_interval = setInterval(() => {
+                hls_instance = provider.instance;
+            }, 100);
+
             provider.config = {
                 // Apply loader for loading fragments/segments.
                 fLoader: MODIFY_FLOADER({
@@ -404,8 +424,7 @@ export default function Watch() {
                     <div class={styles.container_1}>
                         <div class={styles.player_box}>
                             {!is_loading_server() 
-                                ? <media-player
-                                    id="player"
+                                ? <media-player id="player" ref={PLAYER_REF}
                                     playsInline webkit-playsinline crossOrigin autoPlay
                                     fullscreenOrientation='landscape'
                                     onfullscreenchange={(e) => {console.log(e)}}

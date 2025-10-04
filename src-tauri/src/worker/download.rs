@@ -833,25 +833,20 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
     return Ok(());
 }
 
-pub fn new(app: AppHandle) {
-    async_runtime::spawn(async move {
-        loop {
-            
-            match is_available_download() {
-                Ok(available) => {
-                    if available {
-                        match start_task(app.clone()).await {
-                            Ok(_) => {}
-                            Err(e) => error!("[Worker:Download]: {}", e),
-                        }
-                        continue;
+pub async fn new(app: AppHandle) {
+    loop {
+        match is_available_download() {
+            Ok(available) => {
+                if available {
+                    match start_task(app.clone()).await {
+                        Ok(_) => {}
+                        Err(e) => error!("[Worker:Download]: {}", e),
                     }
+                    continue;
                 }
-                Err(e) => error!("[Worker:Download] count available error: {}", e),
             }
-            
-            sleep(Duration::from_secs(5)).await;
+            Err(e) => error!("[Worker:Download] count available error: {}", e),
         }
-    });
-    return;
+        sleep(Duration::from_secs(5)).await;
+    }
 }
