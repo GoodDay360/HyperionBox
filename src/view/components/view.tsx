@@ -457,6 +457,8 @@ export default function View() {
                                                                         episode_index: item.index,
                                                                         
                                                                     }
+                                                                }else{
+                                                                    delete DOWNLOAD_DATA[item.id];
                                                                 }
                                                             }}
                                                         />

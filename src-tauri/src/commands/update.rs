@@ -57,7 +57,7 @@ async fn update_cross_platform(app: tauri::AppHandle) -> Result<Option<String>, 
     use reqwest::Client;
     use std::fs;
     use tauri::Manager;
-    use tauri_plugin_os::platform;
+    use tauri_plugin_os::{platform, arch};
 
     use crate::models::update::{UpdateManifest, UpdateProgress};
     use crate::utils::download_file;
@@ -72,9 +72,19 @@ async fn update_cross_platform(app: tauri::AppHandle) -> Result<Option<String>, 
     if response.status().is_success() {
         let update_manifest: UpdateManifest = response.json().await.map_err(|e| e.to_string())?;
 
+        let android_arch = match arch() {
+                "arm" => "armeabi-v7a",
+                "aarch64" => "arm64-v8a",
+                "x86" => "x86",
+                "x86_64" => "x86_64",
+                _ => Err("Unsupported architecture".to_string())?,
+        };
+
+        // println!("{}", format!("{}-{}", platform(), android_arch));
+
         let selected = update_manifest
             .platforms
-            .get(&platform().to_string())
+            .get(&format!("{}-{}", platform(), android_arch))
             .ok_or("Platform not found")?;
 
         let files_dir = app
