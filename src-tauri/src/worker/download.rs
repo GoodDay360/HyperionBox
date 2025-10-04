@@ -9,7 +9,6 @@ use serde_json::{from_reader, to_string, to_string_pretty};
 use std::fs;
 use std::path::PathBuf;
 use std::str::from_utf8;
-use tauri::async_runtime;
 use tauri::AppHandle;
 use tauri::Emitter;
 use tokio::time::{sleep, Duration};
