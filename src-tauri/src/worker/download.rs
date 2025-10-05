@@ -12,7 +12,7 @@ use std::str::from_utf8;
 use tauri::AppHandle;
 use tauri::Emitter;
 use tokio::time::{sleep, Duration};
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 use chlaty_core::request_plugin::{get_episode_server, get_server, get_server::ServerResult};
 
@@ -558,7 +558,7 @@ async fn download_episode(
 
             /* --- */
 
-            /* Download Caption */
+            /* Download Captions */
             if !captions_dir.exists() {
                 fs::create_dir_all(&captions_dir).map_err(|e| e.to_string())?;
             }
@@ -576,20 +576,23 @@ async fn download_episode(
                     }
                 );
                 let caption_path = captions_dir.join(&caption_file_name);
-                download_file::new(&caption.file, &caption_path, headers.clone(), |_, _| {})
-                    .await
-                    .map_err(|e| e.to_string())?;
-
-                let new_caption_file = PathBuf::from(source)
-                    .join(id)
-                    .join(&season_index.to_string())
-                    .join(&episode_index.to_string())
-                    .join("download")
-                    .join("captions")
-                    .join(&caption_file_name)
-                    .display()
-                    .to_string();
-                caption.file = new_caption_file;
+                match download_file::new(&caption.file, &caption_path, headers.clone(), |_, _| {}).await {
+                    Ok(_) => {
+                        let new_caption_file = PathBuf::from(source)
+                            .join(id)
+                            .join(&season_index.to_string())
+                            .join(&episode_index.to_string())
+                            .join("download")
+                            .join("captions")
+                            .join(&caption_file_name)
+                            .display()
+                            .to_string();
+                        caption.file = new_caption_file;
+                    }
+                    Err(e) => {
+                        warn!("[Worker:Download] download captions: {}\n-> Skipping...", e);
+                    }
+                }
             }
             /* --- */
 
