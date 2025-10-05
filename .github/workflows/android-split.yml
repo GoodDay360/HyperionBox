@@ -1,0 +1,90 @@
+name: Android Split-ABI Build
+
+on:
+  push:
+    branches: [build]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_SDK_ROOT: $HOME/android-sdk
+      ANDROID_NDK_VERSION: r25c
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Install Bun
+      run: |
+        curl -fsSL https://bun.sh/install | bash
+        echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: '. -> src-tauri/target'
+
+    - name: Cache Android NDK
+      uses: actions/cache@v4
+      with:
+        path: ~/.ndk/${{ env.ANDROID_NDK_VERSION }}
+        key: ndk-${{ env.ANDROID_NDK_VERSION }}
+
+    - name: Install Android SDK commandline tools
+      run: |
+        mkdir -p "$ANDROID_SDK_ROOT"
+        curl -o sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+        unzip sdk.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+        mv "$ANDROID_SDK_ROOT/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+        yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" \
+          "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+
+    - name: Install Android NDK
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+        local-cache: true
+
+    - name: Decode keystore and create signing config
+      run: |
+        mkdir -p src-tauri/gen/android
+        echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > src-tauri/gen/android/keystore.properties
+        echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
+        echo "${{ secrets.ANDROID_KEY_BASE64 }}" | base64 -d > $RUNNER_TEMP/keystore.jks
+        echo "storeFile=$RUNNER_TEMP/keystore.jks" >> src-tauri/gen/android/keystore.properties
+
+    - name: Build split-ABI APKs
+      run: bun tauri android build --apk --split-per-abi
+
+    - name: Rename and collect split-ABI APKs
+      run: |
+        APK_ROOT=src-tauri/gen/android/app/build/outputs/apk
+        OUTPUT_DIR=$APK_ROOT/renamed
+        mkdir -p "$OUTPUT_DIR"
+
+        for ARCH in arm arm64 x86 x86_64; do
+          SRC="$APK_ROOT/$ARCH/release/app-$ARCH-release.apk"
+          DEST="$OUTPUT_DIR/hyperionbox-$ARCH-release.apk"
+          if [ -f "$SRC" ]; then
+            cp "$SRC" "$DEST"
+          else
+            echo "Warning: APK not found for $ARCH"
+          fi
+        done
+
+    - name: Upload renamed APKs as artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: hyperionbox-split-apks
+        path: src-tauri/gen/android/app/build/outputs/apk/renamed/*.apk
