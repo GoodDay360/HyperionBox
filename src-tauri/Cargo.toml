@@ -17,7 +17,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 [profile.release]
 opt-level = 3 
 lto = true 
-strip = false # Dynamic libloading will be bugged if set strip to `true`
+strip = true
 codegen-units = 1
 
 [build-dependencies]
