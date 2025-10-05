@@ -21,7 +21,7 @@ layout:
 
 apps:
   hyperionbox:
-    command: usr/bin/hyperionbox
+    command: usr/bin/HyperionBox
     desktop: usr/share/applications/HyperionBox.desktop
     extensions: [gnome]
     plugs:
@@ -109,4 +109,4 @@ parts:
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
       mkdir -p $SNAPCRAFT_PART_INSTALL/meta
       cp $SNAPCRAFT_PROJECT_DIR/snap_config/snapshots.yaml $SNAPCRAFT_PART_INSTALL/meta/
-      sed -i -e "s|Icon=hyperionbox|Icon=/usr/share/icons/hicolor/256x256@2/apps/hyperionbox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
+      sed -i -e "s|Icon=HyperionBox|Icon=/usr/share/icons/hicolor/256x256@2/apps/HyperionBox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
