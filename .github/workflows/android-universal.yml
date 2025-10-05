@@ -59,7 +59,7 @@ jobs:
       run: bun install
 
     - name: Build universal APK
-      run: bun tauri android build --apk
+      run: bun tauri android build
 
     - name: Rename universal APK
       run: |
