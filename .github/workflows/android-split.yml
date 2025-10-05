@@ -51,6 +51,9 @@ jobs:
         echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
         echo "${{ secrets.ANDROID_KEY_BASE64 }}" | base64 -d > $RUNNER_TEMP/keystore.jks
         echo "storeFile=$RUNNER_TEMP/keystore.jks" >> src-tauri/gen/android/keystore.properties
+    
+    - name: Install dependencies
+      run: bun install
 
     - name: Build split-ABI APKs
       run: bun tauri android build --apk --split-per-abi
