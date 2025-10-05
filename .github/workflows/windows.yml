@@ -1,0 +1,47 @@
+name: Windows Build
+
+on:
+  push:
+    branches:
+      - build
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: '. -> src-tauri/target'
+
+    - name: Export Tauri signing environment variables
+      shell: bash
+      run: |
+        echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" >> $GITHUB_ENV
+        echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Build Windows installer
+      run: bun tauri build
+
+    - name: Upload NSIS installer and signature
+      uses: actions/upload-artifact@v4
+      with:
+        name: hyperionbox-windows-installer
+        path: |
+          src-tauri/target/release/bundle/nsis/*-setup.exe
+          src-tauri/target/release/bundle/nsis/*.sig

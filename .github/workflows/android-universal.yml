@@ -1,0 +1,78 @@
+name: Android Universal APK Build
+
+on:
+  push:
+    branches:
+      - build
+
+jobs:
+  build-universal:
+    runs-on: ubuntu-latest
+
+    env:
+      ANDROID_NDK_VERSION: r25c
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Install Bun
+      run: |
+        curl -fsSL https://bun.sh/install | bash
+        echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: '. -> src-tauri/target'
+
+    - name: Install Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Install Android NDK
+      id: ndk
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+        local-cache: true
+
+    - name: Export NDK_HOME
+      run: echo "NDK_HOME=${{ steps.ndk.outputs.ndk-path }}" >> $GITHUB_ENV
+
+    - name: Decode keystore and create signing config
+      run: |
+        mkdir -p src-tauri/gen/android
+        echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > src-tauri/gen/android/keystore.properties
+        echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
+        echo "storePassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
+        echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
+
+        echo "storeFile=hyperionbox.jks" >> src-tauri/gen/android/keystore.properties
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Build universal APK
+      run: bun tauri android build
+
+    - name: Rename universal APK
+      run: |
+        APK_PATH=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+        OUTPUT_DIR=src-tauri/gen/android/app/build/outputs/apk/universal/renamed
+        mkdir -p "$OUTPUT_DIR"
+        cp "$APK_PATH" "$OUTPUT_DIR/hyperionbox-universal-release.apk"
+
+    - name: Upload universal APK as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: hyperionbox-universal-apk
+        path: src-tauri/gen/android/app/build/outputs/apk/universal/renamed/hyperionbox-universal-release.apk
