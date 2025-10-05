@@ -1,4 +1,4 @@
-name: Android Split-ABI Build
+name: Android Universal APK Build
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - build
 
 jobs:
-  build:
+  build-universal:
     runs-on: ubuntu-latest
 
     env:
@@ -58,27 +58,18 @@ jobs:
     - name: Install dependencies
       run: bun install
 
-    - name: Build split-ABI APKs
-      run: bun tauri android build --apk --split-per-abi
+    - name: Build universal APK
+      run: bun tauri android build --apk
 
-    - name: Rename and collect split-ABI APKs
+    - name: Rename universal APK
       run: |
-        APK_ROOT=src-tauri/gen/android/app/build/outputs/apk
-        OUTPUT_DIR=$APK_ROOT/renamed
+        APK_PATH=src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+        OUTPUT_DIR=src-tauri/gen/android/app/build/outputs/apk/universal/renamed
         mkdir -p "$OUTPUT_DIR"
+        cp "$APK_PATH" "$OUTPUT_DIR/hyperionbox-universal-release.apk"
 
-        for ARCH in arm arm64 x86 x86_64; do
-          SRC="$APK_ROOT/$ARCH/release/app-$ARCH-release.apk"
-          DEST="$OUTPUT_DIR/hyperionbox-$ARCH-release.apk"
-          if [ -f "$SRC" ]; then
-            cp "$SRC" "$DEST"
-          else
-            echo "Warning: APK not found for $ARCH"
-          fi
-        done
-
-    - name: Upload renamed APKs as artifacts
+    - name: Upload universal APK as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: hyperionbox-split-apks
-        path: src-tauri/gen/android/app/build/outputs/apk/renamed/*.apk
+        name: hyperionbox-universal-apk
+        path: src-tauri/gen/android/app/build/outputs/apk/universal/renamed/hyperionbox-universal-release.apk
