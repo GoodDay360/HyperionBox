@@ -53,6 +53,9 @@ jobs:
         mkdir -p src-tauri/gen/android
         echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" > src-tauri/gen/android/keystore.properties
         echo "password=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
+        echo "storePassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
+        echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> src-tauri/gen/android/keystore.properties
+
         echo "storeFile=hyperionbox.jks" >> src-tauri/gen/android/keystore.properties
 
     - name: Install dependencies
