@@ -23,7 +23,7 @@
 ### Windows, Android
 [![Download](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/GoodDay360/HyperionBox/releases/latest)
 
-### Linux
+### Linux (Delayed)
 [![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/hyperionbox)
 
 
