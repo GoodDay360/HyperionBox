@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ANDROID_SDK_ROOT: $HOME/android-sdk
       ANDROID_NDK_VERSION: r25c
 
     steps:
@@ -36,20 +35,8 @@ jobs:
       with:
         workspaces: '. -> src-tauri/target'
 
-    - name: Cache Android NDK
-      uses: actions/cache@v4
-      with:
-        path: ~/.ndk/${{ env.ANDROID_NDK_VERSION }}
-        key: ndk-${{ env.ANDROID_NDK_VERSION }}
-
-    - name: Install Android SDK commandline tools
-      run: |
-        mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-        curl -o sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip sdk.zip -d "$ANDROID_SDK_ROOT/cmdline-tools/tmp"
-        mv "$ANDROID_SDK_ROOT/cmdline-tools/tmp/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-        yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" \
-          "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+    - name: Install Android SDK
+      uses: android-actions/setup-android@v3
 
     - name: Install Android NDK
       uses: nttld/setup-ndk@v1
