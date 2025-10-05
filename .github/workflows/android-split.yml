@@ -2,7 +2,8 @@ name: Android Split-ABI Build
 
 on:
   push:
-    branches: [build]
+    branches:
+      - build
 
 jobs:
   build:
@@ -43,10 +44,10 @@ jobs:
 
     - name: Install Android SDK commandline tools
       run: |
-        mkdir -p "$ANDROID_SDK_ROOT"
+        mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
         curl -o sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-        unzip sdk.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
-        mv "$ANDROID_SDK_ROOT/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+        unzip sdk.zip -d "$ANDROID_SDK_ROOT/cmdline-tools/tmp"
+        mv "$ANDROID_SDK_ROOT/cmdline-tools/tmp/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
         yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" \
           "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
