@@ -1,4 +1,4 @@
-name: Windows Tauri Build
+name: Windows Build
 
 on:
   push:
@@ -14,10 +14,9 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Set up Bun
-      shell: bash
-      run: |
-        curl -fsSL https://bun.sh/install | bash
-        echo "$HOME/.bun/bin" >> $GITHUB_PATH
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
