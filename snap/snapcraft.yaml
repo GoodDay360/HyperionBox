@@ -1,6 +1,6 @@
 name: hyperionbox
 base: core22
-version: '2.0.0'
+version: '2.0.1'
 summary: An open-source anime and movie streaming desktop app. # 79 char long summary
 description: |
   An open-source anime and movie streaming desktop app that support watch progress and download for many sources.
@@ -21,7 +21,7 @@ layout:
 
 apps:
   hyperionbox:
-    command: usr/bin/hyperionbox
+    command: usr/bin/HyperionBox
     desktop: usr/share/applications/HyperionBox.desktop
     extensions: [gnome]
     plugs:
@@ -68,6 +68,7 @@ parts:
     plugin: dump
     build-environment:
       - TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5YVg1aWxZSDhCWUJjWituZm1EOFJ4ckh4L0luWWJBejljb1ZCSzYrQXdMTUFBQkFBQUFBQUFBQUFBQUlBQUFBQWd4M1lZT1IvZ3pzMGVlOVVsU3lmK2dXNjFpYVhnOFFHVW9KOEdqUitMYStUTHpZZWQrUkkzQzcwMkZ2MG9iWmV2cGNjbTJYOVFuNlFUYStRbUNRUmZZbVRLS1lzMVNsTFphcEJraUlZSGxjTDdneHdwYVNBWmZrNCtyMUJmdUtwd2RCOG9PRUZLQUk9Cg=="
+      - TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
     build-snaps:
       - node/20/stable
       - rustup/latest/stable
@@ -108,4 +109,4 @@ parts:
       dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
       mkdir -p $SNAPCRAFT_PART_INSTALL/meta
       cp $SNAPCRAFT_PROJECT_DIR/snap_config/snapshots.yaml $SNAPCRAFT_PART_INSTALL/meta/
-      sed -i -e "s|Icon=hyperionbox|Icon=/usr/share/icons/hicolor/256x256@2/apps/hyperionbox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
+      sed -i -e "s|Icon=HyperionBox|Icon=/usr/share/icons/hicolor/256x256@2/apps/HyperionBox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop

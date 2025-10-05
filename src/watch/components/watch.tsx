@@ -201,8 +201,19 @@ export default function Watch() {
     }
 
     const load_server = async () => {
-        max_duration = 0;
+        /* Reset State */
+        clearInterval(set_hls_instance_interval);
+        clearTimeout(set_allow_instant_next_timeout);
+        clearTimeout(play_next_timeout);
         set_is_loading_server(true);
+        if (hls_instance){
+            hls_instance.destroy();
+        }
+        hls_instance = null;
+        allow_instant_next = false;
+        current_watch_time = 0;
+        max_duration = 0;
+        /* --- */
         const data = await get_server(source, link_plugin_id, selected_server_id());
         console.log("SERVER DATA: ", data);
 
@@ -211,15 +222,22 @@ export default function Watch() {
     }
 
     const get_data = async () => {
+        /* Reset State */
+        clearInterval(set_hls_instance_interval);
         clearTimeout(set_allow_instant_next_timeout);
         clearTimeout(play_next_timeout);
         set_is_loading(true);
+        set_is_loading_server(true);
         SET_EPISODE_SERVER_DATA({});
         SET_SERVER_DATA(null);
+        if (hls_instance){
+            hls_instance.destroy();
+        }
+        hls_instance = null;
         allow_instant_next = false;
         current_watch_time = 0;
         max_duration = 0;
-        set_is_loading_server(true);
+        /* --- */
         try {
             
             await load_episode_list();
@@ -444,7 +462,9 @@ export default function Watch() {
                                         max_duration = player.duration;
                                         
                                         player.volume = parseFloat(localStorage.getItem("volume") || "1") || 1;
-                                        let watch_state: WatchState | undefined;
+
+                                        /* Get Watched Duration and Apply it */
+                                        let watch_state: WatchState | undefined | null;
                                         try{
                                             watch_state = await get_watch_state(
                                                 source,
@@ -463,6 +483,7 @@ export default function Watch() {
                                         }
                                         current_watch_time = watch_state?.current_time || 0
                                         player.currentTime = current_watch_time;
+                                        /* --- */
                                     }}
                                     volume={parseFloat(localStorage.getItem("volume") || "1") || 1}
                                     on:time-update={(e)=>{

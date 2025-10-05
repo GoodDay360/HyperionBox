@@ -1,3 +1,2 @@
 exclude:
-  - $SNAP_USER_DATA/.local/share/io.github.goodday360.hyperionbox/
   - $SNAP_USER_DATA/.local/share/io.github.goodday360.hyperionbox/*
