@@ -24,7 +24,7 @@ jobs:
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
-        workspaces: '. -> src-tauri/target'
+        workspaces: 'src-tauri -> src-tauri/target'
 
     - name: Export Tauri signing environment variables
       shell: bash

@@ -33,7 +33,7 @@ jobs:
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
-        workspaces: '. -> src-tauri/target'
+        workspaces: 'src-tauri -> src-tauri/target'
 
     - name: Install Android SDK
       uses: android-actions/setup-android@v3
