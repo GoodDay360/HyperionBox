@@ -2,7 +2,7 @@ use reqwest::Client;
 use std::time::Duration;
 use urlencoding::encode;
 
-use crate::anime::models::ApiResponse;
+use crate::sources::anime::models::ApiResponse;
 use crate::models::search::{Content, SearchData};
 
 const LIMIT: usize = 20;

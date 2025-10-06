@@ -7,7 +7,7 @@ use tauri::async_runtime;
 
 use chlaty_core;
 
-pub mod anime;
+pub mod sources;
 pub mod models;
 pub mod utils;
 

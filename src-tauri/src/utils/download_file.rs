@@ -12,6 +12,7 @@ pub async fn new<F>(
     url: &str,
     output_file: &PathBuf,
     headers: HeaderMap,
+    timeout: usize,
     callback: F,
 ) -> Result<(), String>
 where
@@ -23,7 +24,7 @@ where
         let client = Client::new();
         let response = client
             .get(current_url.clone())
-            .timeout(Duration::from_secs(600))
+            .timeout(Duration::from_secs(timeout as u64))
             .headers(new_headers.clone())
             .send()
             .await

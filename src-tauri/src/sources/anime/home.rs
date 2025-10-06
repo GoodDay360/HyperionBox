@@ -3,7 +3,7 @@ use std::time::Duration;
 use tokio;
 use tracing::error;
 
-use crate::anime::models::ApiResponse;
+use crate::sources::anime::models::ApiResponse;
 use crate::models::home::{Content, ContentData, HomeData, RelevantContent, Trailer};
 use crate::utils::get_calendar;
 
