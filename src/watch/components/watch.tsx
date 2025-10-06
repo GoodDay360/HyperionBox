@@ -111,8 +111,12 @@ export default function Watch() {
 
     const [current_season_index, set_current_season_index] = createSignal<number>(season_index);
     const [current_episode_index, set_current_episode_index] = createSignal<number>(episode_index);
-
     const [current_episode_id, set_current_episode_id] = createSignal<string>("");
+
+    /* For Viewing Episode List */
+    const [view_season_index, set_view_season_index] = createSignal<number>(season_index);
+    const [view_episode_page_index, set_view_episode_page_index] = createSignal<number>(0);
+    /* --- */
     
     let hls_instance:Hls|null = null;
 
@@ -138,8 +142,12 @@ export default function Watch() {
                 for (const [page_index, ep_page] of season.entries()){
                     for (const ep of ep_page){
                         if (ep.index === current_episode_index()){
-                            set_current_episode_page_index(page_index);
+                            /* For Viewing Episode List */
+                            set_view_season_index(season_index);
+                            set_view_episode_page_index(page_index);
+                            /* --- */
 
+                            set_current_episode_page_index(page_index);
                             set_current_season_index(season_index);
                             set_current_episode_index(ep.index);
                             set_current_episode_id(ep.id);
@@ -492,24 +500,21 @@ export default function Watch() {
                                         current_watch_time = e.detail.currentTime;
 
                                         /* Setup Auto Play Next */
+                                        clearTimeout(play_next_timeout);
                                         if ((current_watch_time >= max_duration) && current_watch_time && max_duration && PLAYER_CONFIGS().auto_next){
                                             console.log(current_watch_time, max_duration);
-                                            let max_ep_len = EPISODE_LIST()?.[current_season_index()][current_episode_index()].length - 1;
+                                            let max_ep_index_len = (EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()]?.length ?? 0) - 1;
                                             const next_ep_index = current_episode_index() + 1;
-                                            
-                                            if (next_ep_index <= max_ep_len){
-                                                clearTimeout(play_next_timeout);
+                                            if (next_ep_index <= max_ep_index_len){
                                                 play_next_timeout = setTimeout(() => {
                                                     set_mode({current: "online", force_online: false});
-                                                    const next_epi_id = EPISODE_LIST()?.[current_season_index()][current_episode_index()][next_ep_index].id;
+                                                    const next_epi_id = EPISODE_LIST()?.[current_season_index()][current_episode_page_index()][next_ep_index].id;
                                                     set_current_episode_id(next_epi_id);
                                                     set_current_episode_index(next_ep_index);
                                                     get_data();
                                                     navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(link_plugin_id)}&link_id=${encodeURIComponent(link_id)}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(current_episode_index())}`, {replace: true});
                                                 }, allow_instant_next ? 0 : 5000);
                                             }
-                                        }else{
-                                            clearTimeout(play_next_timeout);
                                         }
                                         /* --- */
 
@@ -727,11 +732,11 @@ export default function Watch() {
                                             >Season</InputLabel>
                                             <Select
                                                 labelId="season_label"
-                                                value={current_season_index()}
+                                                value={view_season_index()}
                                                 label="Season"
                                                 onChange={(e)=>{
                                                     const value = e.target.value;
-                                                    set_current_season_index(value);
+                                                    set_view_season_index(value);
                                                 }}  
                                                 sx={{
                                                     color: 'var(--color-1)',
@@ -768,7 +773,7 @@ export default function Watch() {
                                     
                                     </div>
                                 }
-                                {((EPISODE_LIST()?.[current_season_index()]?.length ?? 0) > 1) && 
+                                {((EPISODE_LIST()?.[view_season_index()]?.length ?? 0) > 1) && 
                                     <div
                                         style={{
                                             flex:1,
@@ -785,11 +790,11 @@ export default function Watch() {
                                             >Episode page</InputLabel>
                                             <Select
                                                 labelId="episode_page_label"
-                                                value={current_episode_page_index()}
+                                                value={view_episode_page_index()}
                                                 label="Episode page"
                                                 onChange={(e)=>{
                                                     const value = e.target.value;
-                                                    set_current_episode_page_index(parseInt(value));
+                                                    set_view_episode_page_index(parseInt(value));
                                                 }}
                                                 sx={{
                                                     color: 'var(--color-1)',
@@ -811,7 +816,7 @@ export default function Watch() {
                                                 }}
 
                                             >
-                                                <For each={[...Array(EPISODE_LIST()?.[current_season_index()]?.length ?? 0)]}>
+                                                <For each={[...Array(EPISODE_LIST()?.[view_season_index()]?.length ?? 0)]}>
                                                     {(_, index) =>(
                                                         <MenuItem value={index()}
                                                             sx={{
@@ -854,7 +859,7 @@ export default function Watch() {
                             </div>
                         </div>
                         <div class={`${styles.episode_body_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}>
-                            <For each={EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()].filter(
+                            <For each={EPISODE_LIST()?.[view_season_index()]?.[view_episode_page_index()].filter(
                                 (item) => search() === "" || item.index.toString().includes(search().trim()) 
                                     || item.id.includes(search().trim()) || item.title.toLowerCase().includes(search().trim().toLowerCase())
                             )}>
@@ -862,7 +867,7 @@ export default function Watch() {
                                     const [available_local, set_available_local] = createSignal(false);
 
                                     onMount(() => {
-                                        request_get_local_download_manifest(source,id,current_season_index(),item.index, false)
+                                        request_get_local_download_manifest(source,id,view_season_index(),item.index, false)
                                             .then((data) => {
                                                 if (data !== null) {
                                                     set_available_local(true);
@@ -895,6 +900,11 @@ export default function Watch() {
                                             }}
                                             onClick={() => {
                                                 set_mode({current: "online", force_online: false});
+                                                /* Apply View Index to Current Index */
+                                                set_current_episode_page_index(view_episode_page_index());
+                                                set_current_season_index(view_season_index());
+                                                /* --- */
+
                                                 set_current_episode_id(item.id);
                                                 set_current_episode_index(item.index);
                                                 get_data();
