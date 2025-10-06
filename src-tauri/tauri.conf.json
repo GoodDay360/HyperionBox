@@ -25,7 +25,11 @@
 
       "assetProtocol": {
         "enable": true,
-        "scope": ["**/*"]
+        "scope": [
+          "**/*",
+          "/*",
+          "/**/*"
+        ]
       }
     }
   },
