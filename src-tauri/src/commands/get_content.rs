@@ -231,7 +231,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
             }
 
             if should_cache {
-                match download_file::new(poster_url, &poster_path, headers.clone(), |_, _| {}).await
+                match download_file::new(poster_url, &poster_path, headers.clone(), 60, |_, _| {}).await
                 {
                     Ok(_) => {}
                     Err(e) => {
@@ -242,7 +242,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                     }
                 }
 
-                match download_file::new(banner_url, &banner_path, headers.clone(), |_, _| {}).await
+                match download_file::new(banner_url, &banner_path, headers.clone(), 60, |_, _| {}).await
                 {
                     Ok(_) => {}
                     Err(e) => {

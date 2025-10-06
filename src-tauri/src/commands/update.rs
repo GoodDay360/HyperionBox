@@ -99,7 +99,7 @@ async fn update_cross_platform(app: tauri::AppHandle) -> Result<Option<String>, 
         let output_file = files_dir.join("hyperionbox-update.apk");
 
         let headers = HeaderMap::new();
-        download_file::new(&selected.url, &output_file, headers, |current, total| {
+        download_file::new(&selected.url, &output_file, headers, 3600, |current, total| {
             match app.emit("update_progress", UpdateProgress { current, total }) {
                 Ok(_) => {}
                 Err(e) => warn!("[update]: {}", e),
