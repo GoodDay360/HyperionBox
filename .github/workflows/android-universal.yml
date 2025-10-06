@@ -60,6 +60,11 @@ jobs:
 
     - name: Install dependencies
       run: bun install
+    
+    - name: Clean Output Directory
+      run: |
+        OUTPUT_DIR=src-tauri/gen/android/app/build/outputs/apk/universal/renamed
+        rm -rf "$OUTPUT_DIR"
 
     - name: Build universal APK
       run: bun tauri android build

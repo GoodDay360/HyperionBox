@@ -35,6 +35,15 @@ jobs:
     - name: Install dependencies
       run: bun install
 
+    - name: Clean NSIS output folder
+      shell: pwsh
+      run: |
+        $nsisPath = "src-tauri/target/release/bundle/nsis"
+        if (Test-Path $nsisPath) {
+          Remove-Item -Recurse -Force $nsisPath
+        }
+
+
     - name: Build Windows installer
       run: bun tauri build
 
