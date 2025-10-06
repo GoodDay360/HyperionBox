@@ -23,7 +23,7 @@ where
         let client = Client::new();
         let response = client
             .get(current_url.clone())
-            .timeout(Duration::from_secs(30))
+            .timeout(Duration::from_secs(600))
             .headers(new_headers.clone())
             .send()
             .await
