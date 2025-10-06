@@ -4,7 +4,7 @@ use std::time::Duration;
 use std::vec;
 use urlencoding::encode;
 
-use crate::anime::models::Data;
+use crate::sources::anime::models::Data;
 use crate::models::view::{ManifestData, Trailer};
 
 async fn get_content(id: &str) -> Result<ManifestData, String> {

@@ -6,7 +6,7 @@ use tracing::{error, warn};
 
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
-use crate::anime;
+use crate::sources::anime;
 use crate::commands::favorite::{get_recent_from_favorite, get_tag_from_favorite};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 use crate::commands::request_plugin::get_episode_list::get_episode_list;

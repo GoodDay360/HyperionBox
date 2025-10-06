@@ -58,6 +58,7 @@ lazy_static = "1.5.0"
 tauri-plugin-android-fs = "16.1.2"
 tauri-plugin-dialog = "2"
 dunce = "1.0.5"
+html-escape = "0.2.13"
 
 [target.'cfg(target_os = "android")'.dependencies]
 tauri-plugin-android-package-install = "2.0.2"
