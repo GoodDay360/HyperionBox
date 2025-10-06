@@ -17,8 +17,13 @@ pub fn new(file_path: &PathBuf) -> Result<String, String> {
     // Linux/macOS: use raw path, strip leading slash
     #[cfg(not(any(windows, target_os = "android")))]
     let path_str = {
-        let raw = file_path.display().to_string();
-        raw.trim_start_matches('/').to_string()
+    let raw = file_path.display().to_string();
+    let normalized = if raw.starts_with('/') {
+        raw.to_string()
+    } else {
+        format!("/{}", raw)
+    };
+        normalized
     };
 
     let encoded = urlencoding::encode(&path_str);

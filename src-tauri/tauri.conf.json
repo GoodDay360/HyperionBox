@@ -25,7 +25,12 @@
 
       "assetProtocol": {
         "enable": true,
-        "scope": ["**/*"]
+        "scope": [
+          "**/*",
+          "/*",
+          "/**/*",
+          "/home/*/.local/share/io.github.goodday360.hyperionbox/**/*"
+        ]
       }
     }
   },
