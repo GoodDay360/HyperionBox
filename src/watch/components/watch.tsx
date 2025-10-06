@@ -92,6 +92,7 @@ export default function Watch() {
     
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
+    const [is_player_ready, set_is_player_ready] = createSignal<boolean>(false);
     const [is_loading_server, set_is_loading_server] = createSignal<boolean>(true);
 
     const [EPISODE_LIST, SET_EPISODE_LIST] = createSignal<EpisodeList[][][]>([]);
@@ -214,6 +215,7 @@ export default function Watch() {
         clearTimeout(set_allow_instant_next_timeout);
         clearTimeout(play_next_timeout);
         set_is_loading_server(true);
+        set_is_player_ready(false);
         if (hls_instance){
             hls_instance.destroy();
         }
@@ -234,6 +236,7 @@ export default function Watch() {
         clearInterval(set_hls_instance_interval);
         clearTimeout(set_allow_instant_next_timeout);
         clearTimeout(play_next_timeout);
+        set_is_player_ready(false);
         set_is_loading(true);
         set_is_loading_server(true);
         SET_EPISODE_SERVER_DATA({});
@@ -492,6 +495,7 @@ export default function Watch() {
                                         current_watch_time = watch_state?.current_time || 0
                                         player.currentTime = current_watch_time;
                                         /* --- */
+                                        set_is_player_ready(true);
                                     }}
                                     volume={parseFloat(localStorage.getItem("volume") || "1") || 1}
                                     on:time-update={(e)=>{
@@ -500,13 +504,15 @@ export default function Watch() {
                                         current_watch_time = e.detail.currentTime;
 
                                         /* Setup Auto Play Next */
-                                        clearTimeout(play_next_timeout);
-                                        if ((current_watch_time >= max_duration) && current_watch_time && max_duration && PLAYER_CONFIGS().auto_next){
-                                            console.log(current_watch_time, max_duration);
+                                        clearTimeout(play_next_timeout);                                        
+                                        if ((Math.floor(current_watch_time) >= Math.floor(max_duration)) && current_watch_time && max_duration && PLAYER_CONFIGS().auto_next && is_player_ready()){
+                                            console.log(current_watch_time, max_duration, is_player_ready());
                                             let max_ep_index_len = (EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()]?.length ?? 0) - 1;
                                             const next_ep_index = current_episode_index() + 1;
                                             if (next_ep_index <= max_ep_index_len){
                                                 play_next_timeout = setTimeout(() => {
+                                                    if (!is_player_ready()) return;
+
                                                     set_mode({current: "online", force_online: false});
                                                     const next_epi_id = EPISODE_LIST()?.[current_season_index()][current_episode_page_index()][next_ep_index].id;
                                                     set_current_episode_id(next_epi_id);
