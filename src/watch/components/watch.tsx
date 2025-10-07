@@ -165,7 +165,8 @@ export default function Watch() {
             source, id, link_plugin_id, 
             current_season_index(), 
             current_episode_index(),
-            current_episode_id()
+            current_episode_id(),
+            true
         );
         console.log("Episode Server: ", data);
         SET_EPISODE_SERVER_DATA(data);

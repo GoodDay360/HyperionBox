@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use tracing::error;
 
-use chlaty_core::request_plugin::get_episode_server;
+use chlaty_core::request_plugin;
 use chlaty_core::request_plugin::get_episode_server::DataResult;
 
 use crate::commands::favorite::update_timestamp_favorite;
@@ -15,8 +15,9 @@ pub async fn get_episode_server(
     season_index: usize,
     episode_index: usize,
     episode_id: String,
+    update_state: bool
 ) -> Result<HashMap<String, Vec<DataResult>>, String> {
-    let get_episode_server_result = get_episode_server::new(
+    let get_episode_server_result = request_plugin::get_episode_server::new(
         &source,
         &plugin_id,
         season_index,
@@ -29,12 +30,13 @@ pub async fn get_episode_server(
     })?;
 
     /* Update Current Watch */
-    let mut local_manifest = get_local_manifest(source.clone(), id.clone()).await?;
-
-    local_manifest.current_watch_season_index = Some(season_index);
-    local_manifest.current_watch_episode_index = Some(episode_index);
-    save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
-    update_timestamp_favorite(source, id).await?;
+    if update_state {
+        let mut local_manifest = get_local_manifest(source.clone(), id.clone()).await?;
+        local_manifest.current_watch_season_index = Some(season_index);
+        local_manifest.current_watch_episode_index = Some(episode_index);
+        save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
+        update_timestamp_favorite(source, id).await?;
+    }
     /* --- */
 
     return Ok(get_episode_server_result);
