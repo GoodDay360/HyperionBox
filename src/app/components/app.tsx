@@ -127,21 +127,30 @@ export default function App() {
         <ContextManager.Provider value={{
             screen_size
         }}>
-            <Toaster 
-                position="bottom-center"
-                gutter={5}
-                toastOptions={{
-                    duration: 5000,
-                    style: {
-                        "min-width": "fit-content",
-                        border:"2px solid var(--background-1)",
-                        background: 'var(--background-2)',
-                        color: "var(--color-1)",
-                        "font-family": "var(--font-family)",
-                        "margin-bottom": "env(safe-area-inset-bottom, 0)"
-                    },
+            <div
+                style={{
+                    width: "auto",
+                    height: "auto",
+                    "user-select": "none",
                 }}
-            />
+                onClick={() => toast.remove()}
+            >
+                <Toaster 
+                    position="bottom-center"
+                    gutter={5}
+                    toastOptions={{
+                        duration: 5000,
+                        style: {
+                            "min-width": "fit-content",
+                            border:"2px solid var(--background-1)",
+                            background: 'var(--background-2)',
+                            color: "var(--color-1)",
+                            "font-family": "var(--font-family)",
+                            "margin-bottom": "env(safe-area-inset-bottom, 0)"
+                        },
+                    }}
+                />
+            </div>
             
             <div id="safe-area-probe" ref={SafeAreaProbeRef}/>
 
