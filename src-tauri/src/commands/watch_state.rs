@@ -3,7 +3,7 @@ use std::fs;
 use std::io::BufReader;
 
 use crate::models::watch_state::WatchState;
-use crate::utils::configs;
+use crate::utils::configs::Configs;
 
 #[tauri::command]
 pub async fn get_watch_state(
@@ -12,7 +12,7 @@ pub async fn get_watch_state(
     season_index: usize,
     episode_index: usize,
 ) -> Result<WatchState, String> {
-    let config_data = configs::get()?;
+    let config_data = Configs::get()?;
 
     let storage_dir = config_data.storage_dir;
     let source_dir = storage_dir.join(&source);
@@ -52,7 +52,7 @@ pub async fn save_watch_state(
     episode_index: usize,
     watch_state: WatchState,
 ) -> Result<(), String> {
-    let config_data = configs::get()?;
+    let config_data = Configs::get()?;
 
     let storage_dir = config_data.storage_dir;
     let source_dir = storage_dir.join(&source);

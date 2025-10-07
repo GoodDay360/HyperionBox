@@ -3,7 +3,7 @@ use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
 
-use crate::utils::configs;
+use crate::utils::configs::Configs;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ItemFromFavorite {
@@ -13,7 +13,7 @@ pub struct ItemFromFavorite {
 }
 
 pub fn get_db() -> Result<Connection, String> {
-    let config_data = configs::get()?;
+    let config_data = Configs::get()?;
     let storage_dir = config_data.storage_dir;
 
     if !storage_dir.exists() {

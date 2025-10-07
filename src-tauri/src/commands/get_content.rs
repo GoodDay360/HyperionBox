@@ -13,7 +13,7 @@ use crate::commands::request_plugin::get_episode_list::get_episode_list;
 use crate::models::home::{Content, ContentData, HomeData};
 use crate::models::search::SearchData;
 use crate::models::view::{ManifestData, ViewData};
-use crate::utils::{configs, convert_file_src, download_file};
+use crate::utils::{configs::Configs, convert_file_src, download_file};
 
 const CACHE_DELAY: usize = 1 * 60 * 60 * 1000;
 
@@ -111,7 +111,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
         link_id = link_plugin.id.clone().unwrap_or("".to_string());
     }
 
-    let storage_dir = configs::get()?.storage_dir;
+    let storage_dir = Configs::get()?.storage_dir;
 
     let item_dir = storage_dir.join(&source).join(&id);
     if !item_dir.exists() {

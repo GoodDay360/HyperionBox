@@ -16,7 +16,7 @@ use tracing::{error, info, warn};
 
 use chlaty_core::request_plugin::{get_episode_server, get_server, get_server::ServerResult};
 
-use crate::utils::configs as app_configs;
+use crate::utils::configs::Configs;
 
 use crate::commands::download::{get_db, set_done_download, set_error_download};
 use crate::models::download::{Download, DownloadItem, DownloadStatusManifest};
@@ -360,7 +360,7 @@ async fn download_episode(
     episode_index: usize,
     mut media_hls: MediaHLS,
 ) -> Result<(), String> {
-    let app_configs_data = app_configs::get().map_err(|e| e.to_string())?;
+    let app_configs_data = Configs::get().map_err(|e| e.to_string())?;
     let storage_dir = app_configs_data.storage_dir;
 
     let config = media_hls.server.config.clone();

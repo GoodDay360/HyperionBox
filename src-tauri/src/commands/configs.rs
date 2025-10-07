@@ -1,17 +1,16 @@
-use crate::utils::configs;
 use crate::utils::configs::Configs;
 
 #[tauri::command]
 pub fn get_configs() -> Result<Configs, String> {
-    let config_data = configs::get()?;
+    let config_data = Configs::get()?;
     return Ok(config_data);
 }
 
 #[tauri::command]
 pub fn set_configs(configs: Configs) -> Result<(), String> {
-    configs::set(configs)?;
+    Configs::set(configs)?;
 
-    configs::init()?;
+    Configs::init()?;
 
     return Ok(());
 }
