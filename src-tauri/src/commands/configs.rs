@@ -8,7 +8,7 @@ pub fn get_configs() -> Result<Configs, String> {
 
 #[tauri::command]
 pub fn set_configs(configs: Configs) -> Result<(), String> {
-    Configs::set(configs)?;
+    Configs::set(&configs)?;
 
     Configs::init()?;
 

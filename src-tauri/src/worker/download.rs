@@ -361,7 +361,7 @@ async fn download_episode(
     mut media_hls: MediaHLS,
 ) -> Result<(), String> {
     let app_configs_data = Configs::get().map_err(|e| e.to_string())?;
-    let storage_dir = app_configs_data.storage_dir;
+    let storage_dir = app_configs_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     let config = media_hls.server.config.clone();
 

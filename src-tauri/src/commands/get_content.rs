@@ -111,7 +111,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
         link_id = link_plugin.id.clone().unwrap_or("".to_string());
     }
 
-    let storage_dir = Configs::get()?.storage_dir;
+    let storage_dir = Configs::get()?.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     let item_dir = storage_dir.join(&source).join(&id);
     if !item_dir.exists() {

@@ -14,7 +14,7 @@ pub struct ItemFromFavorite {
 
 pub fn get_db() -> Result<Connection, String> {
     let config_data = Configs::get()?;
-    let storage_dir = config_data.storage_dir;
+    let storage_dir = config_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     if !storage_dir.exists() {
         fs::create_dir_all(&storage_dir).map_err(|e| e.to_string())?;

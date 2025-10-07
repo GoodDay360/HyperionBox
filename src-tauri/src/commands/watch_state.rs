@@ -14,7 +14,7 @@ pub async fn get_watch_state(
 ) -> Result<WatchState, String> {
     let config_data = Configs::get()?;
 
-    let storage_dir = config_data.storage_dir;
+    let storage_dir = config_data.storage_dir.ok_or("Storage directory not set".to_string())?;
     let source_dir = storage_dir.join(&source);
     let item_dir = source_dir.join(&id);
     let watch_state_dir = item_dir
@@ -54,7 +54,7 @@ pub async fn save_watch_state(
 ) -> Result<(), String> {
     let config_data = Configs::get()?;
 
-    let storage_dir = config_data.storage_dir;
+    let storage_dir = config_data.storage_dir.ok_or("Storage directory not set".to_string())?;
     let source_dir = storage_dir.join(&source);
     let item_dir = source_dir.join(&id);
     let watch_state_dir = item_dir
