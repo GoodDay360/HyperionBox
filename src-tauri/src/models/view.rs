@@ -19,7 +19,7 @@ pub struct ManifestData {
     pub description: String,
 
     pub meta_data: Vec<String>,
-    pub trailer: Trailer,
+    pub trailer: Option<Trailer>,
 
     // Required: Season -> Episodes Page -> Episodes
     pub episode_list: Option<Vec<Vec<Vec<DataResult>>>>,

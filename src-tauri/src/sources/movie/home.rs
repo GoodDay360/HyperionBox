@@ -45,7 +45,7 @@ pub async fn get_content(url: &str) -> Result<Vec<ContentData>, String> {
                 let img_src = img_src.to_string();
                 let splited_img_src = img_src.split("/").collect::<Vec<&str>>();
                 let img_id = splited_img_src.last().unwrap_or(&"").to_string();
-                poster = format!("https://media.themoviedb.org/t/p/w440_and_h660_face/{}", img_id);
+                poster = format!("https://media.themoviedb.org/t/p/w600_and_h900_face/{}", img_id);
             }
 
             new_content_data.push(ContentData {

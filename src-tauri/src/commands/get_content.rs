@@ -3,10 +3,13 @@ use reqwest::header::HeaderMap;
 use std::fs;
 use tokio;
 use tracing::{error, warn};
+use std::future::Future;
+use std::pin::Pin;
 
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
 use crate::sources::anime;
+use crate::sources::movie;
 use crate::commands::favorite::{get_recent_from_favorite, get_tag_from_favorite};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 use crate::commands::request_plugin::get_episode_list::get_episode_list;
@@ -31,7 +34,15 @@ pub async fn home(source: String) -> Result<HomeData, String> {
                 return Err(e)?;
             }
         }
-    } else {
+    }else if source == "movie" {
+        match movie::home::new().await {
+            Ok(data) => _home_data = data,
+            Err(e) => {
+                error!("[HOME] Error: {}", e);
+                return Err(e)?;
+            }
+        }
+    }else{
         return Err("Unkown Source".to_string());
     }
 
@@ -86,6 +97,14 @@ pub async fn search(source: String, page: usize, search: String) -> Result<Vec<S
                 return Err(e);
             }
         }
+    }else if source == "movie" {
+        match movie::search::new(page, &search).await {
+            Ok(data) => return Ok(data),
+            Err(e) => {
+                error!("[HOME] Error: {}", e);
+                return Err(e)?;
+            }
+        }
     }
     return Err("Unkown Source".to_string());
 }
@@ -93,11 +112,13 @@ pub async fn search(source: String, page: usize, search: String) -> Result<Vec<S
 #[tauri::command]
 pub async fn view(source: String, id: String) -> Result<ViewData, String> {
     /* Generate Task */
-    let task_get_view_manifest_data;
+    let task_get_view_manifest_data: Pin<Box<dyn Future<Output = Result<ManifestData, String>> + Send>>;
 
     if source == "anime" {
-        task_get_view_manifest_data = anime::view::new(&id);
-    } else {
+        task_get_view_manifest_data = Box::pin(anime::view::new(&id));
+    }else if source == "movie" {
+        task_get_view_manifest_data = Box::pin(movie::view::new(&id));
+    }else {
         return Err("Unkown Source".to_string());
     }
     /* --- */

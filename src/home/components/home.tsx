@@ -50,12 +50,13 @@ export default function Home() {
     const context = useContext(ContextManager);
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
-
+    
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [search, set_search] = createSignal<string>("");
     const [search_mode, set_search_mode] = createSignal<boolean>(false);
 
+    const [current_source, set_current_source] = createSignal<string>("movie");
     const [RELEVANT_DATA, SET_RELEVANT_DATA] = createSignal<RelevantContent[]>([]);
     const [CONTENT_DATA, SET_CONTENT_DATA] = createSignal<Content[]>([]);
 
@@ -63,7 +64,7 @@ export default function Home() {
     
     const get_data = () => {
         set_is_loading(true);
-        invoke<HomeData>('home', {source:"anime"})
+        invoke<HomeData>('home', {source:current_source()})
             .then((data) => {
                 console.log(data)
                 SET_RELEVANT_DATA(data.relevant_content);
@@ -128,7 +129,7 @@ export default function Home() {
                                 onSubmit={(e) => {
                                     e.preventDefault();
                                     if (!search()) return;
-                                    navigate(`/search?search=${encodeURIComponent(search().trim())}`);
+                                    navigate(`/search?source=${current_source()}&search=${encodeURIComponent(search().trim())}`);
                                 }}
                                 style={{
                                     "padding-left": "12px",
@@ -242,99 +243,101 @@ export default function Home() {
             
             {!is_loading() 
                 ? (<>
-                    <div class={styles.relevant_container}>
-                        <Swiper
-                            class={styles.relevant_swiper}
-                            useNavigation={false}
-                            usePagination={false}
-                            slidesPerView={1}
-                            AutoPlayOptions={{
-                                delay: 5000
-                            }}
-                        >
-                            <For each={RELEVANT_DATA()}>
-                                {(item) => 
-                                    <div
-                                        class={styles.relevant_item_container}
-                                        style={{
-                                            "background-image": `url('${item.banner}')`
-                                        }}
-                                    >
-                                        <div class={styles.relevant_item_container_filter}></div>
+                    {(RELEVANT_DATA().length > 0) &&
+                        <div class={styles.relevant_container}>
+                            <Swiper
+                                class={styles.relevant_swiper}
+                                useNavigation={false}
+                                usePagination={false}
+                                slidesPerView={1}
+                                AutoPlayOptions={{
+                                    delay: 5000
+                                }}
+                            >
+                                <For each={RELEVANT_DATA()}>
+                                    {(item) => 
+                                        <div
+                                            class={styles.relevant_item_container}
+                                            style={{
+                                                "background-image": `url('${item.banner}')`
+                                            }}
+                                        >
+                                            <div class={styles.relevant_item_container_filter}></div>
 
-                                        <div class={styles.relevant_info_container}>
-                                            <LazyLoadImage
-                                                className={styles.relevant_img}
-                                                src={item.poster}
+                                            <div class={styles.relevant_info_container}>
+                                                <LazyLoadImage
+                                                    className={styles.relevant_img}
+                                                    src={item.poster}
 
-                                                skeleton_sx={{
-                                                    width: "calc((100vw + 100vh)/2*0.18)",
-                                                    height: "calc((100vw + 100vh)/2*0.25)",
-                                                    background: "var(--background-2)",
-                                                    borderRadius: "5px",
-                                                }}
-                                            />
-                                            <div
-                                                style={{
-                                                    flex: 1,
-                                                    display:"flex",
-                                                    "flex-direction":"column",
-                                                    "align-items":"flex-start",
-                                                    "padding-left":"16px",
-                                                    overflow:"hidden"
-                                                }}
-                                            >
-                                                <h2 class={styles.relevant_title}
-                                                    onClick={() => {(async () => {
-                                                        await writeText(item.title)
-                                                        toast.remove();
-                                                        toast.success("Title copied to clipboard.",
-                                                            {style:{color:"green"}
-                                                        })
-                                                    })()}}
-                                                >{item.title}</h2>
-                                                <Button
-                                                    variant="contained" color="secondary"
-                                                    sx={{
-                                                        textTransform: 'none',
-                                                        fontSize: 'calc((100vw + 100vh)/2*0.025)',
+                                                    skeleton_sx={{
+                                                        width: "calc((100vw + 100vh)/2*0.18)",
+                                                        height: "calc((100vw + 100vh)/2*0.25)",
+                                                        background: "var(--background-2)",
+                                                        borderRadius: "5px",
                                                     }}
-                                                    onClick={() => {
-                                                        navigate(`/view?source=${"anime"}&id=${item.id}`);
-                                                    }}
-                                                >View Now</Button>
-                                            </div>
-                                            {item?.trailer?.embed_url &&
+                                                />
                                                 <div
                                                     style={{
-                                                        "min-height": "100%",
+                                                        flex: 1,
                                                         display:"flex",
-                                                        "align-items":"flex-end",
-                                                        "padding":"18px"
+                                                        "flex-direction":"column",
+                                                        "align-items":"flex-start",
+                                                        "padding-left":"16px",
+                                                        overflow:"hidden"
                                                     }}
                                                 >
-                                                    <IconButton
+                                                    <h2 class={styles.relevant_title}
+                                                        onClick={() => {(async () => {
+                                                            await writeText(item.title)
+                                                            toast.remove();
+                                                            toast.success("Title copied to clipboard.",
+                                                                {style:{color:"green"}
+                                                            })
+                                                        })()}}
+                                                    >{item.title}</h2>
+                                                    <Button
+                                                        variant="contained" color="secondary"
                                                         sx={{
-                                                            color: '#ff0033',
-                                                            fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                                            textTransform: 'none',
+                                                            fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                                         }}
                                                         onClick={() => {
-                                                            set_show_trailer({
-                                                                state: true,
-                                                                source: item?.trailer?.embed_url ?? ""
-                                                            })
+                                                            navigate(`/view?source=${current_source()}&id=${item.id}`);
+                                                        }}
+                                                    >View Now</Button>
+                                                </div>
+                                                {item?.trailer?.embed_url &&
+                                                    <div
+                                                        style={{
+                                                            "min-height": "100%",
+                                                            display:"flex",
+                                                            "align-items":"flex-end",
+                                                            "padding":"18px"
                                                         }}
                                                     >
-                                                        <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
-                                                    </IconButton>
-                                                </div>
-                                            }
+                                                        <IconButton
+                                                            sx={{
+                                                                color: '#ff0033',
+                                                                fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                                            }}
+                                                            onClick={() => {
+                                                                set_show_trailer({
+                                                                    state: true,
+                                                                    source: item?.trailer?.embed_url ?? ""
+                                                                })
+                                                            }}
+                                                        >
+                                                            <OndemandVideoRoundedIcon color='inherit' fontSize='inherit'/>
+                                                        </IconButton>
+                                                    </div>
+                                                }
+                                            </div>
                                         </div>
-                                    </div>
-                                }
-                            </For>
-                        </Swiper>
-                    </div>
+                                    }
+                                </For>
+                            </Swiper>
+                        </div>
+                    }
                     <For each={CONTENT_DATA()}>
                         {(item) => (
                             <div class={styles.content_container}>
@@ -362,7 +365,7 @@ export default function Home() {
                                                     height: "auto",
                                                 }}
                                                 onClick={() => {
-                                                    navigate(`/view?source=${"anime"}&id=${data_item.id}`);
+                                                    navigate(`/view?source=${current_source()}&id=${data_item.id}`);
                                                 }}
                                             >
                                                 <LazyLoadImage 

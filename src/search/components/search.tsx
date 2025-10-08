@@ -51,10 +51,10 @@ export default function Search() {
     const navigate = useNavigate();
     const [queryParams] = useSearchParams();
     const context = useContext(ContextManager);
+    const source:string = queryParams?.source as string ?? ""
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
     
-
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [is_search_change, set_is_search_change] = createSignal<boolean>(false);
     const [search, set_search] = createSignal<string>(queryParams?.search as string ?? "");
@@ -79,7 +79,7 @@ export default function Search() {
 
     const get_data = ({page, search}:{page: number, search: string}) => {
         set_is_loading(true);
-        invoke<SEARCH_DATA[]>('search', {source:"anime", page, search})
+        invoke<SEARCH_DATA[]>('search', {source, page, search})
             .then((data) => {
                 console.log(data)
                 if (data.length > 0){
@@ -222,7 +222,7 @@ export default function Search() {
                                             height: "auto",
                                         }}
                                         onClick={() => {
-                                            navigate(`/view?source=${"anime"}&id=${item.id}`);
+                                            navigate(`/view?source=${source}&id=${item.id}`);
                                         }}
                                     >
                                         <LazyLoadImage 

@@ -21,7 +21,7 @@ mod tests {
             "HYPERIONBOX_APPDATA",
             env::var("APPDATA").unwrap() + "/io.github.goodday360.hyperionbox",
         );
-        match sources::movie::search::new(1, "loki").await {
+        match sources::movie::view::new("tv-286801").await {
             Ok(d) => {
                 println!("Data: {:?}", d)
             }

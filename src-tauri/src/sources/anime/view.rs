@@ -117,10 +117,10 @@ async fn get_content(id: &str) -> Result<ManifestData, String> {
             },
             poster: poster.clone(),
             banner: banner.clone(),
-            trailer: Trailer {
+            trailer: Some(Trailer {
                 embed_url: trailer_embed_url.clone(),
                 url: trailer_url.clone(),
-            },
+            }),
             description: description.clone(),
             meta_data,
             episode_list: None,
