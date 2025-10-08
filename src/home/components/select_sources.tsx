@@ -10,7 +10,7 @@ import { createSignal, onMount, For } from "solid-js";
 // SUID Imports
 import { 
     Button,
-    CircularProgress, MenuItem,
+    CircularProgress,
     Radio, RadioGroup, FormControlLabel
 
 } from '@suid/material';
@@ -32,7 +32,7 @@ import { get_configs, set_configs } from "@src/settings/scripts/settings";
 
 
 // Types Import
-import { Configs } from "@src/settings/types/settings_type";
+
 
 const AVAILABLE_SOUCRES: Record<string, string> = {
     "anime": "Anime",

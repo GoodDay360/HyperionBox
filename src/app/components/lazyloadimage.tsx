@@ -1,6 +1,6 @@
 // SolidJS Imports
 import { onMount, onCleanup, createSignal } from "solid-js";
-import type { JSX, Accessor } from "solid-js";
+import type { JSX } from "solid-js";
 
 // SUID Imports
 import { Skeleton } from "@suid/material";
