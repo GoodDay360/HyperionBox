@@ -290,7 +290,7 @@ export default function Favorites() {
                                                         }}
                                                     >
                                                         <LazyLoadImage 
-                                                            src={poster}
+                                                            src={poster()}
                                                             className={styles.content_data_img}
 
                                                             skeleton_sx={{

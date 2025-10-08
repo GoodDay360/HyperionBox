@@ -3,11 +3,11 @@ use std::time::Duration;
 use urlencoding::encode;
 
 use crate::sources::anime::models::ApiResponse;
-use crate::models::search::{Content, SearchData};
+use crate::models::search::{SearchData};
 
 const LIMIT: usize = 20;
 
-async fn get_content(page: usize, search: &str) -> Result<SearchData, String> {
+async fn get_content(page: usize, search: &str) -> Result<Vec<SearchData>, String> {
     let clinet = Client::new();
     let url = format!(
         "https://kitsu.io/api/edge/anime?page[limit]={}&page[offset]={}&filter[text]={}",
@@ -29,7 +29,7 @@ async fn get_content(page: usize, search: &str) -> Result<SearchData, String> {
         // #========================================
 
         let result = res.json::<ApiResponse>().await.map_err(|e| e.to_string())?;
-        let mut new_content_data: Vec<Content> = vec![];
+        let mut new_search_data: Vec<SearchData> = vec![];
         for item in result.data.ok_or("no data")?.iter() {
             let id = item.id.as_ref().ok_or("no id")?;
             let atributes = item.attributes.as_ref().ok_or("no attributes")?;
@@ -52,7 +52,7 @@ async fn get_content(page: usize, search: &str) -> Result<SearchData, String> {
                 }
             }
 
-            let new_content = Content {
+            let new_data = SearchData {
                 id: id.to_string().clone(),
                 title: if title_en.is_some() {
                     title_en.unwrap().clone()
@@ -61,20 +61,16 @@ async fn get_content(page: usize, search: &str) -> Result<SearchData, String> {
                 },
                 poster: poster.clone(),
             };
-            new_content_data.push(new_content);
+            new_search_data.push(new_data);
         }
 
-        let count = result.meta.ok_or("no meta")?.count.ok_or("no count")?;
-        return Ok(SearchData {
-            data: new_content_data,
-            max_page: (count as f64 / LIMIT as f64).ceil() as usize,
-        });
+        return Ok(new_search_data);
     } else {
         return Err("error request search".into());
     }
 }
 
-pub async fn new(page: usize, search: &str) -> Result<SearchData, String> {
+pub async fn new(page: usize, search: &str) -> Result<Vec<SearchData>, String> {
     let get_content_result = get_content(page, search).await?;
 
     return Ok(get_content_result);

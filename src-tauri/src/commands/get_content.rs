@@ -77,7 +77,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
 }
 
 #[tauri::command]
-pub async fn search(source: String, page: usize, search: String) -> Result<SearchData, String> {
+pub async fn search(source: String, page: usize, search: String) -> Result<Vec<SearchData>, String> {
     if source == "anime" {
         match anime::search::new(page, &search).await {
             Ok(data) => return Ok(data),
