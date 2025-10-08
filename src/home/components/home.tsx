@@ -20,6 +20,7 @@ import OndemandVideoRoundedIcon from '@suid/icons-material/OndemandVideoRounded'
 import CloseRoundedIcon from '@suid/icons-material/CloseRounded';
 import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
+import AccountTreeRoundedIcon from '@suid/icons-material/AccountTreeRounded';
 
 
 // Solid Toast
@@ -32,13 +33,14 @@ import NavigationBar from "@src/app/components/navigation_bar";
 import Swiper from "@src/app/components/swiper";
 import LazyLoadImage from '@src/app/components/lazyloadimage';
 import PullRefresh from '@src/app/components/pull_refresh';
-
+import SelectSources from './select_sources';
 
 // Style Imports
 import styles from "../styles/home.module.css"
 
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
+import { get_configs } from '@src/settings/scripts/settings';
 
 // Types Import
 import { Content, RelevantContent, HomeData } from '../types/home_type';
@@ -61,17 +63,28 @@ export default function Home() {
     const [CONTENT_DATA, SET_CONTENT_DATA] = createSignal<Content[]>([]);
 
     const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
-    
-    const get_data = () => {
+    const [is_select_source, set_is_select_source] = createSignal<boolean>(false);
+    const get_data = async () => {
         set_is_loading(true);
+        try {
+            const configs = await get_configs();
+            set_current_source(configs.selected_source_id);
+        }catch (e) {
+            console.error(e);
+            toast.remove();
+            toast.error("Something went wrong while getting configs.",{
+                style: {
+                    color:"red",
+                }
+            })
+            set_is_loading(false);
+            return;
+        }
         invoke<HomeData>('home', {source:current_source()})
             .then((data) => {
-                console.log(data)
                 SET_RELEVANT_DATA(data.relevant_content);
                 SET_CONTENT_DATA(data.content);
 
-                console.table(RELEVANT_DATA())
-                set_is_loading(false);
             })
             .catch((e) => {
                 console.error(e);
@@ -81,6 +94,9 @@ export default function Home() {
                         color:"red",
                     }
                 })
+            })
+            .finally(() => {
+                set_is_loading(false);
             });
     }
 
@@ -159,6 +175,7 @@ export default function Home() {
                                     <SearchRoundedIcon color="inherit" fontSize='inherit' />
                                 </ButtonBase>
                             </form>
+                            
                         </Slide>
                         : <>
                             <Slide in={!search_mode()} direction='left'>
@@ -185,12 +202,27 @@ export default function Home() {
                                         fontSize: 'calc((100vw + 100vh)/2*0.035)'
                                     }}
                                     onClick={() => {
+                                        set_is_select_source(true);
+                                    }}
+                                >
+                                    <AccountTreeRoundedIcon color="inherit" fontSize='inherit' />
+                                        
+                                </IconButton>
+
+                                <IconButton disabled={is_loading()}
+                                    sx={{
+                                        color: 'var(--color-1)',
+                                        fontSize: 'calc((100vw + 100vh)/2*0.035)'
+                                    }}
+                                    onClick={() => {
                                         get_data();
                                     }}
                                 >
                                     <RefreshRoundedIcon color="inherit" fontSize='inherit' />
                                         
                                 </IconButton>
+
+                                
                             </div>
                         </>
                     }
@@ -238,6 +270,18 @@ export default function Home() {
                         /> 
                         
                     </form>
+                    <IconButton disabled={is_loading()}
+                        sx={{
+                            color: 'var(--color-1)',
+                            fontSize: 'max(18px, calc((100vw + 100vh)/2*0.035))'
+                        }}
+                        onClick={() => {
+                            set_is_select_source(true);
+                        }}
+                    >
+                        <AccountTreeRoundedIcon color="inherit" fontSize='inherit' />
+                            
+                    </IconButton>
                 </div>
             }
             
@@ -443,6 +487,14 @@ export default function Home() {
             
         </div>
 
+        {is_select_source() &&
+            <SelectSources
+                onClose={() => set_is_select_source(false)}
+                onSuccess={() => get_data()}
+            />
+        }
+        
+
         {show_trailer().state && 
             <div class={styles.trailer_container}>
                 <div
@@ -469,12 +521,16 @@ export default function Home() {
                         <CloseRoundedIcon color='inherit' fontSize='inherit'/>
                     </IconButton>
                 </div>
-                <iframe 
-                    class={styles.trailer}
-                    src={show_trailer().source} 
-                    allow="autoplay; encrypted-media; fullscreen" allowfullscreen
-                >
-                </iframe>
+                <div class={styles.trailer}>
+                    <iframe 
+                        style={{
+                            width: "100%",
+                            height: "100%"
+                        }}
+                        src={show_trailer().source} 
+                        allow="autoplay; encrypted-media; fullscreen" allowfullscreen
+                    />
+                </div>
             </div>
         }
 

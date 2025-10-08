@@ -11,6 +11,7 @@ use crate::utils::get_appdata;
 pub struct Configs {
     pub plugin_dir: Option<PathBuf>,
     pub storage_dir: Option<PathBuf>,
+    pub selected_source_id: Option<String>,
 }
 
 
@@ -18,7 +19,8 @@ pub struct Configs {
 impl Configs {
     pub fn is_all_set(&self) -> bool {
         return self.plugin_dir.is_some() 
-            && self.storage_dir.is_some();
+            && self.storage_dir.is_some()
+            && self.selected_source_id.is_some();
     }
 
     pub fn init() -> Result<(), String> {
@@ -40,6 +42,7 @@ impl Configs {
         return Ok(Configs {
             plugin_dir: Some(PathBuf::from(plugin_dir)),
             storage_dir: Some(PathBuf::from(storage_dir)),
+            selected_source_id: Some("anime".to_string()),
         });
     }
 
@@ -78,6 +81,9 @@ impl Configs {
         }
         if config_data.storage_dir.is_none() {
             config_data.storage_dir = default_configs.storage_dir;
+        }
+        if config_data.selected_source_id.is_none() {
+            config_data.selected_source_id = default_configs.selected_source_id;
         }
         /* --- */
 

@@ -675,12 +675,16 @@ export default function View() {
                         <CloseRoundedIcon color='inherit' fontSize='inherit'/>
                     </IconButton>
                 </div>
-                <iframe 
-                    class={styles.trailer}
-                    src={show_trailer().source} 
-                    allow="autoplay; encrypted-media; fullscreen" allowfullscreen
-                >
-                </iframe>
+                <div class={styles.trailer}>
+                    <iframe 
+                        style={{
+                            width: "100%",
+                            height: "100%"
+                        }}
+                        src={show_trailer().source} 
+                        allow="autoplay; encrypted-media; fullscreen" allowfullscreen
+                    />
+                </div>
             </div>
         }
     </>)
