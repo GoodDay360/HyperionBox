@@ -11,7 +11,7 @@ import { useSearchParams, useNavigate } from "@solidjs/router";
 
 
 // SUID Imports
-import { Button, IconButton, ButtonBase, CircularProgress } from '@suid/material';
+import { Button, IconButton, ButtonBase, CircularProgress, ButtonGroup } from '@suid/material';
 
 // SUID Icon Imports
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
@@ -45,6 +45,12 @@ import { search_in_plugin } from '../scripts/request_plugin';
 import { PluginData, InstalledPluginData } from '../types/manage_plugin_type';
 import { SearchInPluginData } from '../types/request_plugin_type';
 
+const AVAILABLE_SOUCRES: Record<string, string> = {
+    "anime": "Anime",
+    "movie": "Movie/TV",
+};
+
+
 export default function Plugin() {
     const navigate = useNavigate();
     const [queryParams] = useSearchParams();
@@ -57,9 +63,10 @@ export default function Plugin() {
     const [link_to, set_link_to] = createSignal<{state:boolean, plugin_id:string, id:string, title:string}>({state:false, plugin_id:"", id:"", title:""});
 
     const [search_title, set_search_title] = createSignal(link_from.title);
+    const [select_source_id, set_select_source_id] = createSignal<string>(link_from.source ||Object.keys(AVAILABLE_SOUCRES)[0]);
 
 
-    const [current_tab, set_current_tab] = createSignal(0);
+    const [current_tab, set_current_tab] = createSignal(link_from.source ? 0 : 1);
 
     
     const [PLUGIN_DATA, SET_PLUGIN_DATA] = createSignal<Record<string, PluginData>>({});
@@ -92,11 +99,11 @@ export default function Plugin() {
         }
     }
 
-    onMount(() => {
+    const get_data = () => {
         set_is_loading(true);
         Promise.all([
-            get_plugin_list("anime"),
-            get_installed_plugin_list("anime")
+            get_plugin_list(select_source_id()),
+            get_installed_plugin_list(select_source_id()),
         ])
             .then(([plugin_data, installed_plugin_data]) => {
                 SET_PLUGIN_DATA(plugin_data);
@@ -115,6 +122,11 @@ export default function Plugin() {
             .finally(() => {
                 set_is_loading(false);
             });
+    }
+    
+
+    onMount(() => {
+        get_data();
 
     })
 
@@ -199,6 +211,40 @@ export default function Plugin() {
                         )}
                     </For>
                 </div>
+            </div>
+            <div class={styles.source_container}>
+                <ButtonGroup variant="outlined" color="primary"
+                    sx={{
+                        "&:hover": {
+                            border: "none",
+                            outline:"none",
+                        }
+                    }}
+                >
+                    <For each={Object.keys(AVAILABLE_SOUCRES)}>
+                        {(source_id)=>(
+                            <Button
+                                sx={{
+                                    border:"none",
+                                    outline:"none",
+                                    background: select_source_id() === source_id ? "var(--background-2)" : "var(--background-1)",
+                                    textTransform: "none",
+                                    color: "var(--color-1)",
+                                    fontSize: "calc((100vw + 100vh)/2*0.025)",
+                                    "&:hover": {
+                                        border: "none",
+                                        outline:"none",
+                                    }
+                                }}
+                                onClick={()=>{
+                                    set_select_source_id(source_id);
+                                    get_data();
+                                }}
+                            >{AVAILABLE_SOUCRES[source_id]}
+                            </Button>
+                        )}
+                    </For>
+                </ButtonGroup>
             </div>
             {is_loading()
                 ? <div class={styles.loading_box}>

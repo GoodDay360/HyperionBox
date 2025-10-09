@@ -569,7 +569,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chlaty-core"
 version = "0.1.0"
-source = "git+https://github.com/chlaty/chlaty-core?branch=main#5c037f67cd2539f60180d9f9ae94ae30d0075d8e"
+source = "git+https://github.com/chlaty/chlaty-core?branch=main#7c23ca5f6737575aa31c3e905e25d5405b0cc284"
 dependencies = [
  "chrono",
  "dashmap",
@@ -965,7 +965,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.8.9",
+ "libloading 0.7.4",
 ]
 
 [[package]]

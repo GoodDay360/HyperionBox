@@ -162,14 +162,14 @@ export default function App() {
                 <Update/>
 
                 <Router>
-                    <Route path="/" component={Home} />
+                    {/* <Route path="/" component={Home} /> */}
                     <Route path="/favorites" component={Favorites} />
                     <Route path="/downloads" component={Downloads} />
                     <Route path="/settings" component={Settings} />
                     <Route path="/search" component={Search} />
                     <Route path="/view" component={View} />
                     <Route path="/watch" component={Watch} />
-                    <Route path="/plugin" component={Plugin} />
+                    <Route path="/" component={Plugin} />
                     <Route path="/manage_favorite" component={ManageFavorite} />
                 </Router>
             </div>
