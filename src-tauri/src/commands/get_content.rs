@@ -27,7 +27,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
         content: vec![],
     };
     if source == "anime" {
-        match anime::home::new().await {
+        match anime::home::new(&source).await {
             Ok(data) => _home_data = data,
             Err(e) => {
                 error!("[HOME] Error: {}", e);
@@ -35,7 +35,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
             }
         }
     }else if source == "movie" {
-        match movie::home::new().await {
+        match movie::home::new(&source).await {
             Ok(data) => _home_data = data,
             Err(e) => {
                 error!("[HOME] Error: {}", e);
@@ -52,10 +52,11 @@ pub async fn home(source: String) -> Result<HomeData, String> {
     let mut recent_content_data: Vec<ContentData> = vec![];
     let recent_from_favorite = get_recent_from_favorite(15).await?;
     for item in recent_from_favorite {
-        let local_manifest = get_local_manifest(item.source, item.id.to_string()).await?;
+        let local_manifest = get_local_manifest(item.source.clone(), item.id.to_string()).await?;
         match local_manifest.manifest_data {
             Some(data) => {
                 let new_content = ContentData {
+                    source: item.source,
                     id: item.id.to_string().clone(),
                     title: data.title,
                     poster: data.poster,
@@ -64,6 +65,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
             }
             None => {
                 let new_content = ContentData {
+                    source: item.source,
                     id: item.id.to_string().clone(),
                     title: "?".to_string(),
                     poster: "".to_string(),

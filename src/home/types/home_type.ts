@@ -1,4 +1,5 @@
 export interface RelevantContent {
+    source: string,
     id: string,
     title: string,
     poster: string,
@@ -10,6 +11,7 @@ export interface RelevantContent {
 }
 
 export interface ContentData {
+    source: string,
     id: string,
     title?: string,
     poster?: string,

@@ -66,6 +66,8 @@ export default function Home() {
     const [is_select_source, set_is_select_source] = createSignal<boolean>(false);
     const get_data = async () => {
         set_is_loading(true);
+        SET_RELEVANT_DATA([]);
+        SET_CONTENT_DATA([]);
         try {
             const configs = await get_configs();
             set_current_source(configs.selected_source_id);
@@ -346,7 +348,7 @@ export default function Home() {
                                                             fontSize: 'calc((100vw + 100vh)/2*0.025)',
                                                         }}
                                                         onClick={() => {
-                                                            navigate(`/view?source=${current_source()}&id=${item.id}`);
+                                                            navigate(`/view?source=${encodeURIComponent(item.source)}&id=${encodeURIComponent(item.id)}`);
                                                         }}
                                                     >View Now</Button>
                                                 </div>
@@ -409,7 +411,7 @@ export default function Home() {
                                                     height: "auto",
                                                 }}
                                                 onClick={() => {
-                                                    navigate(`/view?source=${current_source()}&id=${data_item.id}`);
+                                                    navigate(`/view?source=${encodeURIComponent(data_item.source)}&id=${encodeURIComponent(data_item.id)}`);
                                                 }}
                                             >
                                                 <LazyLoadImage 

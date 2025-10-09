@@ -83,7 +83,7 @@ export default function Plugin() {
             const plugin_id_list = Object.keys(INSTALLED_PLUGIN_DATA());
             Promise.all(
                 plugin_id_list.map(plugin_id =>
-                    search_in_plugin(link_from.source, plugin_id, search_title(), 1)
+                    search_in_plugin(select_source_id(), plugin_id, search_title(), 1)
                         .then(data => [plugin_id, data])
                         .catch(() => [plugin_id, []])
                 )
@@ -133,7 +133,7 @@ export default function Plugin() {
     createEffect(on(current_tab, () => {
         if (is_loading()) return;
         set_is_loading(true);
-        get_installed_plugin_list("anime")
+        get_installed_plugin_list(select_source_id())
             .then((data) => {    
                 console.log(data);
                 SET_INSTALLED_PLUGIN_DATA(data);
@@ -213,8 +213,10 @@ export default function Plugin() {
                 </div>
             </div>
             <div class={styles.source_container}>
-                <ButtonGroup variant="outlined" color="primary"
+                <ButtonGroup variant="outlined" color="primary" 
                     sx={{
+                        border: "none",
+                        outline:"none",
                         "&:hover": {
                             border: "none",
                             outline:"none",
@@ -223,7 +225,7 @@ export default function Plugin() {
                 >
                     <For each={Object.keys(AVAILABLE_SOUCRES)}>
                         {(source_id)=>(
-                            <Button
+                            <Button disabled={is_loading() || is_working()}
                                 sx={{
                                     border:"none",
                                     outline:"none",
@@ -395,7 +397,7 @@ export default function Plugin() {
                                                             onClick={() => {
                                                                 set_is_working(true);
                                                                 invoke("link_plugin", { 
-                                                                    source: link_from.source,
+                                                                    source: select_source_id(),
                                                                     pluginId: link_to().plugin_id,
                                                                     fromId: link_from.id,
                                                                     toId: link_to().id

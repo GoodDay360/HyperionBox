@@ -6,7 +6,7 @@ use tokio::join;
 
 use crate::models::home::{HomeData, Content, ContentData};
 
-pub async fn get_content(url: &str) -> Result<Vec<ContentData>, String> {
+pub async fn get_content(source:&str, url: &str) -> Result<Vec<ContentData>, String> {
     
     let client = Client::new();
 
@@ -49,6 +49,7 @@ pub async fn get_content(url: &str) -> Result<Vec<ContentData>, String> {
             }
 
             new_content_data.push(ContentData {
+                source: source.to_string(),
                 id,
                 title,
                 poster
@@ -62,7 +63,7 @@ pub async fn get_content(url: &str) -> Result<Vec<ContentData>, String> {
 }
 
 
-pub async fn new() -> Result<HomeData, String> {
+pub async fn new(source:&str) -> Result<HomeData, String> {
 
     let trending_url = "https://www.themoviedb.org/remote/panel?panel=trending_scroller&group=this-week";
     let popular_url = "https://www.themoviedb.org/remote/panel?panel=popular_scroller&group=in-theatres";
@@ -70,7 +71,7 @@ pub async fn new() -> Result<HomeData, String> {
     let (
         task_get_trending_content, task_get_popular_content
     ) = join!(
-        get_content(trending_url), get_content(popular_url)
+        get_content(&source, trending_url), get_content(&source, popular_url)
     );
 
     let mut new_content:Vec<Content> = vec![];
