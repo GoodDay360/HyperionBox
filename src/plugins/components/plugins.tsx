@@ -101,6 +101,10 @@ export default function Plugin() {
 
     const get_data = () => {
         set_is_loading(true);
+        SET_PLUGIN_DATA({});
+        SET_INSTALLED_PLUGIN_DATA({});
+        SET_SEARCH_IN_PLUGIN_DATA({});
+        
         Promise.all([
             get_plugin_list(select_source_id()),
             get_installed_plugin_list(select_source_id()),
@@ -459,7 +463,7 @@ export default function Plugin() {
                                         onMount(() => {
                                             let unlisten: () => void;
                                             (async () => {
-                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${"anime"}_${plugin_id}`, (event) => {
+                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${select_source_id()}_${plugin_id}`, (event) => {
                                                     const { current, total } = event.payload;
                                                     set_install_progress((current / total) * 100);
                                                 });
@@ -503,7 +507,7 @@ export default function Plugin() {
                                                                 set_is_installing(true);
                                                                 
                                                                 install_plugin(
-                                                                    "anime",
+                                                                    select_source_id(),
                                                                     plugin_id,
                                                                     {
                                                                         title,
@@ -568,7 +572,7 @@ export default function Plugin() {
                                         onMount(() => {
                                             let unlisten: () => void;
                                             (async () => {
-                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${"anime"}_${plugin_id}`, (event) => {
+                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${select_source_id()}_${plugin_id}`, (event) => {
                                                     const { current, total } = event.payload;
                                                     set_update_progress((current / total) * 100);
                                                 });
@@ -606,7 +610,7 @@ export default function Plugin() {
                                                                         set_is_working(true);
                                                                         set_is_updating(true);
                                                                         install_plugin(
-                                                                            "anime",
+                                                                            select_source_id(),
                                                                             plugin_id,
                                                                             {
                                                                                 title,
@@ -694,7 +698,7 @@ export default function Plugin() {
                                                                     set_is_working(true);
                                                                     set_is_removing(true);
                                                                     remove_plugin(
-                                                                        "anime",
+                                                                        select_source_id(),
                                                                         plugin_id,
                                                                     )
                                                                         .then((_) => {

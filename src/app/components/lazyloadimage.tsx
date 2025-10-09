@@ -51,7 +51,7 @@ export default function LazyLoadImage({
             <Skeleton variant="rectangular" sx={skeleton_sx} />
         }
         {is_in_view() && 
-            <img src={src ? src : "src/assets/media/no-image-2.jpg"} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
+            <img src={(src.trim() !== "") ? src : "src/assets/media/no-image-2.jpg"} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
                 onLoad={() => set_is_loaded(true)}
             />
         }

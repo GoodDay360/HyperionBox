@@ -297,7 +297,7 @@ export default function View() {
                                                     fontSize: 'calc((100vw + 100vh)/2*0.04)',
                                                 }}
                                                 onClick={() =>{
-                                                    navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.manifest_data?.id}&link_title=${DATA()?.manifest_data?.title}`);
+                                                    navigate(`/plugin?link_source=${source}&link_id=${DATA()?.manifest_data?.id}&link_title=${DATA()?.manifest_data?.title}`);
                                                 }}
                                             >
                                                 <AddLinkRoundedIcon fontSize='inherit' color='inherit' />

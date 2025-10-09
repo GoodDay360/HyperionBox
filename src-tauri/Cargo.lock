@@ -569,7 +569,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chlaty-core"
 version = "0.1.0"
-source = "git+https://github.com/chlaty/chlaty-core?branch=main#7c23ca5f6737575aa31c3e905e25d5405b0cc284"
+source = "git+https://github.com/chlaty/chlaty-core?branch=main#a554dfaa449a29e877a0c7a0075fd36bba6eb3d6"
 dependencies = [
  "chrono",
  "dashmap",

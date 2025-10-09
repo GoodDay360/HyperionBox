@@ -209,10 +209,11 @@ fn get_current_download_item(source: &str, id: &str) -> Result<Option<DownloadIt
 async fn get_media_hls(
     source: &str,
     plugin_id: &str,
+    server_index: usize,
     server_id: &str,
     prefer_quality: usize,
 ) -> Result<MediaHLS, String> {
-    let server_data = get_server::new(source, plugin_id, server_id).map_err(|e| e.to_string())?;
+    let server_data = get_server::new(source, plugin_id, server_index, server_id).map_err(|e| e.to_string())?;
 
     let mut hls_file: String = "".to_string();
 
@@ -765,6 +766,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                 )
                 .map_err(|e| e.to_string())?;
 
+                let mut selected_server_index:usize = 0;
                 let mut selected_server_id: String = "".to_string();
 
                 match ep_server_data.get(&prefer_server_type) {
@@ -777,6 +779,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                         for server in server {
                             if server.index == prefer_server_index {
                                 selected_server_id = server.id.clone();
+                                selected_server_index = server.index;
                                 break;
                             }
                         }
@@ -795,7 +798,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                 }
 
                 let media_hls =
-                    match get_media_hls(&source, &plugin_id, &selected_server_id, prefer_quality).await
+                    match get_media_hls(&source, &plugin_id, selected_server_index, &selected_server_id, prefer_quality).await
                     {
                         Ok(media_hls) => media_hls,
                         Err(e) => {

@@ -108,6 +108,7 @@ export default function Watch() {
     const [mode, set_mode] = createSignal<{current: "online"|"offline", force_online: boolean}>({current:"online", force_online:false});
     const [search, set_search] = createSignal<string>("");
     const [selected_server_id, set_selected_server_id] = createSignal<string>("");
+    const [selected_server_index, set_selected_server_index] = createSignal<number>(0);
     const [current_episode_page_index, set_current_episode_page_index] = createSignal<number>(0);
 
     const [current_season_index, set_current_season_index] = createSignal<number>(season_index);
@@ -161,6 +162,7 @@ export default function Watch() {
     }
 
     const load_episode_server = async () => {
+        console.log("CEI: ", current_episode_id());
         const data = await get_episode_server(
             source, id, link_plugin_id, 
             current_season_index(), 
@@ -203,6 +205,7 @@ export default function Watch() {
             localStorage.setItem("prefer_server_type", selected_server_type);
             localStorage.setItem("prefer_server_index", selected_server_index.toString());
 
+            set_selected_server_index(selected_server_index);
             set_selected_server_id(selected_server_id);
         }
 
@@ -225,11 +228,20 @@ export default function Watch() {
         current_watch_time = 0;
         max_duration = 0;
         /* --- */
-        const data = await get_server(source, link_plugin_id, selected_server_id());
-        console.log("SERVER DATA: ", data);
-
-        SET_SERVER_DATA(data);
-        set_is_loading_server(false);
+        try {
+            console.log(source, link_plugin_id, selected_server_id());
+            const data = await get_server(source, link_plugin_id, selected_server_index(), selected_server_id());
+            console.log("SERVER DATA: ", data);
+            SET_SERVER_DATA(data);
+            set_is_loading_server(false);
+        }catch(e){
+            console.error(e);
+            toast.remove();
+            toast.error("Something went wrong while getting server data.",{style:{color:"red"}});
+        }
+        
+        
+        
     }
 
     const get_data = async () => {
@@ -258,7 +270,6 @@ export default function Watch() {
             
             if (mode().force_online === false){
                 local_download_manifest = await request_get_local_download_manifest(source, id, current_season_index(), current_episode_index(), true);
-                
                 
                 if (local_download_manifest !== null){
                     /* Modify Tracks URL */
