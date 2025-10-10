@@ -164,6 +164,24 @@
 	word-break: keep-all;
 }
 
+.season_frame{
+	width: 100%;
+	height: auto;
+}
+
+.season_container{
+	width: 100%;
+	height: auto;
+	display: flex;
+	flex-direction: row;
+	gap: 12px;
+	box-sizing: border-box;
+	overflow: auto;
+	padding: 12px;
+}
+
+
+
 .episode_container{
 	width: 100%;
 	height: auto;

@@ -516,6 +516,12 @@ export default function Plugin() {
                                                                 )
                                                                     .then((_) => {
                                                                         set_is_install_done(true);
+                                                                        toast.remove();
+                                                                        toast.success("Plugin installed successfully.",{
+                                                                            style: {
+                                                                                color:"green",
+                                                                            }
+                                                                        })
                                                                     })
                                                                     .catch((e) => {
                                                                         console.error(e);
@@ -528,12 +534,7 @@ export default function Plugin() {
                                                                     })
                                                                     .finally(() => {
                                                                         set_is_working(false);
-                                                                        toast.remove();
-                                                                        toast.success("Plugin installed successfully.",{
-                                                                            style: {
-                                                                                color:"green",
-                                                                            }
-                                                                        })
+                                                                        set_is_installing(false);
                                                                     })
                                                             }}
                                                         >
@@ -703,6 +704,12 @@ export default function Plugin() {
                                                                     )
                                                                         .then((_) => {
                                                                             set_is_remove_done(true);
+                                                                            toast.remove();
+                                                                            toast.success("Plugin removed successfully.",{
+                                                                                style: {
+                                                                                    color:"green",
+                                                                                }
+                                                                            })
                                                                         })
                                                                         .catch((e) => {
                                                                             console.error(e);
@@ -715,12 +722,7 @@ export default function Plugin() {
                                                                         })
                                                                         .finally(()=>{
                                                                             set_is_working(false);
-                                                                            toast.remove();
-                                                                            toast.success("Plugin removed successfully.",{
-                                                                                style: {
-                                                                                    color:"green",
-                                                                                }
-                                                                            })
+                                                                            set_is_removing(false);
                                                                         })
                                                                 }}
                                                             >

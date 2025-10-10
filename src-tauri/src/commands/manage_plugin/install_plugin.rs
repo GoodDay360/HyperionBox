@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use tauri::async_runtime;
 use tauri::Emitter;
-use tracing::error;
+use tracing::{error, warn};
 
-use chlaty_core::manage_plugin::install_plugin;
+use chlaty_core::manage_plugin;
 use chlaty_core::manage_plugin::install_plugin::PluginManifest;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -19,9 +19,8 @@ pub async fn install_plugin(
     plugin_id: String,
     plugin_manifest: PluginManifest,
 ) -> Result<(), String> {
-
-    async_runtime::spawn_blocking(move || {
-        let _ = install_plugin::new(
+    let result = async_runtime::spawn_blocking(move || {
+        return manage_plugin::install_plugin::new(
             &source,
             &plugin_id,
             "latest",
@@ -32,11 +31,17 @@ pub async fn install_plugin(
                     Payload { current, total },
                 ) {
                     Ok(_) => {}
-                    Err(e) => error!("[install_plugin] Error: {}", e),
+                    Err(e) => warn!("[install_plugin] Emit Error: {}", e),
                 }
             },
         ).map_err(|e| e.to_string());
     }).await.map_err(|e| e.to_string())?;
 
-    return Ok(());
+    match result {
+        Ok(_) => return Ok(()),
+        Err(e) => {
+            error!("[install_plugin] {}", e);
+            return Err(e.to_string());
+        },
+    }
 }

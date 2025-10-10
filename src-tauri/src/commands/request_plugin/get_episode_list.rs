@@ -15,7 +15,6 @@ pub async fn get_episode_list(
             Ok(data) => data,
             Err(_) => {
                 let local_manifest = get_local_manifest(source.clone(), id.clone()).await?;
-                println!("{:?}", local_manifest);
                 let manifest_data = local_manifest
                     .manifest_data
                     .ok_or("Local Manifest also not exist.")?;

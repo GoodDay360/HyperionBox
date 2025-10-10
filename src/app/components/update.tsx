@@ -112,7 +112,11 @@ export default function Update() {
                     <ul class={styles.content_box}>
                         <li class={styles.text}>Notes:
                             <ul>
-                                <span class={styles.text}>{is_update_available().notes}</span>
+                                <span class={styles.text}
+                                    style={{
+                                        "white-space": "pre-line"
+                                    }}
+                                >{is_update_available().notes}</span>
                             </ul>
                         </li>
                         <li class={styles.text}>Version

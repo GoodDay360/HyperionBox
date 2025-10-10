@@ -1,7 +1,7 @@
 use dashmap::DashMap;
 use lazy_static::lazy_static;
 use m3u8_rs::Playlist;
-use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::header::{HeaderMap, HeaderValue, HeaderName};
 use reqwest::Client;
 use rusqlite::{params, Error::QueryReturnedNoRows, Result};
 use serde::{Deserialize, Serialize};
@@ -231,24 +231,34 @@ async fn get_media_hls(
     let client = Client::new();
 
     let mut headers = HeaderMap::new();
-    headers.insert(
-        "Host",
-        HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
-    );
-    headers.insert(
-        "Referer",
-        HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
-    );
-    headers.insert(
-        "Origin",
-        HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
-    );
+    if !config.host.is_empty() {
+        headers.insert(
+            "Host",
+            HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
+        );
+    }
+    
+    if !config.referer.is_empty() {
+        headers.insert(
+            "Referer",
+            HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
+        );
+    }
+    
+    if !config.origin.is_empty() {
+        headers.insert(
+            "Origin",
+            HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
+        );
+    }
+    headers.insert(HeaderName::from_static("sec-fetch-site"), HeaderValue::from_static("same-origin"));
+    
 
     info!("[worker:download] Downloading HLS... | {}", hls_file);
     let response = client
         .get(&hls_file)
         .timeout(Duration::from_secs(10))
-        .headers(headers)
+        .headers(headers.clone())
         .send()
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
@@ -301,21 +311,7 @@ async fn get_media_hls(
                         }
                     }
                 }
-
-                let mut headers = HeaderMap::new();
-                headers.insert(
-                    "Host",
-                    HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
-                );
-                headers.insert(
-                    "Referer",
-                    HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
-                );
-                headers.insert(
-                    "Origin",
-                    HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
-                );
-
+                
                 let mut _url: String = "".to_string();
                 if config.playlist_base_url.is_empty() {
                     _url = selected_media_uri;
@@ -348,9 +344,11 @@ async fn get_media_hls(
                 return Err(e.to_string())?;
             }
         }
+    }else{
+        return Err(format!("[get_media_hls] Request failed. {}", response.status()))?;
     }
 
-    return Err("[get_media_hls] Request failed.".to_string());
+    return Err("[get_media_hls] Request failed.".to_string())?;
 }
 
 async fn download_episode(
@@ -797,8 +795,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                     }
                 }
 
-                let media_hls =
-                    match get_media_hls(&source, &plugin_id, selected_server_index, &selected_server_id, prefer_quality).await
+                let media_hls = match get_media_hls(&source, &plugin_id, selected_server_index, &selected_server_id, prefer_quality).await
                     {
                         Ok(media_hls) => media_hls,
                         Err(e) => {

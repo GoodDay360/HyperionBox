@@ -31,7 +31,6 @@ pub async fn home(source: String) -> Result<HomeData, String> {
             Ok(data) => _home_data = data,
             Err(e) => {
                 error!("[HOME] Error: {}", e);
-                return Err(e)?;
             }
         }
     }else if source == "movie" {
@@ -39,7 +38,6 @@ pub async fn home(source: String) -> Result<HomeData, String> {
             Ok(data) => _home_data = data,
             Err(e) => {
                 error!("[HOME] Error: {}", e);
-                return Err(e)?;
             }
         }
     }else{
@@ -237,6 +235,8 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
             /* Load and save local poster and banner if exist */
             let poster_url = &manifest_data.poster;
             let banner_url = &manifest_data.banner;
+
+            
 
             let headers = HeaderMap::new();
 
