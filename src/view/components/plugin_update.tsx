@@ -89,7 +89,7 @@ export default function PluginUpdate({
             {!is_installing()
                 
                 ? <div class={styles.button_box}>
-                    <Button variant='text' color="error"
+                    <Button variant='text' color="warning"
                         sx={{
                             fontSize: "calc((100vw + 100vh)/2*0.0225)",
                             textTransform: "none",
@@ -98,7 +98,7 @@ export default function PluginUpdate({
                         }}
                         onClick={onClose}
                     >
-                        Cancel
+                        Later
                     </Button>
                     <Button variant='text' color="primary" disabled={is_installing()}
                         sx={{

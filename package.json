@@ -30,6 +30,7 @@
     "bun": "^1.2.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.18",
     "eslint": "^9.35.0",
     "hls.js": "^1.6.13",
     "install": "^0.13.0",

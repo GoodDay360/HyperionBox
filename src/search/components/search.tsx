@@ -79,6 +79,7 @@ export default function Search() {
 
     const get_data = ({page, search}:{page: number, search: string}) => {
         set_is_loading(true);
+        console.log("SEARCH IS: ",{source, page, search})
         invoke<SEARCH_DATA[]>('search', {source, page, search})
             .then((data) => {
                 console.log(data)

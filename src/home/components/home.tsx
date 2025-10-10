@@ -146,8 +146,8 @@ export default function Home() {
                             <form class={styles.search_container}
                                 onSubmit={(e) => {
                                     e.preventDefault();
-                                    if (!search()) return;
-                                    navigate(`/search?source=${current_source()}&search=${encodeURIComponent(search().trim())}`);
+                                    if (!search() || !current_source()) return;
+                                    navigate(`/search?source=${encodeURIComponent(current_source())}&search=${encodeURIComponent(search().trim())}`);
                                 }}
                                 style={{
                                     "padding-left": "12px",
@@ -237,9 +237,9 @@ export default function Home() {
                         }}
                         onSubmit={(e) => {
                             e.preventDefault();
-                            if (!search()) return;
+                            if (!search() || !current_source()) return;
                             
-                            navigate(`/search?search=${encodeURIComponent(search().trim())}`);
+                            navigate(`/search?source=${encodeURIComponent(current_source())}&search=${encodeURIComponent(search().trim())}`);
                         }}
                     > 
                         <ButtonBase

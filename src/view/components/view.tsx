@@ -305,13 +305,14 @@ export default function View() {
                                     {(_,index) =>
                                         <ButtonBase
                                             sx={{
-                                                background: current_season_index() == index() ? "var(--background-1)" : "var(--background-2)",
+                                                background: current_season_index() == index() ? "var(--background-2)" : "var(--background-1)",
                                                 color: "var(--color-1)",
                                                 whiteSpace: "nowrap",
                                                 padding: "28px",
                                                 borderRadius: "8px",
                                                 fontWeight: 600,
                                                 fontSize: "calc((100vw + 100vh)/2* 0.0275)",
+                                                border: "2px solid var(--background-2)",
                                             }}
                                             onClick={()=>{
                                                 set_current_season_index(index());
