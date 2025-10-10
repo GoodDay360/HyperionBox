@@ -27,7 +27,15 @@
 	flex-direction: row;
 	overflow: auto;
 	background: transparent;
-	/* gap: 12px; */
+}
+
+.source_container{
+	width: 100%;
+	height: auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 12px;
 }
 
 
@@ -237,6 +245,8 @@
 
 /* --- */
 
+/* Add Plugins */
+
 .add_plugin_container{
 	width: 100%;
 	flex: 1;
@@ -269,6 +279,8 @@
 	text-overflow: ellipsis; 
 	white-space: nowrap;
 }
+
+/* --- */
 
 
 .installed_plugin_container{

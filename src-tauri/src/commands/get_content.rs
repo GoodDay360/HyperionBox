@@ -3,17 +3,20 @@ use reqwest::header::HeaderMap;
 use std::fs;
 use tokio;
 use tracing::{error, warn};
+use std::future::Future;
+use std::pin::Pin;
 
 use chlaty_core::request_plugin::get_episode_list::DataResult;
 
 use crate::sources::anime;
+use crate::sources::movie;
 use crate::commands::favorite::{get_recent_from_favorite, get_tag_from_favorite};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 use crate::commands::request_plugin::get_episode_list::get_episode_list;
 use crate::models::home::{Content, ContentData, HomeData};
 use crate::models::search::SearchData;
 use crate::models::view::{ManifestData, ViewData};
-use crate::utils::{configs, convert_file_src, download_file};
+use crate::utils::{configs::Configs, convert_file_src, download_file};
 
 const CACHE_DELAY: usize = 1 * 60 * 60 * 1000;
 
@@ -24,14 +27,20 @@ pub async fn home(source: String) -> Result<HomeData, String> {
         content: vec![],
     };
     if source == "anime" {
-        match anime::home::new().await {
+        match anime::home::new(&source).await {
             Ok(data) => _home_data = data,
             Err(e) => {
                 error!("[HOME] Error: {}", e);
-                return Err(e)?;
             }
         }
-    } else {
+    }else if source == "movie" {
+        match movie::home::new(&source).await {
+            Ok(data) => _home_data = data,
+            Err(e) => {
+                error!("[HOME] Error: {}", e);
+            }
+        }
+    }else{
         return Err("Unkown Source".to_string());
     }
 
@@ -41,10 +50,11 @@ pub async fn home(source: String) -> Result<HomeData, String> {
     let mut recent_content_data: Vec<ContentData> = vec![];
     let recent_from_favorite = get_recent_from_favorite(15).await?;
     for item in recent_from_favorite {
-        let local_manifest = get_local_manifest(item.source, item.id.to_string()).await?;
+        let local_manifest = get_local_manifest(item.source.clone(), item.id.to_string()).await?;
         match local_manifest.manifest_data {
             Some(data) => {
                 let new_content = ContentData {
+                    source: item.source,
                     id: item.id.to_string().clone(),
                     title: data.title,
                     poster: data.poster,
@@ -53,6 +63,7 @@ pub async fn home(source: String) -> Result<HomeData, String> {
             }
             None => {
                 let new_content = ContentData {
+                    source: item.source,
                     id: item.id.to_string().clone(),
                     title: "?".to_string(),
                     poster: "".to_string(),
@@ -77,13 +88,21 @@ pub async fn home(source: String) -> Result<HomeData, String> {
 }
 
 #[tauri::command]
-pub async fn search(source: String, page: usize, search: String) -> Result<SearchData, String> {
+pub async fn search(source: String, page: usize, search: String) -> Result<Vec<SearchData>, String> {
     if source == "anime" {
         match anime::search::new(page, &search).await {
             Ok(data) => return Ok(data),
             Err(e) => {
                 error!("Error: {}", e);
                 return Err(e);
+            }
+        }
+    }else if source == "movie" {
+        match movie::search::new(page, &search).await {
+            Ok(data) => return Ok(data),
+            Err(e) => {
+                error!("[HOME] Error: {}", e);
+                return Err(e)?;
             }
         }
     }
@@ -93,11 +112,13 @@ pub async fn search(source: String, page: usize, search: String) -> Result<Searc
 #[tauri::command]
 pub async fn view(source: String, id: String) -> Result<ViewData, String> {
     /* Generate Task */
-    let task_get_view_manifest_data;
+    let task_get_view_manifest_data: Pin<Box<dyn Future<Output = Result<ManifestData, String>> + Send>>;
 
     if source == "anime" {
-        task_get_view_manifest_data = anime::view::new(&id);
-    } else {
+        task_get_view_manifest_data = Box::pin(anime::view::new(&id));
+    }else if source == "movie" {
+        task_get_view_manifest_data = Box::pin(movie::view::new(&id));
+    }else {
         return Err("Unkown Source".to_string());
     }
     /* --- */
@@ -111,7 +132,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
         link_id = link_plugin.id.clone().unwrap_or("".to_string());
     }
 
-    let storage_dir = configs::get()?.storage_dir;
+    let storage_dir = Configs::get()?.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     let item_dir = storage_dir.join(&source).join(&id);
     if !item_dir.exists() {
@@ -214,6 +235,8 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
             /* Load and save local poster and banner if exist */
             let poster_url = &manifest_data.poster;
             let banner_url = &manifest_data.banner;
+
+            
 
             let headers = HeaderMap::new();
 

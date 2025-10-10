@@ -12,12 +12,12 @@ export function get_episode_list(source: string, id: string, pluginId: string, l
     return invoke<EpisodeList[][][]>('get_episode_list', {source, id, pluginId, linkId});
 }
 
-export function get_episode_server(source: string, id: string, pluginId: string, seasonIndex: number, episodeIndex: number, episodeId: string): Promise<EpisodeServerData> {
-    return invoke<EpisodeServerData>('get_episode_server', {source, id, pluginId, seasonIndex, episodeIndex, episodeId});
+export function get_episode_server(source: string, id: string, pluginId: string, seasonIndex: number, episodeIndex: number, episodeId: string, updateState: boolean): Promise<EpisodeServerData> {
+    return invoke<EpisodeServerData>('get_episode_server', {source, id, pluginId, seasonIndex, episodeIndex, episodeId, updateState});
 }
 
-export function get_server(source: string, pluginId: string, id: string): Promise<ServerData> {
-    return invoke<ServerData>('get_server', {source, pluginId, id});
+export function get_server(source: string, pluginId: string, index:number, id: string): Promise<ServerData> {
+    return invoke<ServerData>('get_server', {source, pluginId, index, id});
 }
 
 export function get_watch_state(source: string, id: string, seasonIndex: number, episodeIndex: number): Promise<WatchState> {

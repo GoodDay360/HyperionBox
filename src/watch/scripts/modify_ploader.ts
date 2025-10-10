@@ -58,16 +58,22 @@ const MODIFY_PLOADER = ({
 				"Host"?:string,
 				"Origin"?:string,
 				"Referer"?:string,
-			} = {};
+				"User-Agent":string,
+				"Sec-Fetch-Site":string,
+			} = {
+				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+				"Sec-Fetch-Site": "same-origin",
+			};
 
 			let current_url = context.url;
 			
-			if (host) {headers["Host"] = host};
+			if (host) {headers["Host"] = "192.168.0.102"};
 			if (origin) {headers["Origin"] = origin};
 			if (referer) {headers["Referer"] = referer};
 
 			for (;;) {
-				console.log("PLOADER", current_url)
+				console.log("PLOADER:", current_url)
+				console.log("PLOADER HEADERS:", headers)
 				try {
 					if (mode === "online") {
 						let response = await fetch(current_url,
@@ -80,6 +86,7 @@ const MODIFY_PLOADER = ({
 							headers.Origin = "";
 							headers.Host = url_obj.host;
 							current_url = response.url;
+							console.log("Redirect PLOADER:", current_url)
 							continue;
 						}
 						const responseData = await response.arrayBuffer()

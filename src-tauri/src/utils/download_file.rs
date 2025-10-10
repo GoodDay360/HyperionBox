@@ -18,6 +18,7 @@ pub async fn new<F>(
 where
     F: Fn(usize, usize),
 {
+    // println!("[download_file] Downloading: {}", &url);
     let mut new_headers = headers.clone();
     let mut current_url: String = url.to_string();
     loop {
@@ -28,13 +29,13 @@ where
             .headers(new_headers.clone())
             .send()
             .await
-            .map_err(|e| format!("Request failed: {}", e))?;
+            .map_err(|e| format!("[download_file] Request failed: {}", e))?;
 
         if response.url().to_string() != current_url {
             let parsed_url = Url::parse(&current_url).map_err(|e| e.to_string())?;
             let new_host = parsed_url
                 .host_str()
-                .ok_or_else(|| "Host not found from parsed URL.")?;
+                .ok_or_else(|| "[download_file] Host not found from parsed URL.")?;
             new_headers.insert(
                 "Host",
                 HeaderValue::from_str(new_host).map_err(|e| e.to_string())?,
@@ -45,26 +46,27 @@ where
         }
         if response.status().is_success() {
             let total_size = response
-                .content_length()
-                .ok_or_else(|| "Can't determine content length".to_string())?;
+                .content_length().unwrap_or(0);
 
             let path = Path::new(output_file);
             let mut file =
-                File::create(&path).map_err(|e| format!("Failed to create file: {}", e))?;
+                File::create(&path).map_err(|e| format!("[download_file] Failed to create file: {}", e))?;
 
             let mut downloaded = 0;
             let mut stream = response.bytes_stream();
 
             while let Some(chunk) = stream.next().await {
-                let chunk = chunk.map_err(|e| format!("Stream error: {}", e))?;
+                let chunk = chunk.map_err(|e| format!("[download_file] Stream error: {}", e))?;
                 file.write_all(&chunk)
-                    .map_err(|e| format!("Write error: {}", e))?;
+                    .map_err(|e| format!("[download_file] Write error: {}", e))?;
                 downloaded += chunk.len();
-                callback(downloaded, total_size as usize);
+                if total_size > 0 {
+                    callback(downloaded, total_size as usize);
+                }
             }
             break;
         } else {
-            return Err(format!("Request failed: {}", response.status()));
+            return Err(format!("[download_file] Request failed: {}", response.status()));
         }
     }
     Ok(())

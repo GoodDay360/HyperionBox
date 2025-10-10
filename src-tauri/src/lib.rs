@@ -71,7 +71,7 @@ pub fn run() {
                 .map_err(|e| e.to_string())?;
 
             env::set_var("HYPERIONBOX_APPDATA", appdata_dir);
-            utils::configs::init()?;
+            utils::configs::Configs::init()?;
 
             /* Spawn Worker */
             async_runtime::spawn(async move {

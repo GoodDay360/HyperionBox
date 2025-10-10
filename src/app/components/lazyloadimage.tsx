@@ -1,6 +1,6 @@
 // SolidJS Imports
 import { onMount, onCleanup, createSignal } from "solid-js";
-import type { JSX, Accessor } from "solid-js";
+import type { JSX } from "solid-js";
 
 // SUID Imports
 import { Skeleton } from "@suid/material";
@@ -12,7 +12,7 @@ export default function LazyLoadImage({
     style,
     skeleton_sx
 }:{
-    src: Accessor<string> | string,
+    src: string,
     className?: string,
     style?: JSX.CSSProperties,
     skeleton_sx?: SxProps
@@ -51,7 +51,7 @@ export default function LazyLoadImage({
             <Skeleton variant="rectangular" sx={skeleton_sx} />
         }
         {is_in_view() && 
-            <img src={typeof src === "string" ? src : src()} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
+            <img src={(src.trim() !== "") ? src : "src/assets/media/no-image-2.jpg"} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
                 onLoad={() => set_is_loaded(true)}
             />
         }

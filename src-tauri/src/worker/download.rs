@@ -1,7 +1,7 @@
 use dashmap::DashMap;
 use lazy_static::lazy_static;
 use m3u8_rs::Playlist;
-use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::header::{HeaderMap, HeaderValue, HeaderName};
 use reqwest::Client;
 use rusqlite::{params, Error::QueryReturnedNoRows, Result};
 use serde::{Deserialize, Serialize};
@@ -16,7 +16,7 @@ use tracing::{error, info, warn};
 
 use chlaty_core::request_plugin::{get_episode_server, get_server, get_server::ServerResult};
 
-use crate::utils::configs as app_configs;
+use crate::utils::configs::Configs;
 
 use crate::commands::download::{get_db, set_done_download, set_error_download};
 use crate::models::download::{Download, DownloadItem, DownloadStatusManifest};
@@ -209,10 +209,11 @@ fn get_current_download_item(source: &str, id: &str) -> Result<Option<DownloadIt
 async fn get_media_hls(
     source: &str,
     plugin_id: &str,
+    server_index: usize,
     server_id: &str,
     prefer_quality: usize,
 ) -> Result<MediaHLS, String> {
-    let server_data = get_server::new(source, plugin_id, server_id).map_err(|e| e.to_string())?;
+    let server_data = get_server::new(source, plugin_id, server_index, server_id).map_err(|e| e.to_string())?;
 
     let mut hls_file: String = "".to_string();
 
@@ -230,24 +231,34 @@ async fn get_media_hls(
     let client = Client::new();
 
     let mut headers = HeaderMap::new();
-    headers.insert(
-        "Host",
-        HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
-    );
-    headers.insert(
-        "Referer",
-        HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
-    );
-    headers.insert(
-        "Origin",
-        HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
-    );
+    if !config.host.is_empty() {
+        headers.insert(
+            "Host",
+            HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
+        );
+    }
+    
+    if !config.referer.is_empty() {
+        headers.insert(
+            "Referer",
+            HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
+        );
+    }
+    
+    if !config.origin.is_empty() {
+        headers.insert(
+            "Origin",
+            HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
+        );
+    }
+    headers.insert(HeaderName::from_static("sec-fetch-site"), HeaderValue::from_static("same-origin"));
+    
 
     info!("[worker:download] Downloading HLS... | {}", hls_file);
     let response = client
         .get(&hls_file)
         .timeout(Duration::from_secs(10))
-        .headers(headers)
+        .headers(headers.clone())
         .send()
         .await
         .map_err(|e| format!("Request failed: {}", e))?;
@@ -300,21 +311,7 @@ async fn get_media_hls(
                         }
                     }
                 }
-
-                let mut headers = HeaderMap::new();
-                headers.insert(
-                    "Host",
-                    HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
-                );
-                headers.insert(
-                    "Referer",
-                    HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
-                );
-                headers.insert(
-                    "Origin",
-                    HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
-                );
-
+                
                 let mut _url: String = "".to_string();
                 if config.playlist_base_url.is_empty() {
                     _url = selected_media_uri;
@@ -347,9 +344,11 @@ async fn get_media_hls(
                 return Err(e.to_string())?;
             }
         }
+    }else{
+        return Err(format!("[get_media_hls] Request failed. {}", response.status()))?;
     }
 
-    return Err("[get_media_hls] Request failed.".to_string());
+    return Err("[get_media_hls] Request failed.".to_string())?;
 }
 
 async fn download_episode(
@@ -360,8 +359,8 @@ async fn download_episode(
     episode_index: usize,
     mut media_hls: MediaHLS,
 ) -> Result<(), String> {
-    let app_configs_data = app_configs::get().map_err(|e| e.to_string())?;
-    let storage_dir = app_configs_data.storage_dir;
+    let app_configs_data = Configs::get().map_err(|e| e.to_string())?;
+    let storage_dir = app_configs_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     let config = media_hls.server.config.clone();
 
@@ -765,6 +764,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                 )
                 .map_err(|e| e.to_string())?;
 
+                let mut selected_server_index:usize = 0;
                 let mut selected_server_id: String = "".to_string();
 
                 match ep_server_data.get(&prefer_server_type) {
@@ -777,6 +777,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                         for server in server {
                             if server.index == prefer_server_index {
                                 selected_server_id = server.id.clone();
+                                selected_server_index = server.index;
                                 break;
                             }
                         }
@@ -794,8 +795,7 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                     }
                 }
 
-                let media_hls =
-                    match get_media_hls(&source, &plugin_id, &selected_server_id, prefer_quality).await
+                let media_hls = match get_media_hls(&source, &plugin_id, selected_server_index, &selected_server_id, prefer_quality).await
                     {
                         Ok(media_hls) => media_hls,
                         Err(e) => {

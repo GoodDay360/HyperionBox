@@ -40,15 +40,10 @@ import styles from "../styles/search.module.css"
 import { ContextManager } from '@src/app/components/app';
 
 
-interface DATA {
+interface SEARCH_DATA {
     id: string,
     title: string,
     poster: string,
-}
-
-interface SEARCH_DATA {
-    data: DATA[],
-    max_page: number
 }
 
 
@@ -56,10 +51,10 @@ export default function Search() {
     const navigate = useNavigate();
     const [queryParams] = useSearchParams();
     const context = useContext(ContextManager);
+    const source:string = queryParams?.source as string ?? ""
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
     
-
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [is_search_change, set_is_search_change] = createSignal<boolean>(false);
     const [search, set_search] = createSignal<string>(queryParams?.search as string ?? "");
@@ -67,7 +62,7 @@ export default function Search() {
     const [page, set_page] = createSignal<number>(1);
 
     let last_search: string = queryParams?.search as string ?? "";
-    const [DATA, SET_DATA] = createSignal<DATA[]>([]);
+    const [DATA, SET_DATA] = createSignal<SEARCH_DATA[]>([]);
     
     const check_scroll = () => {
         if (is_loading() || is_page_max()) return;
@@ -84,11 +79,12 @@ export default function Search() {
 
     const get_data = ({page, search}:{page: number, search: string}) => {
         set_is_loading(true);
-        invoke<SEARCH_DATA>('search', {source:"anime", page, search})
-            .then((res) => {
-                console.log(res)
-                if (res.data.length > 0){
-                    SET_DATA([...DATA(), ...res.data]);
+        console.log("SEARCH IS: ",{source, page, search})
+        invoke<SEARCH_DATA[]>('search', {source, page, search})
+            .then((data) => {
+                console.log(data)
+                if (data.length > 0){
+                    SET_DATA([...DATA(), ...data]);
                 }else{
                     set_is_page_max(true);
                 }
@@ -227,7 +223,7 @@ export default function Search() {
                                             height: "auto",
                                         }}
                                         onClick={() => {
-                                            navigate(`/view?source=${"anime"}&id=${item.id}`);
+                                            navigate(`/view?source=${source}&id=${item.id}`);
                                         }}
                                     >
                                         <LazyLoadImage 

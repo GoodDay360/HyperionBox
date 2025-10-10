@@ -3,13 +3,13 @@ use std::fs;
 use std::io::BufReader;
 
 use crate::models::local_manifest::LocalManifest;
-use crate::utils::{configs, convert_file_src};
+use crate::utils::{configs::Configs, convert_file_src};
 
 #[tauri::command]
 pub async fn get_local_manifest(source: String, id: String) -> Result<LocalManifest, String> {
-    let config_data = configs::get()?;
+    let config_data = Configs::get()?;
 
-    let storage_dir = config_data.storage_dir;
+    let storage_dir = config_data.storage_dir.ok_or("Storage directory not set".to_string())?;
     let source_dir = storage_dir.join(&source);
     let item_dir = source_dir.join(&id);
     if !item_dir.exists() {
@@ -33,7 +33,7 @@ pub async fn get_local_manifest(source: String, id: String) -> Result<LocalManif
         }
 
         if let Some(manifest_data) = local_manifest_data.manifest_data.as_mut() {
-            let storage_dir = configs::get()?.storage_dir;
+            let storage_dir = Configs::get()?.storage_dir.ok_or("Storage directory not set".to_string())?;
 
             let item_dir = storage_dir.join(&source).join(&id);
             let poster_path = item_dir.join("poster.png");
@@ -60,9 +60,9 @@ pub async fn save_local_manifest(
     id: String,
     local_manifest_data: LocalManifest,
 ) -> Result<(), String> {
-    let config_data = configs::get()?;
+    let config_data = Configs::get()?;
 
-    let storage_dir = config_data.storage_dir;
+    let storage_dir = config_data.storage_dir.ok_or("Storage directory not set".to_string())?;
     let source_dir = storage_dir.join(&source);
     let item_dir = source_dir.join(&id);
     if !item_dir.exists() {

@@ -7,7 +7,7 @@ use crate::sources::anime::models::ApiResponse;
 use crate::models::home::{Content, ContentData, HomeData, RelevantContent, Trailer};
 use crate::utils::get_calendar;
 
-async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
+async fn get_relevant_content(source:&str) -> Result<Vec<RelevantContent>, String> {
     let clinet = Client::new();
     let calendar = get_calendar::new().map_err(|e| e.to_string())?;
     let url = format!(
@@ -76,6 +76,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
             }
 
             let relevant_content = RelevantContent {
+                source: source.to_string(),
                 id: id.to_string().clone(),
                 title: if title_en.is_some() {
                     title_en.unwrap().clone()
@@ -97,7 +98,7 @@ async fn get_relevant_content() -> Result<Vec<RelevantContent>, String> {
     }
 }
 
-async fn get_trending_content() -> Result<Vec<ContentData>, String> {
+async fn get_trending_content(source:&str) -> Result<Vec<ContentData>, String> {
     let clinet = Client::new();
     let url = format!("https://kitsu.io/api/edge/trending/anime",);
     let res = clinet
@@ -131,6 +132,7 @@ async fn get_trending_content() -> Result<Vec<ContentData>, String> {
             }
 
             let new_content_item = ContentData {
+                source: source.to_string(),
                 id: id.to_string().clone(),
                 title: if title_en.is_some() {
                     title_en.unwrap().clone()
@@ -147,9 +149,9 @@ async fn get_trending_content() -> Result<Vec<ContentData>, String> {
     }
 }
 
-pub async fn new() -> Result<HomeData, String> {
+pub async fn new(source:&str) -> Result<HomeData, String> {
     let (task_get_relevant_content, task_get_trending_content) =
-        tokio::join!(get_relevant_content(), get_trending_content(),);
+        tokio::join!(get_relevant_content(&source), get_trending_content(&source),);
 
     let relevant_content = match task_get_relevant_content {
         Ok(content) => content,

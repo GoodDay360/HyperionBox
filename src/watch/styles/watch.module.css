@@ -113,7 +113,6 @@
 	flex-direction: column;
 	gap: 8px;
 	padding: 12px;
-	border-bottom: 2.5px solid var(--background-3);
 	box-sizing: border-box;
 	background: var(--background-1);
 }

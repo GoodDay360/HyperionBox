@@ -8,6 +8,7 @@ pub struct Trailer {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RelevantContent {
+    pub source: String,
     pub id: String,
     pub title: String,
     pub banner: String,
@@ -17,6 +18,7 @@ pub struct RelevantContent {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ContentData {
+    pub source: String,
     pub id: String,
     pub title: String,
     pub poster: String,

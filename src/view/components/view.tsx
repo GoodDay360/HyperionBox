@@ -35,6 +35,7 @@ import toast from 'solid-toast';
 import LazyLoadImage from '@src/app/components/lazyloadimage';
 import PullRefresh from '@src/app/components/pull_refresh';
 import Download from './download';
+import PluginUpdate from './plugin_update';
 
 // Style Imports
 import styles from "../styles/view.module.css"
@@ -43,7 +44,10 @@ import styles from "../styles/view.module.css"
 import { ContextManager } from '@src/app/components/app';
 import { ViewData, DownloadEpisode } from '../types/view_type';
 import { request_get_local_download_manifest } from '@src/watch/scripts/watch';
+import check_plugin_update from '../scripts/check_plugin_update';
 
+// Types Imports
+import { CheckPluginUpdate } from '../types/check_plugin_update_type';
 
 export default function View() {
     const navigate = useNavigate();
@@ -54,7 +58,7 @@ export default function View() {
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
-    const [is_loading, set_is_loading] = createSignal<boolean>(true);
+    const [is_loading, set_is_loading] = createSignal<boolean>(false);
 
     const [DATA, SET_DATA] = createSignal<ViewData>();
     let DOWNLOAD_DATA: DownloadEpisode = {};
@@ -65,9 +69,13 @@ export default function View() {
     const [download, set_download] = createSignal<{mode:boolean, request:boolean}>({mode:false, request:false});
     const [select_download_all, set_select_download_all] = createSignal(false);
 
-    const [current_season_index, _] = createSignal<number>(0);
+    const [current_season_index, set_current_season_index] = createSignal<number>(0);
     const [current_episode_page_index, set_current_episode_page_index] = createSignal<number>(0);
 
+    /* Check Plugin Update */
+    const [plugin_update, set_plugin_update] = createSignal<CheckPluginUpdate>();
+
+    /* --- */
     
 
     const get_data = () => {
@@ -77,6 +85,11 @@ export default function View() {
                 SET_DATA(data);
                 console.table(data)
                 set_is_loading(false);
+                check_plugin_update(source, data.link_plugin?.plugin_id ?? "")
+                    .then((data) => {
+                        set_plugin_update(data)
+                    })
+
             })
             .catch((e) => {
                 console.error(e);
@@ -91,6 +104,7 @@ export default function View() {
 
     onMount(() => {
         get_data();
+        
     })
 
 
@@ -283,6 +297,34 @@ export default function View() {
                             >&nbsp;&nbsp;&nbsp;&nbsp;{DATA()?.manifest_data?.description}</span>
                         </div>
                     </div>
+                    
+                    {((DATA()?.manifest_data?.episode_list?.length ?? 0) > 1) &&
+                        <div class={styles.season_frame}>
+                            <div class={styles.season_container}>
+                                <For each={[...Array(DATA()?.manifest_data?.episode_list?.length ?? 0)]}>
+                                    {(_,index) =>
+                                        <ButtonBase
+                                            sx={{
+                                                background: current_season_index() == index() ? "var(--background-2)" : "var(--background-1)",
+                                                color: "var(--color-1)",
+                                                whiteSpace: "nowrap",
+                                                padding: "28px",
+                                                borderRadius: "8px",
+                                                fontWeight: 600,
+                                                fontSize: "calc((100vw + 100vh)/2* 0.0275)",
+                                                border: "2px solid var(--background-2)",
+                                            }}
+                                            onClick={()=>{
+                                                set_current_season_index(index());
+                                            }}
+                                        >
+                                            Season: {index() + 1}
+                                        </ButtonBase>
+                                    }
+                                </For>
+                            </div>
+                        </div>
+                    }
 
                     <div class={styles.episode_container}>
                         <div class={styles.episode_frame}>
@@ -297,7 +339,7 @@ export default function View() {
                                                     fontSize: 'calc((100vw + 100vh)/2*0.04)',
                                                 }}
                                                 onClick={() =>{
-                                                    navigate(`/plugin?link_source=${"anime"}&link_id=${DATA()?.manifest_data?.id}&link_title=${DATA()?.manifest_data?.title}`);
+                                                    navigate(`/plugin?link_source=${source}&link_id=${DATA()?.manifest_data?.id}&link_title=${DATA()?.manifest_data?.title}`);
                                                 }}
                                             >
                                                 <AddLinkRoundedIcon fontSize='inherit' color='inherit' />
@@ -312,15 +354,17 @@ export default function View() {
                                                         set_select_download_all(!select_download_all());
 
                                                         if (select_download_all()) {
-                                                            for (const ep_page of DATA()?.manifest_data?.episode_list?.[current_season_index()] ?? []) {
-                                                                for (const item of ep_page) {
-                                                                    DOWNLOAD_DATA[item.id] = {
-                                                                        season_index: current_season_index(),
-                                                                        episode_index: item.index,
+                                                            for (const [season_index, _] of (DATA()?.manifest_data?.episode_list ?? []).entries()) {
+                                                                for (const ep_page of DATA()?.manifest_data?.episode_list?.[season_index] ?? []) {
+                                                                    for (const item of ep_page) {
+                                                                        DOWNLOAD_DATA[item.id] = {
+                                                                            season_index: season_index,
+                                                                            episode_index: item.index,
+                                                                        }
                                                                     }
                                                                 }
-                                                                
                                                             }
+                                                            
                                                         }else{
                                                             for (const item of DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()] ?? []) {
                                                                 delete DOWNLOAD_DATA[item.id]
@@ -551,8 +595,6 @@ export default function View() {
                             />
                         </div>
 
-                        
-                        
                         <div class={styles.episode_container}>
                             <div class={styles.episode_frame}
                                 style={{
@@ -675,13 +717,27 @@ export default function View() {
                         <CloseRoundedIcon color='inherit' fontSize='inherit'/>
                     </IconButton>
                 </div>
-                <iframe 
-                    class={styles.trailer}
-                    src={show_trailer().source} 
-                    allow="autoplay; encrypted-media; fullscreen" allowfullscreen
-                >
-                </iframe>
+                <div class={styles.trailer}>
+                    <iframe 
+                        style={{
+                            width: "100%",
+                            height: "100%"
+                        }}
+                        src={show_trailer().source} 
+                        allow="autoplay; encrypted-media; fullscreen" allowfullscreen
+                    />
+                </div>
             </div>
+        }
+
+        {plugin_update()?.state &&
+            <PluginUpdate
+                source={plugin_update()?.source ?? ""}
+                plugin_id={plugin_update()?.pluginId ?? ""}
+                pluginManifest={plugin_update()?.pluginManifest ?? {title: "", manifest: ""}}
+                onClose={()=>{set_plugin_update({state:false})}}
+                onSuccess={()=>{get_data()}}
+            />
         }
     </>)
 }

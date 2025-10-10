@@ -6,14 +6,14 @@ use tauri::async_runtime;
 use chlaty_core::request_plugin::get_server::ServerResult;
 
 use crate::models::download::{Download, DownloadItem, Episode, GetDownload};
-use crate::utils::configs;
+use crate::utils::configs::Configs;
 
 use crate::commands::local_manifest::{ get_local_manifest, save_local_manifest };
 use crate::worker::download::{CurrentDownloadStatus, CURRENT_DOWNLOAD_STATUS};
 
 pub fn get_db() -> Result<Connection, String> {
-    let config_data = configs::get()?;
-    let storage_dir = config_data.storage_dir;
+    let config_data = Configs::get()?;
+    let storage_dir = config_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     if !storage_dir.exists() {
         fs::create_dir_all(&storage_dir).map_err(|e| e.to_string())?;
@@ -278,8 +278,8 @@ pub async fn get_download() -> Result<HashMap<String, GetDownload>, String> {
 
 #[tauri::command]
 pub async fn remove_download(source: String, id: String) -> Result<(), String> {
-    let configs_data = configs::get()?;
-    let storage_dir = configs_data.storage_dir;
+    let configs_data = Configs::get()?;
+    let storage_dir = configs_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     let conn = get_db()?;
 
@@ -359,8 +359,8 @@ pub async fn remove_download_item(
     season_index: usize,
     episode_index: usize,
 ) -> Result<(), String> {
-    let configs_data = configs::get()?;
-    let storage_dir = configs_data.storage_dir;
+    let configs_data = Configs::get()?;
+    let storage_dir = configs_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     let conn = get_db()?;
 
@@ -477,8 +477,8 @@ pub async fn get_local_download_manifest(
     episode_index: usize,
     update_state: bool
 ) -> Result<Option<ServerResult>, String> {
-    let configs_data = configs::get()?;
-    let storage_dir = configs_data.storage_dir;
+    let configs_data = Configs::get()?;
+    let storage_dir = configs_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
     let download_dir = storage_dir
         .join(&source)

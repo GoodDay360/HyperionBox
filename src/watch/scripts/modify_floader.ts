@@ -60,7 +60,12 @@ const MODIFY_FLOADER = ({
 				"Host"?:string,
 				"Origin"?:string,
 				"Referer"?:string,
-			} = {};
+				"User-Agent":string,
+				"Sec-Fetch-Site":string,
+			} = {
+				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
+				"Sec-Fetch-Site": "same-origin",
+			};
 
 			let current_url = context.url;
 
@@ -68,9 +73,11 @@ const MODIFY_FLOADER = ({
 			if (host) {headers["Host"] = host};
 			if (origin) {headers["Origin"] = origin};
 			if (referer) {headers["Referer"] = referer};
-			console.log("FLOADER", current_url)
+			
+
 			for (;;) {
-				
+				console.log("FLOADER:", current_url);
+				console.log("FLOADER HEADERS:", headers);
 				try {
 					
 					if (mode === "online") {
@@ -86,6 +93,7 @@ const MODIFY_FLOADER = ({
 							headers.Referer = referer;
 							current_url = response.url;
 
+							console.log("Redirect FLOADER:", current_url);
 
 							continue;
 						}

@@ -11,7 +11,7 @@ import { useSearchParams, useNavigate } from "@solidjs/router";
 
 
 // SUID Imports
-import { Button, IconButton, ButtonBase, CircularProgress } from '@suid/material';
+import { Button, IconButton, ButtonBase, CircularProgress, ButtonGroup } from '@suid/material';
 
 // SUID Icon Imports
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
@@ -45,6 +45,12 @@ import { search_in_plugin } from '../scripts/request_plugin';
 import { PluginData, InstalledPluginData } from '../types/manage_plugin_type';
 import { SearchInPluginData } from '../types/request_plugin_type';
 
+const AVAILABLE_SOUCRES: Record<string, string> = {
+    "anime": "Anime",
+    "movie": "Movie/TV",
+};
+
+
 export default function Plugin() {
     const navigate = useNavigate();
     const [queryParams] = useSearchParams();
@@ -57,9 +63,10 @@ export default function Plugin() {
     const [link_to, set_link_to] = createSignal<{state:boolean, plugin_id:string, id:string, title:string}>({state:false, plugin_id:"", id:"", title:""});
 
     const [search_title, set_search_title] = createSignal(link_from.title);
+    const [select_source_id, set_select_source_id] = createSignal<string>(link_from.source ||Object.keys(AVAILABLE_SOUCRES)[0]);
 
 
-    const [current_tab, set_current_tab] = createSignal(0);
+    const [current_tab, set_current_tab] = createSignal(link_from.source ? 0 : 1);
 
     
     const [PLUGIN_DATA, SET_PLUGIN_DATA] = createSignal<Record<string, PluginData>>({});
@@ -76,7 +83,7 @@ export default function Plugin() {
             const plugin_id_list = Object.keys(INSTALLED_PLUGIN_DATA());
             Promise.all(
                 plugin_id_list.map(plugin_id =>
-                    search_in_plugin(link_from.source, plugin_id, search_title(), 1)
+                    search_in_plugin(select_source_id(), plugin_id, search_title(), 1)
                         .then(data => [plugin_id, data])
                         .catch(() => [plugin_id, []])
                 )
@@ -92,11 +99,15 @@ export default function Plugin() {
         }
     }
 
-    onMount(() => {
+    const get_data = () => {
         set_is_loading(true);
+        SET_PLUGIN_DATA({});
+        SET_INSTALLED_PLUGIN_DATA({});
+        SET_SEARCH_IN_PLUGIN_DATA({});
+        
         Promise.all([
-            get_plugin_list("anime"),
-            get_installed_plugin_list("anime")
+            get_plugin_list(select_source_id()),
+            get_installed_plugin_list(select_source_id()),
         ])
             .then(([plugin_data, installed_plugin_data]) => {
                 SET_PLUGIN_DATA(plugin_data);
@@ -115,13 +126,18 @@ export default function Plugin() {
             .finally(() => {
                 set_is_loading(false);
             });
+    }
+    
+
+    onMount(() => {
+        get_data();
 
     })
 
     createEffect(on(current_tab, () => {
         if (is_loading()) return;
         set_is_loading(true);
-        get_installed_plugin_list("anime")
+        get_installed_plugin_list(select_source_id())
             .then((data) => {    
                 console.log(data);
                 SET_INSTALLED_PLUGIN_DATA(data);
@@ -199,6 +215,42 @@ export default function Plugin() {
                         )}
                     </For>
                 </div>
+            </div>
+            <div class={styles.source_container}>
+                <ButtonGroup variant="outlined" color="primary" 
+                    sx={{
+                        border: "none",
+                        outline:"none",
+                        "&:hover": {
+                            border: "none",
+                            outline:"none",
+                        }
+                    }}
+                >
+                    <For each={Object.keys(AVAILABLE_SOUCRES)}>
+                        {(source_id)=>(
+                            <Button disabled={is_loading() || is_working()}
+                                sx={{
+                                    border:"none",
+                                    outline:"none",
+                                    background: select_source_id() === source_id ? "var(--background-2)" : "var(--background-1)",
+                                    textTransform: "none",
+                                    color: "var(--color-1)",
+                                    fontSize: "calc((100vw + 100vh)/2*0.025)",
+                                    "&:hover": {
+                                        border: "none",
+                                        outline:"none",
+                                    }
+                                }}
+                                onClick={()=>{
+                                    set_select_source_id(source_id);
+                                    get_data();
+                                }}
+                            >{AVAILABLE_SOUCRES[source_id]}
+                            </Button>
+                        )}
+                    </For>
+                </ButtonGroup>
             </div>
             {is_loading()
                 ? <div class={styles.loading_box}>
@@ -349,7 +401,7 @@ export default function Plugin() {
                                                             onClick={() => {
                                                                 set_is_working(true);
                                                                 invoke("link_plugin", { 
-                                                                    source: link_from.source,
+                                                                    source: select_source_id(),
                                                                     pluginId: link_to().plugin_id,
                                                                     fromId: link_from.id,
                                                                     toId: link_to().id
@@ -411,7 +463,7 @@ export default function Plugin() {
                                         onMount(() => {
                                             let unlisten: () => void;
                                             (async () => {
-                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${"anime"}_${plugin_id}`, (event) => {
+                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${select_source_id()}_${plugin_id}`, (event) => {
                                                     const { current, total } = event.payload;
                                                     set_install_progress((current / total) * 100);
                                                 });
@@ -455,7 +507,7 @@ export default function Plugin() {
                                                                 set_is_installing(true);
                                                                 
                                                                 install_plugin(
-                                                                    "anime",
+                                                                    select_source_id(),
                                                                     plugin_id,
                                                                     {
                                                                         title,
@@ -464,6 +516,12 @@ export default function Plugin() {
                                                                 )
                                                                     .then((_) => {
                                                                         set_is_install_done(true);
+                                                                        toast.remove();
+                                                                        toast.success("Plugin installed successfully.",{
+                                                                            style: {
+                                                                                color:"green",
+                                                                            }
+                                                                        })
                                                                     })
                                                                     .catch((e) => {
                                                                         console.error(e);
@@ -476,12 +534,7 @@ export default function Plugin() {
                                                                     })
                                                                     .finally(() => {
                                                                         set_is_working(false);
-                                                                        toast.remove();
-                                                                        toast.success("Plugin installed successfully.",{
-                                                                            style: {
-                                                                                color:"green",
-                                                                            }
-                                                                        })
+                                                                        set_is_installing(false);
                                                                     })
                                                             }}
                                                         >
@@ -520,7 +573,7 @@ export default function Plugin() {
                                         onMount(() => {
                                             let unlisten: () => void;
                                             (async () => {
-                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${"anime"}_${plugin_id}`, (event) => {
+                                                unlisten = await listen<{current:number,total:number}>(`install_plugin_${select_source_id()}_${plugin_id}`, (event) => {
                                                     const { current, total } = event.payload;
                                                     set_update_progress((current / total) * 100);
                                                 });
@@ -558,7 +611,7 @@ export default function Plugin() {
                                                                         set_is_working(true);
                                                                         set_is_updating(true);
                                                                         install_plugin(
-                                                                            "anime",
+                                                                            select_source_id(),
                                                                             plugin_id,
                                                                             {
                                                                                 title,
@@ -646,11 +699,17 @@ export default function Plugin() {
                                                                     set_is_working(true);
                                                                     set_is_removing(true);
                                                                     remove_plugin(
-                                                                        "anime",
+                                                                        select_source_id(),
                                                                         plugin_id,
                                                                     )
                                                                         .then((_) => {
                                                                             set_is_remove_done(true);
+                                                                            toast.remove();
+                                                                            toast.success("Plugin removed successfully.",{
+                                                                                style: {
+                                                                                    color:"green",
+                                                                                }
+                                                                            })
                                                                         })
                                                                         .catch((e) => {
                                                                             console.error(e);
@@ -663,12 +722,7 @@ export default function Plugin() {
                                                                         })
                                                                         .finally(()=>{
                                                                             set_is_working(false);
-                                                                            toast.remove();
-                                                                            toast.success("Plugin removed successfully.",{
-                                                                                style: {
-                                                                                    color:"green",
-                                                                                }
-                                                                            })
+                                                                            set_is_removing(false);
                                                                         })
                                                                 }}
                                                             >

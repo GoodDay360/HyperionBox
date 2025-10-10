@@ -4,9 +4,8 @@ version = 4
 
 [[package]]
 name = "HyperionBox"
-version = "2.0.3"
+version = "2.0.4"
 dependencies = [
- "anyhow",
  "bytes",
  "chlaty-core",
  "chrono",
@@ -570,7 +569,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chlaty-core"
 version = "0.1.0"
-source = "git+https://github.com/chlaty/chlaty-core?branch=main#5c037f67cd2539f60180d9f9ae94ae30d0075d8e"
+source = "git+https://github.com/chlaty/chlaty-core?branch=main#a554dfaa449a29e877a0c7a0075fd36bba6eb3d6"
 dependencies = [
  "chrono",
  "dashmap",
