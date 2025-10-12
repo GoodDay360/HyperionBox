@@ -2,14 +2,14 @@
 
 
 // SolidJS Imports
-import { createSignal, onMount, Index, useContext } from "solid-js";
+import { createSignal, onMount, Index, useContext, For } from "solid-js";
 
 // SolidJS Router Imports
 // import { useNavigate } from '@solidjs/router';
 
 
 // SUID Imports
-import { IconButton, ButtonBase, Skeleton} from '@suid/material';
+import { IconButton, ButtonBase, Skeleton, MenuItem } from '@suid/material';
 
 
 // SUID Icon Imports
@@ -25,6 +25,7 @@ import toast from 'solid-toast';
 // Component Imports
 import NavigationBar from "@src/app/components/navigation_bar";
 import PullRefresh from '@src/app/components/pull_refresh';
+import Select from "@src/app/components/Select";
 
 
 // Style Imports
@@ -33,7 +34,7 @@ import styles from "../styles/settings.module.css"
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
 import { pick_dir } from '@src/app/scripts/dialog';
-import { get_configs, set_configs } from '../scripts/settings';
+import { get_configs, set_configs, is_available_download } from '../scripts/settings';
 import { Configs } from '../types/settings_type';
 
 // Types Import
@@ -249,6 +250,82 @@ export default function Settings() {
                                         </ButtonBase>
                                     </div>
                                 </div>
+                            </div>
+
+                        </fieldset>
+
+                        <fieldset
+                            style={{
+                                border:"2.5px solid var(--color-1)",
+                            }}
+                        >
+                            <legend class={`float-none w-auto`}
+                                style={{
+                                    color:"var(--color-1)",
+                                }}
+                            >Download</legend>
+                            
+                            <div class={styles.item_container}
+                                style={{
+                                    padding: "12px",
+                                }}
+                            >
+                                <div class={styles.item_box}>
+                                    <h2 class={styles.item_title}>Worker Threads</h2>
+                                    <Select 
+                                        label="Default: 3 | Min: 1, Max: 8"
+                                        value={CONFIGS_DATA()?.download_worker_threads ?? 3}
+                                        onChange={(e)=>{(async () => {
+                                            const value = e.target.value;
+                                            try {
+                                                const allow = !(await is_available_download());
+                                                if (!allow) {
+                                                    toast.remove();
+                                                    toast.error(`Cannot change worker threads while there is a download task running.`,{
+                                                        style: {
+                                                            color:"red",
+                                                        }
+                                                    })
+                                                    return;
+                                                }
+                                                const current_config = CONFIGS_DATA();
+                                                const new_config: Configs = {
+                                                    ...current_config!,
+                                                    download_worker_threads: value
+                                                };
+                                            
+                                                set_configs(new_config)
+                                                    .then(() => {
+                                                        SET_CONFIGS_DATA(new_config);
+                                                    })
+                                                    .catch((e) => {
+                                                        console.error(e);
+                                                        toast.remove();
+                                                        toast.error("Something went wrong while setting configs.",{
+                                                            style: {
+                                                                color:"red",
+                                                            }
+                                                        })
+                                                    })
+                                            }catch (e) {
+                                                console.error(e);
+                                                toast.remove();
+                                                toast.error(`Something went wrong while setting configs.`,{
+                                                    style: {
+                                                        color:"red",
+                                                    }
+                                                })
+                                            }
+                                        })()}}
+                                    >
+                                        <For each={[...Array(8)]}>
+                                            {(_, index)=>(
+                                                <MenuItem value={index()+1}>{index()+1}</MenuItem>
+                                            )}
+                                        </For>
+                                    </Select>
+                                </div>
+
                             </div>
 
                         </fieldset>

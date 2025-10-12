@@ -1,6 +1,6 @@
 use dashmap::DashMap;
 use lazy_static::lazy_static;
-use m3u8_rs::Playlist;
+use m3u8_rs::{Playlist, MediaSegment};
 use reqwest::header::{HeaderMap, HeaderValue, HeaderName};
 use reqwest::Client;
 use rusqlite::{params, Error::QueryReturnedNoRows, Result};
@@ -13,12 +13,17 @@ use tauri::AppHandle;
 use tauri::Emitter;
 use tokio::time::{sleep, Duration};
 use tracing::{error, info, warn};
+use tauri::async_runtime;
+use std::sync::Arc;
+use async_runtime::JoinHandle;
+use futures::future::join_all;
 
 use chlaty_core::request_plugin::{get_episode_server, get_server, get_server::ServerResult};
 
+
 use crate::utils::configs::Configs;
 
-use crate::commands::download::{get_db, set_done_download, set_error_download};
+use crate::commands::download::{get_db, set_done_download, set_error_download, is_available_download};
 use crate::models::download::{Download, DownloadItem, DownloadStatusManifest};
 use crate::utils::download_file;
 
@@ -41,7 +46,11 @@ pub struct MediaHLS {
 
 lazy_static! {
     pub static ref CURRENT_DOWNLOAD_STATUS: DashMap<usize, CurrentDownloadStatus> = DashMap::new(); // Tread Index, CurrentDownloadStatus
+
+    pub static ref SEND_DOWNLOAD_STATUS_HANDLE: DashMap<usize, JoinHandle<()>> = DashMap::new();
 }
+
+
 
 fn check_current_download(
     source: &str,
@@ -381,23 +390,8 @@ async fn download_episode(
             }
 
             let manifest_path = download_dir.join("manifest.json");
-            let download_status_manifest_path = download_dir.join("download_status.json");
+            
 
-            /* Get current download status manifest */
-            if !download_status_manifest_path.exists() {
-                fs::write(&download_status_manifest_path, "{}").map_err(|e| e.to_string())?;
-            }
-
-            let last_download_status_manifest_file =
-                fs::File::open(&download_status_manifest_path).map_err(|e| e.to_string())?;
-            let last_download_status_mannifest_data: DownloadStatusManifest =
-                match from_reader(last_download_status_manifest_file) {
-                    Ok(data) => data,
-                    Err(_) => DownloadStatusManifest::default(),
-                };
-            let last_download_index = last_download_status_mannifest_data.current;
-
-            /* --- */
 
             /* Modify Headers */
             let mut headers = HeaderMap::new();
@@ -424,109 +418,250 @@ async fn download_episode(
 
             /* --- */
 
-            /* Download Segments */
+            /* Setup Download Segments */
+            let max_segment = pl.segments.len();
             if let Some(mut current_status) = CURRENT_DOWNLOAD_STATUS.get_mut(&0) {
-                current_status.total = pl.segments.len() - 1;
+                current_status.total = max_segment - 1;
             }
+            
+            let mut distribute_work: Vec<Vec<MediaSegment>> = vec![];
 
-            for (index, segment) in pl.segments.clone().iter().enumerate() {
-                if !check_current_download(source, id, season_index, episode_index)? {
-                    return Ok(());
+            let max_download_worker: f64 = app_configs_data.download_worker_threads.ok_or("[download_episode]: download worker threads key not found")? as f64;
+            
+            let max_work_per_worker: usize = (max_segment as f64 / max_download_worker).ceil() as usize;
+
+            let mut new_work: Vec<MediaSegment> = vec![];
+            let mut current_work: usize = 0;
+            for segment in pl.segments.iter() {
+                
+                if current_work == max_work_per_worker{
+                    new_work.push(segment.clone());
+                    distribute_work.push(new_work.clone());
+
+                    current_work = 0;
+                    new_work = vec![];
+                }else{
+                    current_work += 1;
+                    new_work.push(segment.clone());
                 }
-                if (index as isize) <= last_download_index {
-                    continue;
-                }
-                /* Set current download status. This is required to prevent unkown behavior on frontend. */
-                if let Some(mut current_status) = CURRENT_DOWNLOAD_STATUS.get_mut(&0) {
-                    let current = if index > 0 { index - 1 } else { 0 };
-                    current_status.current = current;
-                }
-                match app.emit(
-                    &format!(
-                        "download-status-{}-{}-{}-{}",
-                        source, id, season_index, episode_index
-                    ),
-                    CurrentDownloadStatus {
-                        source: source.to_string(),
-                        id: id.to_string(),
-                        season_index,
-                        episode_index,
-                        current: if index > 0 { index - 1 } else { 0 },
-                        total: pl.segments.len() - 1,
-                    },
-                ) {
-                    Ok(_) => {}
-                    Err(e) => {
-                        error!("[Worker:Download] emit error: {}", e);
+            }
+            // Push remaining work
+            if new_work.len() > 0 {
+                distribute_work.push(new_work);
+            }
+            // ---
+
+            let worker_download_status:Arc<DashMap<usize, usize>> = Arc::new(DashMap::new());  // worker index, downloaded segments per worker.
+            let mut worker_handles:Vec<JoinHandle<Result<(), String>>> = vec![];
+
+
+            /* Setup send status to frontend. */
+            
+            let source_clone = Arc::new(source.to_string());
+            let id_clone = Arc::new(id.to_string());
+            let app_clone = app.clone();
+            let worker_download_status_clone = Arc::clone(&worker_download_status);
+
+            if let Some((_, handle)) = SEND_DOWNLOAD_STATUS_HANDLE.remove(&0) {
+                let _ = handle.await;
+            }
+            
+            
+            let handle = async_runtime::spawn(async move {
+                loop {
+                    if let Some(current_status) = CURRENT_DOWNLOAD_STATUS.get(&0) {
+                        let check_source = &current_status.source;
+                        let check_id = &current_status.id;
+                        let check_season_index = current_status.season_index;
+                        let check_episode_index = current_status.episode_index;
+
+                        if *source_clone != *check_source
+                            || *id_clone != *check_id
+                            || season_index != check_season_index
+                            || episode_index != check_episode_index
+                        {
+                            return;
+                        }
+                    }else{
+                        return;
                     }
+
+                    let mut total_segment_download: usize = 0;
+                    for count in worker_download_status_clone.iter() {
+                        total_segment_download += count.value();
+                    }
+
+                    /* Set current download status. This is required to show frontend what it doing. */
+                    if let Some(mut current_status) = CURRENT_DOWNLOAD_STATUS.get_mut(&0) {
+                        let current = total_segment_download;
+                        current_status.current = current;
+                    }
+                    /* --- */
+
+                    /* emit status to frontend. */
+                    match app_clone.emit(
+                        &format!(
+                            "download-status-{}-{}-{}-{}",
+                            &source_clone, &id_clone, season_index, episode_index
+                        ),
+                        CurrentDownloadStatus {
+                            source: (*source_clone).clone(),
+                            id: (*id_clone).clone(),
+                            season_index,
+                            episode_index,
+                            current: total_segment_download,
+                            total: max_segment,
+                        },
+                    ) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("[Worker:Download] emit error: {}", e);
+                        }
+                    }
+                    /* --- */
+
+                    if total_segment_download == max_segment {
+                        break;
+                    }
+
+                    sleep(Duration::from_secs(2)).await;
                 }
-                /* --- */
+            });
 
-                let mut _url: String = "".to_string();
+            SEND_DOWNLOAD_STATUS_HANDLE.insert(0, handle);
+            
+            /* --- */
 
-                if !config.segment_base_url.is_empty() {
-                    _url = format!("{}/{}", &config.segment_base_url, segment.uri);
-                } else {
-                    _url = segment.uri.clone();
-                }
+            
 
-                let segment_path = segments_dir.join(format!("segment-{}", index));
+            let mut segment_start_index: usize = 0;
+            
+            for (worker_index, work) in distribute_work.into_iter().enumerate() {
+                let current_work_len = work.len();
+                
+                /* Get current download status manifest */
+                let download_status_manifest_path = download_dir.join(format!("download-status-worker-{}.json", worker_index));
 
-                download_file::new(&_url, &segment_path, headers.clone(), 300, |_, _| {})
-                    .await
-                    .map_err(|e| e.to_string())?;
-
-                /* Save download status */
                 if !download_status_manifest_path.exists() {
                     fs::write(&download_status_manifest_path, "{}").map_err(|e| e.to_string())?;
                 }
 
-                let download_status_manifest_file =
+                let last_download_status_manifest_file =
                     fs::File::open(&download_status_manifest_path).map_err(|e| e.to_string())?;
-                let mut download_status_mannifest_data: DownloadStatusManifest =
-                    match from_reader(download_status_manifest_file) {
-                        Ok(data) => data,
-                        Err(_) => DownloadStatusManifest::default(),
-                    };
+                let last_download_status_mannifest_data: DownloadStatusManifest = match from_reader(last_download_status_manifest_file) {
+                    Ok(data) => data,
+                    Err(_) => DownloadStatusManifest::default(),
+                };
+                let last_download_index = last_download_status_mannifest_data.current;
 
-                download_status_mannifest_data.current = index as isize;
-                let download_status_manifest_data_json =
-                    to_string(&download_status_mannifest_data).map_err(|e| e.to_string())?;
-                fs::write(
-                    &download_status_manifest_path,
-                    &download_status_manifest_data_json,
-                )
-                .map_err(|e| e.to_string())?;
                 /* --- */
 
-                /* Update current download status after downloaded segment */
+                /* Spawn Worker */
+                let source_clone = source.to_string();
+                let id_clone = id.to_string();
+                let worker_download_status_clone = Arc::clone(&worker_download_status);
+                let config_clone = config.clone();
+                let segment_dir_clone = segments_dir.clone();
+                let download_status_manifest_path_clone = download_status_manifest_path.clone();
+                let header_clone = headers.clone();
+                let handle:JoinHandle<Result<(), String>> = async_runtime::spawn(async move {
+                    let start_index = segment_start_index;
+                    for (index, segment) in work.iter().enumerate() {
+                        if !check_current_download(&source_clone, &id_clone, season_index, episode_index)? {
+                            return Ok(());
+                        }
+                        
+                        // println!("START INDEX: {}, LAST INDEX: {}", start_index+index, last_download_index);
 
-                if let Some(mut current_status) = CURRENT_DOWNLOAD_STATUS.get_mut(&0) {
-                    let current = index;
-                    current_status.current = current;
-                }
-                match app.emit(
-                    &format!(
-                        "download-status-{}-{}-{}-{}",
-                        source, id, season_index, episode_index
-                    ),
-                    CurrentDownloadStatus {
-                        source: source.to_string(),
-                        id: id.to_string(),
-                        season_index,
-                        episode_index,
-                        current: index,
-                        total: pl.segments.len() - 1,
-                    },
-                ) {
-                    Ok(_) => {}
-                    Err(e) => {
-                        error!("[Worker:Download] emit error: {}", e);
+                        if ((start_index + index) as isize) <= last_download_index {
+                            /* Update current worker download status after continue from last download */
+                            (*worker_download_status_clone).insert(worker_index, index+1);
+                            /* --- */
+                            continue;
+                        }
+
+                        let mut _url: String = "".to_string();
+
+                        if !config_clone.segment_base_url.is_empty() {
+                            _url = format!("{}/{}", &config_clone.segment_base_url, segment.uri);
+                        } else {
+                            _url = segment.uri.clone();
+                        }
+
+                        let segment_path = segment_dir_clone.join(format!("segment-{}", start_index+index));
+
+                        download_file::new(&_url, &segment_path, header_clone.clone(), 300, |_, _| {})
+                            .await
+                            .map_err(|e| e.to_string())?;
+
+                        /* Save download status */
+                        if !download_status_manifest_path_clone.exists() {
+                            fs::write(&download_status_manifest_path_clone, "{}").map_err(|e| e.to_string())?;
+                        }
+
+                        let download_status_manifest_file =
+                            fs::File::open(&download_status_manifest_path_clone).map_err(|e| e.to_string())?;
+                        let mut download_status_mannifest_data: DownloadStatusManifest =
+                            match from_reader(download_status_manifest_file) {
+                                Ok(data) => data,
+                                Err(_) => DownloadStatusManifest::default(),
+                            };
+
+                        download_status_mannifest_data.current = (start_index+index) as isize;
+                        let download_status_manifest_data_json =
+                            to_string(&download_status_mannifest_data).map_err(|e| e.to_string())?;
+                        fs::write(
+                            &download_status_manifest_path_clone,
+                            &download_status_manifest_data_json,
+                        )
+                        .map_err(|e| e.to_string())?;
+                        /* --- */
+
+                        /* Update current worker download status after downloaded segment */
+                        (*worker_download_status_clone).insert(worker_index, index+1);
+                        /* --- */
                     }
-                }
+                    Ok(())
+                });
+                worker_handles.push(handle);
+                segment_start_index += current_work_len;
                 /* --- */
             }
+            /* --- */
 
+            /* Wait for all workers to finish. */
+
+            let results = join_all(worker_handles).await;
+
+            for (index, result) in results.iter().enumerate() {
+                match result {
+                    Ok(_) => {},
+                    Err(e) => {
+                        error!("[worker-{}] Task failed: {}", index, e);
+                        return Err(e.to_string());
+                    },
+                }
+            }
+
+            /* --- */
+
+            /* Clean up download status */
+            let mut total_segment_download: usize = 0;
+            for count in worker_download_status.iter() {
+                total_segment_download += count.value();
+            }
+            println!("total_s: {}| max_s: {}", total_segment_download, max_segment);
+            if total_segment_download == max_segment {
+                for i in 0..(max_download_worker as usize) {
+                    let download_status_manifest_path = download_dir.join(format!("download-status-worker-{}.json", i));
+
+                    if download_status_manifest_path.exists() {
+                        fs::remove_file(&download_status_manifest_path).map_err(|e| e.to_string())?;
+                    }
+                };
+            }else{
+                return Ok(());
+            }
             /* --- */
 
             /* Map Segments URI to local and save to player.m3u8. */
@@ -634,9 +769,7 @@ async fn download_episode(
                 .await
                 .map_err(|e| e.to_string())?;
 
-            if download_status_manifest_path.exists() {
-                fs::remove_file(&download_status_manifest_path).map_err(|e| e.to_string())?;
-            }
+            
 
             match app.emit(
                 &format!(
@@ -691,33 +824,7 @@ async fn set_current_download_error(
 }
 
 
-pub fn is_available_download() -> Result<bool, String> {
-    let conn = get_db()?;
 
-    let count_download: usize = conn.query_row(
-        "SELECT COUNT(*) FROM download WHERE pause = 0",
-        params![],
-        |row| row.get(0),
-    )
-    .map_err(|e| e.to_string())?;
-
-    if count_download == 0 {
-        return Ok(false);
-    }
-
-    let count_download_item:usize = conn.query_row(
-        "SELECT COUNT(*) FROM download_item WHERE error = 0 AND done = 0",
-        params![],
-        |row| row.get(0),
-    )
-    .map_err(|e| e.to_string())?;
-
-    if count_download_item == 0 {
-        return Ok(false);
-    }
-
-    return Ok(true);
-}
 
 async fn start_task(app: AppHandle) -> Result<(), String> {
     let mut offset:usize = 0;
@@ -739,9 +846,9 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                 let prefer_server_index = current_download_item.prefer_server_index;
                 let prefer_quality = current_download_item.prefer_quality;
 
-                info!("[worker:download] currently working on: \n-> source: {}, id: {}, season_index: {}, episode_index: {}",
-                    &source, &id, season_index, episode_index
-                );
+                // info!("[worker:download] currently working on: \n-> source: {}, id: {}, season_index: {}, episode_index: {}",
+                //     &source, &id, season_index, episode_index
+                // );
 
                 CURRENT_DOWNLOAD_STATUS.insert(
                     0,
@@ -837,9 +944,16 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
 
 pub async fn new(app: AppHandle) {
     loop {
+        CURRENT_DOWNLOAD_STATUS.clear();
+        if let Some((_, handle)) = SEND_DOWNLOAD_STATUS_HANDLE.remove(&0) {
+            let _ = handle.await;
+        }
+
         match is_available_download() {
             Ok(available) => {
+                
                 if available {
+                    println!("[Worker:Download] Available");
                     match start_task(app.clone()).await {
                         Ok(_) => {}
                         Err(e) => error!("[Worker:Download]: {}", e),
@@ -851,4 +965,5 @@ pub async fn new(app: AppHandle) {
         }
         sleep(Duration::from_secs(5)).await;
     }
+
 }

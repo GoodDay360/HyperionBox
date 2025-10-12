@@ -26,7 +26,7 @@ pub fn run() {
     dotenv().ok();
     if IS_DEV {
         fmt()
-            .with_max_level(Level::INFO)
+            .with_max_level(Level::DEBUG)
             .with_max_level(Level::ERROR)
             .with_max_level(Level::WARN)
             .with_thread_names(true)
@@ -76,7 +76,7 @@ pub fn run() {
             /* Spawn Worker */
             async_runtime::spawn(async move {
                 chlaty_core::init();
-                worker::download::new(app_handle.clone()).await;
+                worker::download::new(app_handle.clone()).await
             });
             /* --- */
             return Ok(());
@@ -137,6 +137,7 @@ pub fn run() {
             /* === */
 
             /* Download */
+            commands::download::is_available_download,
             commands::download::add_download,
             commands::download::get_download,
             commands::download::set_pause_download,

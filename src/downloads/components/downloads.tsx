@@ -315,7 +315,7 @@ export default function Downloads() {
                                                                             </>
                                                                         }
 
-                                                                        {(is_error() || is_done()) &&
+                                                                        {(is_error() || is_done() || pause()) &&
                                                                             <IconButton
                                                                                 sx={{
                                                                                     color: "red",
