@@ -12,3 +12,8 @@ export const get_configs = async ():Promise<Configs> => {
 export const set_configs = async (configs:Configs):Promise<void> => {
     return invoke('set_configs', {configs})
 };
+
+
+export const is_available_download = async ():Promise<boolean> => {
+    return invoke('is_available_download');
+};

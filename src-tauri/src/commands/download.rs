@@ -59,6 +59,44 @@ pub fn get_db() -> Result<Connection, String> {
 }
 
 #[tauri::command]
+pub fn is_available_download() -> Result<bool, String> {
+    let conn = get_db()?;
+
+    let count_download: usize = conn.query_row(
+        "SELECT COUNT(*) FROM download WHERE pause = 0",
+        params![],
+        |row| row.get(0),
+    )
+    .map_err(|e| e.to_string())?;
+
+    if count_download == 0 {
+        return Ok(false);
+    }
+
+    let count_download_item:usize = conn.query_row(
+    "
+            SELECT COUNT(*) FROM download_item
+            WHERE error = 0 AND done = 0
+            AND EXISTS (
+                SELECT 1 FROM download
+                WHERE download.source = download_item.source
+                AND download.id = download_item.id
+                AND download.pause = 0
+            )
+        ",
+        params![],
+        |row| row.get(0),
+    )
+    .map_err(|e| e.to_string())?;
+
+    if count_download_item == 0 {
+        return Ok(false);
+    }
+
+    return Ok(true);
+}
+
+#[tauri::command]
 pub async fn add_download(
     source: String,
     id: String,

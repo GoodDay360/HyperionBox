@@ -33,8 +33,8 @@ export default function Select(props: {
         >{props.label}</InputLabel>
         <SUIDSelect
             labelId={props.label}
-            value={props.value}
             label={props.label}
+            value={props.value}
             onChange={props.onChange}  
             sx={{
                 ...{
