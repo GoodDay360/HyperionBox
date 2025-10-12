@@ -300,7 +300,19 @@ export default function View() {
                     
                     {((DATA()?.manifest_data?.episode_list?.length ?? 0) > 1) &&
                         <div class={styles.season_frame}>
-                            <div class={styles.season_container}>
+                            <div class={`${styles.season_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
+                                onWheel={(e) => {
+                                    const el = e.currentTarget;
+                                    const hasOverflow = el.scrollWidth > el.clientWidth;
+                                    if (!hasOverflow) return;
+
+                                    e.preventDefault();
+                                    e.currentTarget.scrollBy({
+                                        left: e.deltaY,
+                                        behavior: "smooth",
+                                    });
+                                }}
+                            >
                                 <For each={[...Array(DATA()?.manifest_data?.episode_list?.length ?? 0)]}>
                                     {(_,index) =>
                                         <ButtonBase
@@ -366,9 +378,7 @@ export default function View() {
                                                             }
                                                             
                                                         }else{
-                                                            for (const item of DATA()?.manifest_data?.episode_list?.[current_season_index()]?.[current_episode_page_index()] ?? []) {
-                                                                delete DOWNLOAD_DATA[item.id]
-                                                            }
+                                                            DOWNLOAD_DATA = {};
                                                         }
                                                     }}
                                                 >
@@ -438,6 +448,16 @@ export default function View() {
 
                                                 createEffect(on(select_download_all, () => {
                                                     set_is_checked(select_download_all());
+                                                }))
+
+                                                createEffect(on([current_season_index, current_episode_page_index], () => {
+                                                    if (is_loading()) return;
+                                                    
+                                                    if (Object.keys(DOWNLOAD_DATA).includes(item.id)) {
+                                                        set_is_checked(true);
+                                                    }else{
+                                                        set_is_checked(false);
+                                                    }
                                                 }))
 
                                                 onMount(() => {
