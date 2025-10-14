@@ -401,7 +401,7 @@ export default function Plugin() {
                                                             onClick={() => {
                                                                 set_is_working(true);
                                                                 invoke("link_plugin", { 
-                                                                    source: select_source_id(),
+                                                                    source: link_from.source,
                                                                     pluginId: link_to().plugin_id,
                                                                     fromId: link_from.id,
                                                                     toId: link_to().id

@@ -162,7 +162,6 @@ export default function Watch() {
     }
 
     const load_episode_server = async () => {
-        console.log("CEI: ", current_episode_id());
         const data = await get_episode_server(
             source, id, link_plugin_id, 
             current_season_index(), 
@@ -567,7 +566,6 @@ export default function Watch() {
                                     on:provider-change={onProviderChange}
                                     on:text-track-change={(e)=>{
                                         if (is_loading()) return;
-                                        console.log(e)
                                         localStorage.setItem("prefer_caption", (e?.detail?.label ?? "").toLowerCase());
                                     }}
                                     
@@ -583,7 +581,7 @@ export default function Watch() {
                                         }</For>
                                     </media-provider>
                                     <media-video-layout
-                                        
+                                        colorScheme='dark'
                                         thumbnails={SERVER_DATA()?.data.tracks.find((item) => item.kind === 'thumbnail')?.file}
                                     >
                                         <media-time-slider/>
