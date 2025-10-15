@@ -33,7 +33,7 @@ An open-source anime and movie streaming app that supports many sources through 
 # ✨ Features
 - 🎬 **Stream anime and movies** seamlessly from various sources.
 - 📌 **Track watch progress** across multiple sessions.
-- ⬇️ **Download videos** for offline viewing.
+- ⬇️ **Download** for offline watching.
 - 🎨 **Modern UI** for a smooth and intuitive experience.
 - 🔍 **Advanced search** for quick content discovery.
 - 🧩 **Plugins**: check source code in this repository [chlaty-core](https://github.com/chlaty/chlaty-core).
