@@ -155,6 +155,7 @@ export default function Search() {
                         set_is_page_max(false);
                         SET_DATA([]);
                         last_search = search().trim();
+                        navigate(`/search?source=${encodeURIComponent(source)}&search=${encodeURIComponent(search().trim())}`, {replace: true});
                         get_data({page: 1, search: search().trim()});
                     }}
                     style={{

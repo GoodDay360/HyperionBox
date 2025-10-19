@@ -1,4 +1,4 @@
-use serde_json::{from_reader, to_string_pretty};
+use serde_json::{from_reader, to_string};
 use std::fs;
 use std::io::BufReader;
 
@@ -72,7 +72,7 @@ pub async fn save_local_manifest(
     let manifest_path = item_dir.join("manifest.json");
 
     let local_manifest_data_to_string =
-        to_string_pretty(&local_manifest_data).map_err(|e| e.to_string())?;
+        to_string(&local_manifest_data).map_err(|e| e.to_string())?;
     fs::write(&manifest_path, local_manifest_data_to_string).map_err(|e| e.to_string())?;
 
     return Ok(());

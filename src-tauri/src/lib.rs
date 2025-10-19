@@ -84,21 +84,22 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             /* Update */
             commands::update::update,
-            /* === */
+            /* --- */
+            
             /* Config */
             commands::configs::get_configs,
             commands::configs::set_configs,
-            /* === */
+            /* --- */
 
             /* Dialog */
             commands::dialog::pick_dir::pick_dir,
-            /* === */
+            /* --- */
 
-            /* Get Content */
-            commands::get_content::home,
-            commands::get_content::search,
-            commands::get_content::view,
-            /* === */
+            /* Get Methods Content */
+            commands::methods::home::home,
+            commands::methods::search::search,
+            commands::methods::view::view,
+            /* --- */
 
             /* Manage Plugin */
             commands::manage_plugin::get_plugin_list::get_plugin_list,
@@ -106,7 +107,7 @@ pub fn run() {
             commands::manage_plugin::get_installed_plugin_list::get_installed_plugin_list,
             commands::manage_plugin::install_plugin::install_plugin,
             commands::manage_plugin::remove_plugin::remove_plugin,
-            /* === */
+            /* --- */
 
             /* Request Plugin */
             commands::request_plugin::search_in_plugin::search_in_plugin,
@@ -114,11 +115,11 @@ pub fn run() {
             commands::request_plugin::get_episode_server::get_episode_server,
             commands::request_plugin::get_server::get_server,
             commands::link_plugin::link_plugin,
-            /* === */
+            /* --- */
 
             /* Local Manifest */
             commands::local_manifest::get_local_manifest,
-            /* === */
+            /* --- */
 
             /* Favorite */
             commands::favorite::create_tag,
@@ -129,12 +130,12 @@ pub fn run() {
             commands::favorite::get_tag_from_favorite,
             commands::favorite::get_item_from_favorite,
             commands::favorite::remove_favorite,
-            /* === */
+            /* --- */
 
             /* Watch State */
             commands::watch_state::get_watch_state,
             commands::watch_state::save_watch_state,
-            /* === */
+            /* --- */
 
             /* Download */
             commands::download::is_available_download,
@@ -146,7 +147,12 @@ pub fn run() {
             commands::download::remove_download_item,
             commands::download::get_current_download_status,
             commands::download::get_local_download_manifest,
-            /* === */
+            /* --- */
+
+            /* Settings */
+            commands::manage_storage::get_storage_size,
+            commands::manage_storage::clean_storage,
+            /* --- */
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

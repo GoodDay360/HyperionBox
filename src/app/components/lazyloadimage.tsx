@@ -6,6 +6,9 @@ import type { JSX } from "solid-js";
 import { Skeleton } from "@suid/material";
 import type { SxProps } from "@suid/system";
 
+// Media Imports
+import NO_IMG from "@src/assets/media/no-image-2.jpg";
+
 export default function LazyLoadImage({
     src,
     className,
@@ -51,7 +54,7 @@ export default function LazyLoadImage({
             <Skeleton variant="rectangular" sx={skeleton_sx} />
         }
         {is_in_view() && 
-            <img src={(src.trim() !== "") ? src : "src/assets/media/no-image-2.jpg"} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
+            <img src={src.trim() ? src : NO_IMG} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
                 onLoad={() => set_is_loaded(true)}
             />
         }

@@ -9,7 +9,7 @@ import { createSignal, onMount, Index, useContext, For } from "solid-js";
 
 
 // SUID Imports
-import { IconButton, ButtonBase, Skeleton, MenuItem } from '@suid/material';
+import { IconButton, ButtonBase, Skeleton, MenuItem, Button } from '@suid/material';
 
 
 // SUID Icon Imports
@@ -34,7 +34,10 @@ import styles from "../styles/settings.module.css"
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
 import { pick_dir } from '@src/app/scripts/dialog';
-import { get_configs, set_configs, is_available_download } from '../scripts/settings';
+import { 
+    get_configs, set_configs, is_available_download, 
+    get_storage_size, format_bytes, clean_storage
+} from '../scripts/settings';
 import { Configs } from '../types/settings_type';
 
 // Types Import
@@ -48,26 +51,39 @@ export default function Settings() {
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
     const [CONFIGS_DATA, SET_CONFIGS_DATA] = createSignal<Configs>();
+    const [STORAGE_SIZE, SET_STORAGE_SIZE] = createSignal<number>(0);
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
+    const [is_working, set_is_working] = createSignal<boolean>(false);
 
-    const get_data = () => {
+    const get_data = async () => {
+        if (is_working()) return;
+
         set_is_loading(true);
+
+        try {
+            const configs_data = await get_configs()
+            SET_CONFIGS_DATA(configs_data);
+
+            const storage_size = await get_storage_size();
+            SET_STORAGE_SIZE(storage_size);
+
+            console.log("STORAGE SIZE: ", storage_size);
+
+            set_is_loading(false);
+                
+        }catch (e) {
+            console.error(e);
+            console.error(e);
+            toast.remove();
+            toast.error("Something went wrong while getting configs.",{
+                style: {
+                    color:"red",
+                }
+            })
+        }
         
-        get_configs()
-            .then((data) => {
-                SET_CONFIGS_DATA(data);
-                set_is_loading(false);
-            })
-            .catch((e) => {
-                console.error(e);
-                toast.remove();
-                toast.error("Something went wrong while getting configs.",{
-                    style: {
-                        color:"red",
-                    }
-                })
-            })
+        
         
     }
 
@@ -83,7 +99,7 @@ export default function Settings() {
             />
         }
         <div class={styles.container} ref={SET_CONTAINER_REF}>
-            {(context?.screen_size?.()?.width ?? 0) > 550 &&
+            {(((context?.screen_size?.()?.width ?? 0) > 550) && !is_working()) &&
                 <div class={styles.header_container}>
                     <div
                         style={{
@@ -250,6 +266,63 @@ export default function Settings() {
                                         </ButtonBase>
                                     </div>
                                 </div>
+
+                                <div class={styles.item_box}>
+                                    <h2 class={styles.item_title}>Cache Directory</h2>
+                                    <div class={styles.item_input_box}>
+                                        <input class={styles.item_input} readOnly
+                                            value={CONFIGS_DATA()?.cache_dir ?? ""}
+                                        />
+                                        <ButtonBase
+                                            sx={{
+                                                color: 'var(--color-1)',
+                                                fontSize: 'max(18px, calc((100vw + 100vh)/2*0.025))',
+                                                background: 'var(--background-2)',
+                                                padding: '8px',
+                                            }}
+                                            onClick={() => {
+                                                pick_dir()
+                                                    .then((data) => {
+                                                        console.log(data);
+                                                        if (data) {
+                                                            const current_config = CONFIGS_DATA();
+
+                                                            const new_config: Configs = {
+                                                                ...current_config!,
+                                                                cache_dir: data
+                                                            };
+                                                            set_configs(new_config)
+                                                                .then(() => {
+                                                                    SET_CONFIGS_DATA(new_config);
+                                                                })
+                                                                .catch((e) => {
+                                                                    console.error(e);
+                                                                    toast.remove();
+                                                                    toast.error("Something went wrong while setting configs.",{
+                                                                        style: {
+                                                                            color:"red",
+                                                                        }
+                                                                    })
+                                                                })
+                                                        }
+                                                        
+
+                                                    })
+                                                    .catch((e) => {
+                                                        console.error(e);
+                                                        toast.remove();
+                                                        toast.error(`${e}`,{
+                                                            style: {
+                                                                color:"red",
+                                                            }
+                                                        })
+                                                    })
+                                            }}
+                                        >
+                                            <FolderRoundedIcon color="inherit" fontSize='inherit' />
+                                        </ButtonBase>
+                                    </div>
+                                </div>
                             </div>
 
                         </fieldset>
@@ -324,6 +397,50 @@ export default function Settings() {
                                             )}
                                         </For>
                                     </Select>
+                                </div>
+                                <div class={styles.item_box}
+                                    style={{}}
+                                >
+                                    <h2 class={styles.item_title}>Storage Size: {format_bytes(STORAGE_SIZE())}</h2>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            "flex-direction": "row",
+                                            gap: "8px"
+                                        }}
+                                    >
+                                        <Button variant="contained" color="secondary" disabled={is_loading() || is_working()}
+                                            sx={{
+                                                color: "var(--color-1)",
+                                                fontSize: "calc((100vw + 100vh)/2*0.018)",
+                                            }}
+                                            onClick={() => {
+                                                set_is_working(true);
+                                                clean_storage()
+                                                    .then(() => {
+                                                        toast.remove();
+                                                        toast.success("Storage cleaned successfully.",{
+                                                            style: {
+                                                                color:"green",
+                                                            }
+                                                        })
+                                                    })
+                                                    .catch((e) => {
+                                                        console.error(e);
+                                                        toast.remove();
+                                                        toast.error("Something went wrong while cleaning storage.",{
+                                                            style: {
+                                                                color:"red",
+                                                            }
+                                                        })
+                                                    })
+                                                    .finally(() => {
+                                                        set_is_working(false);
+                                                    })
+                                            }}
+                                        >Clean Storage</Button>
+
+                                    </div>
                                 </div>
 
                             </div>

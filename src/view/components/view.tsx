@@ -1,5 +1,4 @@
 // Tauri API
-import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { platform } from '@tauri-apps/plugin-os';
 
@@ -24,6 +23,7 @@ import DownloadRoundedIcon from '@suid/icons-material/DownloadRounded';
 import SelectAllRoundedIcon from '@suid/icons-material/SelectAllRounded';
 import DeselectRoundedIcon from '@suid/icons-material/DeselectRounded';
 import SaveRoundedIcon from '@suid/icons-material/SaveRounded';
+import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
 
 
 // Solid Toast
@@ -42,12 +42,13 @@ import styles from "../styles/view.module.css"
 
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
-import { ViewData, DownloadEpisode } from '../types/view_type';
+import { request_view } from '../scripts/view';
 import { request_get_local_download_manifest } from '@src/watch/scripts/watch';
 import check_plugin_update from '../scripts/check_plugin_update';
 
 // Types Imports
 import { CheckPluginUpdate } from '../types/check_plugin_update_type';
+import { ViewData, DownloadEpisode } from '../types/view_type';
 
 export default function View() {
     const navigate = useNavigate();
@@ -58,7 +59,7 @@ export default function View() {
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
-    const [is_loading, set_is_loading] = createSignal<boolean>(false);
+    const [is_loading, set_is_loading] = createSignal<boolean>(true);
 
     const [DATA, SET_DATA] = createSignal<ViewData>();
     let DOWNLOAD_DATA: DownloadEpisode = {};
@@ -78,9 +79,9 @@ export default function View() {
     /* --- */
     
 
-    const get_data = () => {
+    const get_data = (forceRemote: boolean) => {
         set_is_loading(true);
-        invoke<ViewData>('view', {source, id})
+        request_view(source, id, forceRemote)
             .then((data) => {
                 SET_DATA(data);
                 console.table(data)
@@ -103,7 +104,7 @@ export default function View() {
     }
 
     onMount(() => {
-        get_data();
+        get_data(false);
         
     })
 
@@ -111,7 +112,7 @@ export default function View() {
     return (<>
         {CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550 &&
             <PullRefresh container={CONTAINER_REF() as HTMLElement}
-                onRefresh={get_data}
+                onRefresh={()=>get_data(true)}
             />
         }
         <div class={styles.container} ref={SET_CONTAINER_REF}
@@ -128,18 +129,35 @@ export default function View() {
                     >
                         {/* Below component are position absolute */}
                         <div class={styles.container_1_filter}></div>
-                        <IconButton
-                            sx={{
-                                color: "var(--color-1)",
-                                fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
-                                margin: "12px",
-                            }}
-                            onClick={() => {
-                                navigate(-1);
-                            }}
-                        >
-                            <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
-                        </IconButton>
+                        <div class={styles.container_1_btn_box}>
+                            <IconButton
+                                sx={{
+                                    color: "var(--color-1)",
+                                    fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
+                                    margin: "12px",
+                                }}
+                                onClick={() => {
+                                    navigate(-1);
+                                }}
+                            >
+                                <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
+                            </IconButton>
+
+                            {CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) > 550 &&
+                                <IconButton
+                                    sx={{
+                                        color: "var(--color-1)",
+                                        fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
+                                        margin: "12px",
+                                    }}
+                                    onClick={() => {
+                                        get_data(true);
+                                    }}
+                                >
+                                    <RefreshRoundedIcon color='inherit' fontSize='inherit' />
+                                </IconButton>
+                            }
+                        </div>
                         {/* === */}
                         
                         <div class={styles.container_1_box}>
@@ -756,7 +774,7 @@ export default function View() {
                 plugin_id={plugin_update()?.pluginId ?? ""}
                 pluginManifest={plugin_update()?.pluginManifest ?? {title: "", manifest: ""}}
                 onClose={()=>{set_plugin_update({state:false})}}
-                onSuccess={()=>{get_data()}}
+                onSuccess={()=>{get_data(true)}}
             />
         }
     </>)

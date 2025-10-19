@@ -226,6 +226,33 @@ pub fn get_item_from_favorite(tag_name: String) -> Result<Vec<ItemFromFavorite>,
     Ok(items)
 }
 
+
+pub fn get_all_item_from_favorite() -> Result<Vec<ItemFromFavorite>, String> {
+    let conn = get_db()?;
+
+    let mut stmt = conn
+        .prepare(
+            "SELECT source, id, timestamp
+                FROM favorite
+                GROUP BY source, id, timestamp",
+        )
+        .map_err(|e| e.to_string())?;
+
+    let items = stmt
+        .query_map([], |row| {
+            Ok(ItemFromFavorite {
+                source: row.get(0)?,
+                id: row.get(1)?,
+                timestamp: row.get::<_, i64>(2)? as usize,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+
+    Ok(items)
+}
+
 #[tauri::command]
 pub async fn update_timestamp_favorite(source: String, id: String) -> Result<(), String> {
     let conn = get_db()?; // Reuse your existing get_db function

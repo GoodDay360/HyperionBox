@@ -11,6 +11,7 @@ use crate::utils::get_appdata;
 pub struct Configs {
     pub plugin_dir: Option<PathBuf>,
     pub storage_dir: Option<PathBuf>,
+    pub cache_dir: Option<PathBuf>,
     pub selected_source_id: Option<String>,
     pub download_worker_threads: Option<usize>,
 }
@@ -21,6 +22,7 @@ impl Configs {
     pub fn is_all_set(&self) -> bool {
         return self.plugin_dir.is_some() 
             && self.storage_dir.is_some()
+            && self.cache_dir.is_some()
             && self.selected_source_id.is_some()
             && self.download_worker_threads.is_some();
     }
@@ -40,10 +42,12 @@ impl Configs {
 
         let plugin_dir = appdata_dir.join("plugins").to_string_lossy().to_string();
         let storage_dir = appdata_dir.join("storage").to_string_lossy().to_string();
+        let cache_dir = appdata_dir.join("cache").to_string_lossy().to_string();
 
         return Ok(Configs {
             plugin_dir: Some(PathBuf::from(plugin_dir)),
             storage_dir: Some(PathBuf::from(storage_dir)),
+            cache_dir: Some(PathBuf::from(cache_dir)),
             selected_source_id: Some("anime".to_string()),
             download_worker_threads: Some(3),
         });
@@ -85,6 +89,11 @@ impl Configs {
         if config_data.storage_dir.is_none() {
             config_data.storage_dir = default_configs.storage_dir;
         }
+
+        if config_data.cache_dir.is_none() {
+            config_data.cache_dir = default_configs.cache_dir;
+        }
+
         if config_data.selected_source_id.is_none() {
             config_data.selected_source_id = default_configs.selected_source_id;
         }
