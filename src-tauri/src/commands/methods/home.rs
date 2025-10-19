@@ -9,7 +9,7 @@ use crate::sources::movie;
 use crate::commands::favorite::{get_recent_from_favorite};
 use crate::commands::local_manifest::{get_local_manifest};
 use crate::utils::configs::Configs;
-
+use crate::utils::convert_file_src;
 use crate::models::home::{Content, ContentData, HomeData};
 
 const CACHE_DELAY: usize = 3 * 60 * 60 * 1000; // In milliseconds
@@ -95,6 +95,8 @@ pub async fn home(source: String, force_remote: bool) -> Result<HomeData, String
     
 
     /* Load Recent Watch */
+    let app_configs = Configs::get()?;
+    let storage_dir = app_configs.storage_dir.ok_or("Storage directory not set".to_string())?;
     let content_data = &mut home_data.content;
 
     let mut recent_content_data: Vec<ContentData> = vec![];
@@ -103,11 +105,22 @@ pub async fn home(source: String, force_remote: bool) -> Result<HomeData, String
         let local_manifest = get_local_manifest(item.source.clone(), item.id.to_string()).await?;
         match local_manifest.manifest_data {
             Some(data) => {
+                let item_dir = storage_dir.join(&source).join(&item.id);
+                let poster_path = item_dir.join("poster.png");
+
+                let poster: String;
+
+                if poster_path.exists() {
+                    poster = convert_file_src::new(&poster_path)?;
+                }else{
+                    poster = data.poster;
+                }
+
                 let new_content = ContentData {
                     source: item.source,
                     id: item.id.to_string().clone(),
                     title: data.title,
-                    poster: data.poster,
+                    poster,
                 };
                 recent_content_data.push(new_content);
             }
