@@ -1,5 +1,4 @@
 // Tauri API
-import { invoke } from '@tauri-apps/api/core';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { platform } from '@tauri-apps/plugin-os';
 
@@ -41,9 +40,10 @@ import styles from "../styles/home.module.css"
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
 import { get_configs } from '@src/settings/scripts/settings';
+import { request_home } from '../scripts/home';
 
 // Types Import
-import { Content, RelevantContent, HomeData } from '../types/home_type';
+import { Content, RelevantContent } from '../types/home_type';
 
 
 
@@ -64,7 +64,7 @@ export default function Home() {
 
     const [show_trailer, set_show_trailer] = createSignal<{state:boolean, source:string}>({state:false, source:""});
     const [is_select_source, set_is_select_source] = createSignal<boolean>(false);
-    const get_data = async () => {
+    const get_data = async (forceRemote: boolean) => {
         set_is_loading(true);
         SET_RELEVANT_DATA([]);
         SET_CONTENT_DATA([]);
@@ -82,7 +82,7 @@ export default function Home() {
             set_is_loading(false);
             return;
         }
-        invoke<HomeData>('home', {source:current_source()})
+        request_home(current_source(), forceRemote)
             .then((data) => {
                 SET_RELEVANT_DATA(data.relevant_content);
                 SET_CONTENT_DATA(data.content);
@@ -104,13 +104,13 @@ export default function Home() {
 
     onMount(() => {
         
-        get_data();
+        get_data(false);
     })
     
     return (<>
         {(CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550) &&
             <PullRefresh container={CONTAINER_REF() as HTMLElement}
-                onRefresh={get_data}
+                onRefresh={() => get_data(true)}
             />
         }
         <div class={styles.container} ref={SET_CONTAINER_REF}>
@@ -217,7 +217,7 @@ export default function Home() {
                                         fontSize: 'calc((100vw + 100vh)/2*0.035)'
                                     }}
                                     onClick={() => {
-                                        get_data();
+                                        get_data(true);
                                     }}
                                 >
                                     <RefreshRoundedIcon color="inherit" fontSize='inherit' />
@@ -492,7 +492,7 @@ export default function Home() {
         {is_select_source() &&
             <SelectSources
                 onClose={() => set_is_select_source(false)}
-                onSuccess={() => get_data()}
+                onSuccess={() => get_data(false)}
             />
         }
         

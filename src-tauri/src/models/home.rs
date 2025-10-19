@@ -34,4 +34,5 @@ pub struct Content {
 pub struct HomeData {
     pub relevant_content: Vec<RelevantContent>,
     pub content: Vec<Content>,
+    pub last_save_timestamp: usize,
 }

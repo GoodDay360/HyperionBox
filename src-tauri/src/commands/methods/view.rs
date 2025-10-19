@@ -2,7 +2,7 @@ use chrono::Utc;
 use reqwest::header::HeaderMap;
 use std::fs;
 use tokio;
-use tracing::{error, warn};
+use tracing::{warn};
 use std::future::Future;
 use std::pin::Pin;
 
@@ -10,107 +10,16 @@ use chlaty_core::request_plugin::get_episode_list::DataResult;
 
 use crate::sources::anime;
 use crate::sources::movie;
-use crate::commands::favorite::{get_recent_from_favorite, get_tag_from_favorite};
+use crate::commands::favorite::{get_tag_from_favorite};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 use crate::commands::request_plugin::get_episode_list::get_episode_list;
-use crate::models::home::{Content, ContentData, HomeData};
-use crate::models::search::SearchData;
 use crate::models::view::{ManifestData, ViewData};
 use crate::utils::{configs::Configs, convert_file_src, download_file};
 
-const CACHE_DELAY: usize = 1 * 60 * 60 * 1000;
+const CACHE_DELAY: usize = 3 * 60 * 60 * 1000; // In milliseconds
 
 #[tauri::command]
-pub async fn home(source: String) -> Result<HomeData, String> {
-    let mut _home_data: HomeData = HomeData {
-        relevant_content: vec![],
-        content: vec![],
-    };
-    if source == "anime" {
-        match anime::home::new(&source).await {
-            Ok(data) => _home_data = data,
-            Err(e) => {
-                error!("[HOME] Error: {}", e);
-            }
-        }
-    }else if source == "movie" {
-        match movie::home::new(&source).await {
-            Ok(data) => _home_data = data,
-            Err(e) => {
-                error!("[HOME] Error: {}", e);
-            }
-        }
-    }else{
-        return Err("Unkown Source".to_string());
-    }
-
-    /* Load Recent Watch */
-    let content_data = &mut _home_data.content;
-
-    let mut recent_content_data: Vec<ContentData> = vec![];
-    let recent_from_favorite = get_recent_from_favorite(15).await?;
-    for item in recent_from_favorite {
-        let local_manifest = get_local_manifest(item.source.clone(), item.id.to_string()).await?;
-        match local_manifest.manifest_data {
-            Some(data) => {
-                let new_content = ContentData {
-                    source: item.source,
-                    id: item.id.to_string().clone(),
-                    title: data.title,
-                    poster: data.poster,
-                };
-                recent_content_data.push(new_content);
-            }
-            None => {
-                let new_content = ContentData {
-                    source: item.source,
-                    id: item.id.to_string().clone(),
-                    title: "?".to_string(),
-                    poster: "".to_string(),
-                };
-                recent_content_data.push(new_content);
-            }
-        }
-    }
-
-    if recent_content_data.len() > 0 {
-        content_data.insert(
-            0,
-            Content {
-                label: "Continuous Watching".to_string(),
-                data: recent_content_data,
-            },
-        );
-    }
-    /* --- */
-
-    return Ok(_home_data);
-}
-
-#[tauri::command]
-pub async fn search(source: String, page: usize, search: String) -> Result<Vec<SearchData>, String> {
-    if source == "anime" {
-        match anime::search::new(page, &search).await {
-            Ok(data) => return Ok(data),
-            Err(e) => {
-                error!("Error: {}", e);
-                return Err(e);
-            }
-        }
-    }else if source == "movie" {
-        match movie::search::new(page, &search).await {
-            Ok(data) => return Ok(data),
-            Err(e) => {
-                error!("[HOME] Error: {}", e);
-                return Err(e)?;
-            }
-        }
-    }
-    return Err("Unkown Source".to_string());
-}
-
-#[tauri::command]
-pub async fn view(source: String, id: String) -> Result<ViewData, String> {
+pub async fn view(source: String, id: String, force_remote: bool) -> Result<ViewData, String> {
     /* Generate Task */
     let task_get_view_manifest_data: Pin<Box<dyn Future<Output = Result<ManifestData, String>> + Send>>;
 
@@ -124,6 +33,10 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
     /* --- */
 
     let mut local_manifest = get_local_manifest(source.clone(), id.clone()).await?;
+    let local_timestamp: usize = local_manifest.last_save_timestamp.unwrap_or(0);
+
+    let favoriate_tags = get_tag_from_favorite(source.clone(), id.clone()).await?;
+
     let mut link_plugin_id: String = String::new();
     let mut link_id: String = String::new();
 
@@ -143,6 +56,30 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
 
     let mut view_data: ViewData;
 
+    
+
+    /* Load from cache if it exist and not expired */
+    if (favoriate_tags.len() > 0) && !force_remote {
+        let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
+        if (current_timestamp - local_timestamp) < CACHE_DELAY {
+            if let Some(manifest_data) = &local_manifest.manifest_data {
+                if manifest_data.episode_list.is_some() || local_manifest.link_plugin.is_none() {
+                    return Ok(ViewData {
+                        manifest_data: Some(manifest_data.clone()),
+                        link_plugin: local_manifest.link_plugin.clone(),
+                        current_watch_season_index: local_manifest.current_watch_season_index.clone(),
+                        current_watch_episode_index: local_manifest.current_watch_episode_index.clone(),
+                        favorites: favoriate_tags.clone(),
+                    });
+                }
+            }
+        }
+    }
+    /* --- */
+
+    /* Fetch from remote if cache expire/not exist and not in favorite */
+    /* This fallback to use local manifest if it failed to fetch. */
+    
     if !link_plugin_id.is_empty() && !link_id.is_empty() {
         let (task_get_view_manifest_data, task_get_episode_list) = tokio::join!(
             task_get_view_manifest_data,
@@ -215,16 +152,19 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
             }
         }
     }
+    
+    
 
     view_data.current_watch_season_index = local_manifest.current_watch_season_index;
     view_data.current_watch_episode_index = local_manifest.current_watch_episode_index;
 
-    let favoriate_tags = get_tag_from_favorite(source.clone(), id.clone()).await?;
     view_data.favorites = favoriate_tags.clone();
 
+    /* --- */
+    
+    /* Save remote manifest data to local if it in favorite */
     if favoriate_tags.len() > 0 {
         local_manifest.manifest_data = view_data.manifest_data.clone();
-
         if let Some(manifest_data) = &mut view_data.manifest_data {
             /* Insert Plugin Info */
             manifest_data
@@ -232,7 +172,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                 .insert(0, format!("Favorite: {}", favoriate_tags.join(", ")));
             /* --- */
 
-            /* Load and save local poster and banner if exist */
+            /* Load and cache local poster and banner if exist */
             let poster_url = &manifest_data.poster;
             let banner_url = &manifest_data.banner;
 
@@ -247,7 +187,7 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
             if !poster_path.exists() || !banner_path.exists() {
                 should_cache = true;
             } else {
-                let local_timestamp: usize = local_manifest.last_save_timestamp.unwrap_or(0);
+                
                 if (current_timestamp - local_timestamp) >= CACHE_DELAY {
                     should_cache = true;
                 }
@@ -275,7 +215,6 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
                         );
                     }
                 }
-                local_manifest.last_save_timestamp = Some(current_timestamp);
             }
 
             if poster_path.exists() {
@@ -288,8 +227,12 @@ pub async fn view(source: String, id: String) -> Result<ViewData, String> {
             /* --- */
         }
 
+        let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
+        local_manifest.last_save_timestamp = Some(current_timestamp);
+
         save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
     }
+    /* --- */
 
     return Ok(view_data);
 }

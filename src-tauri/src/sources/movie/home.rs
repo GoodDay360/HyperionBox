@@ -2,6 +2,7 @@ use reqwest::Client;
 use visdom::Vis;
 use html_escape::decode_html_entities;
 use tokio::join;
+use chrono::Utc;
 
 
 use crate::models::home::{HomeData, Content, ContentData};
@@ -85,10 +86,12 @@ pub async fn new(source:&str) -> Result<HomeData, String> {
         label: "Popular".to_string(),
         data: task_get_popular_content?,
     });
+    let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
 
     let home_data: HomeData = HomeData {
         relevant_content: vec![],
         content: new_content,
+        last_save_timestamp: current_timestamp
     };
 
     return Ok(home_data);

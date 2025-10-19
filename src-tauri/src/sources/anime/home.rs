@@ -2,6 +2,7 @@ use reqwest::Client;
 use std::time::Duration;
 use tokio;
 use tracing::error;
+use chrono::Utc;
 
 use crate::sources::anime::models::ApiResponse;
 use crate::models::home::{Content, ContentData, HomeData, RelevantContent, Trailer};
@@ -177,8 +178,11 @@ pub async fn new(source:&str) -> Result<HomeData, String> {
         }
     };
 
+    let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
+
     return Ok(HomeData {
         relevant_content: relevant_content,
         content: new_content,
+        last_save_timestamp: current_timestamp,
     });
 }
