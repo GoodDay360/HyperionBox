@@ -186,7 +186,6 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
 
             
 
-            let headers = HeaderMap::new();
 
             let mut should_cache_media = false;
 
@@ -201,7 +200,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
             }
 
             if should_cache_media {
-                match download_file::new(poster_url, &poster_path, headers.clone(), 10, |_, _| {}).await
+                match download_file::new(poster_url, &poster_path, None, 10, |_, _| {}).await
                 {
                     Ok(_) => {}
                     Err(e) => {
@@ -212,7 +211,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
                     }
                 }
 
-                match download_file::new(banner_url, &banner_path, headers.clone(), 10, |_, _| {}).await
+                match download_file::new(banner_url, &banner_path, None, 10, |_, _| {}).await
                 {
                     Ok(_) => {}
                     Err(e) => {
@@ -236,7 +235,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
 
         let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
         local_manifest.last_save_timestamp = Some(current_timestamp);
-        if (current_timestamp - local_timestamp) >= CACHE_DELAY {
+        if ((current_timestamp - local_timestamp) >= CACHE_DELAY) || force_remote {
             save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
         }
     }

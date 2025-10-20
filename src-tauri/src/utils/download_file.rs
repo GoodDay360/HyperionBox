@@ -1,6 +1,6 @@
 use futures_util::StreamExt;
 use reqwest::header::{HeaderMap, HeaderValue};
-use reqwest::Client;
+use reqwest::{Client, Response};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -11,7 +11,7 @@ use url::Url;
 pub async fn new<F>(
     url: &str,
     output_file: &PathBuf,
-    headers: HeaderMap,
+    headers: Option<HeaderMap>,
     timeout: usize,
     callback: F,
 ) -> Result<(), String>
@@ -19,30 +19,43 @@ where
     F: Fn(usize, usize),
 {
     // println!("[download_file] Downloading: {}", &url);
-    let mut new_headers = headers.clone();
-    let mut current_url: String = url.to_string();
+    
     loop {
         let client = Client::new();
-        let response = client
-            .get(current_url.clone())
-            .timeout(Duration::from_secs(timeout as u64))
-            .headers(new_headers.clone())
-            .send()
-            .await
-            .map_err(|e| format!("[download_file] Request failed: {}", e))?;
 
-        if response.url().to_string() != current_url {
-            let parsed_url = Url::parse(&current_url).map_err(|e| e.to_string())?;
-            let new_host = parsed_url
-                .host_str()
-                .ok_or_else(|| "[download_file] Host not found from parsed URL.")?;
-            new_headers.insert(
-                "Host",
-                HeaderValue::from_str(new_host).map_err(|e| e.to_string())?,
-            );
+        let response: Response;
 
-            current_url = response.url().to_string();
-            continue;
+        if let Some(some_headers) = &headers {
+            let mut new_headers = some_headers.clone();
+            let mut _current_url: String = url.to_string();
+            response = client
+                .get(_current_url.clone())
+                .timeout(Duration::from_secs(timeout as u64))
+                .headers(new_headers.clone())
+                .send()
+                .await
+                .map_err(|e| format!("[download_file] Request failed: {}", e))?;
+
+            if response.url().to_string() != _current_url {
+                let parsed_url = Url::parse(&_current_url).map_err(|e| e.to_string())?;
+                let new_host = parsed_url
+                    .host_str()
+                    .ok_or_else(|| "[download_file] Host not found from parsed URL.")?;
+                new_headers.insert(
+                    "Host",
+                    HeaderValue::from_str(new_host).map_err(|e| e.to_string())?,
+                );
+
+                _current_url = response.url().to_string();
+                continue;
+            }
+        }else{
+            response = client
+                .get(url.to_string())
+                .timeout(Duration::from_secs(timeout as u64))
+                .send()
+                .await
+                .map_err(|e| format!("[download_file] Request failed: {}", e))?;
         }
         if response.status().is_success() {
             let total_size = response
