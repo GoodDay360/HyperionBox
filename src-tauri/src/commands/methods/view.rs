@@ -1,5 +1,4 @@
 use chrono::Utc;
-use reqwest::header::HeaderMap;
 use std::fs;
 use tokio;
 use tracing::{warn};
