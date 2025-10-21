@@ -590,7 +590,7 @@ async fn download_episode(
 
                         let segment_path = segment_dir_clone.join(format!("segment-{}", start_index+index));
 
-                        download_file::new(&_url, &segment_path, Some(header_clone.clone()), 300, |_, _| {})
+                        download_file::new(&_url, &segment_path, Some(header_clone.clone()), 30, |_, _| {})
                             .await
                             .map_err(|e| e.to_string())?;
 
@@ -650,7 +650,7 @@ async fn download_episode(
             for count in worker_download_status.iter() {
                 total_segment_download += count.value();
             }
-            println!("total_s: {}| max_s: {}", total_segment_download, max_segment);
+            // println!("total_s: {}| max_s: {}", total_segment_download, max_segment);
             if total_segment_download == max_segment {
                 for i in 0..(max_download_worker as usize) {
                     let download_status_manifest_path = download_dir.join(format!("download-status-worker-{}.json", i));
@@ -710,7 +710,7 @@ async fn download_episode(
                     }
                 );
                 let caption_path = captions_dir.join(&caption_file_name);
-                match download_file::new(&caption.file, &caption_path, Some(headers.clone()), 300, |_, _| {}).await {
+                match download_file::new(&caption.file, &caption_path, Some(headers.clone()), 40, |_, _| {}).await {
                     Ok(_) => {
                         let new_caption_file = PathBuf::from(source)
                             .join(id)
@@ -912,24 +912,30 @@ async fn start_task(app: AppHandle) -> Result<(), String> {
                         }
                     };
 
-                match download_episode(
-                    app.clone(),
-                    &source,
-                    &id,
-                    season_index,
-                    episode_index,
-                    media_hls,
-                )
-                .await
-                {
-                    Ok(_) => {}
-                    Err(e) => {
-                        set_current_download_error(app, &source, &id, season_index, episode_index)
-                            .await?;
-                        return Err(e.to_string());
+                let mut retry:usize = 0;
+                loop {
+                    match download_episode(
+                        app.clone(),
+                        &source,
+                        &id,
+                        season_index,
+                        episode_index,
+                        media_hls.clone(),
+                    ).await {
+                        Ok(_) => {break}
+                        Err(e) => {
+                            if retry == 3 {
+                                set_current_download_error(app, &source, &id, season_index, episode_index)
+                                    .await?;
+                                return Err(e.to_string());
+                            }else{
+                                retry+=1;
+                                continue;
+                            }
+                            
+                        }
                     }
                 }
-
                 break;
             }
             
@@ -953,7 +959,7 @@ pub async fn new(app: AppHandle) {
             Ok(available) => {
                 
                 if available {
-                    println!("[Worker:Download] Available");
+                    // println!("[Worker:Download] Available");
                     match start_task(app.clone()).await {
                         Ok(_) => {}
                         Err(e) => error!("[Worker:Download]: {}", e),
