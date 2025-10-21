@@ -53,7 +53,6 @@ async fn update_cross_platform(app: tauri::AppHandle) -> Result<Option<String>, 
 
 #[cfg(target_os = "android")]
 async fn update_cross_platform(app: tauri::AppHandle) -> Result<Option<String>, String> {
-    use reqwest::header::HeaderMap;
     use reqwest::Client;
     use std::fs;
     use tauri::Manager;
@@ -98,8 +97,7 @@ async fn update_cross_platform(app: tauri::AppHandle) -> Result<Option<String>, 
 
         let output_file = files_dir.join("hyperionbox-update.apk");
 
-        let headers = HeaderMap::new();
-        download_file::new(&selected.url, &output_file, Some(headers), 3600, |current, total| {
+        download_file::new(&selected.url, &output_file, None, 3600, |current, total| {
             match app.emit("update_progress", UpdateProgress { current, total }) {
                 Ok(_) => {}
                 Err(e) => warn!("[update]: {}", e),

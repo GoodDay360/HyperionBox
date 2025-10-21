@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "HyperionBox"
-version = "2.0.7"
+version = "2.0.8"
 dependencies = [
  "bytes",
  "chlaty-core",

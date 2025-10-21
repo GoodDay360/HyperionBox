@@ -85,8 +85,9 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
     /* Fetch from remote if cache expire/not exist and not in favorite */
     /* This fallback to use local manifest if it failed to fetch. */
 
-    if should_fetch_remote {
+    let mut fetch_remote_state: bool = true;
 
+    if should_fetch_remote {
         if !link_plugin_id.is_empty() && !link_id.is_empty() {
             let (task_get_view_manifest_data, task_get_episode_list) = tokio::join!(
                 task_get_view_manifest_data,
@@ -99,21 +100,26 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
                         "[View] Failed to load remote manifest: {}\n=> Loading local manifest.",
                         e
                     );
+                    fetch_remote_state = false;
                     local_manifest
                         .manifest_data
-                        .ok_or("[View] Error: Local manifest data not exists.".to_string())?
+                        .clone().ok_or("[View] Error: Local manifest data not exists.".to_string())?
                 }
             };
 
-            let episode_list: Vec<Vec<Vec<DataResult>>>;
-            match task_get_episode_list {
-                Ok(data) => episode_list = data,
+            let episode_list: Vec<Vec<Vec<DataResult>>> = match task_get_episode_list {
+                Ok(data) => data,
                 Err(e) => {
                     warn!(
                         "[View] Failed to load remote episode list: {}\n=> Loading local episode list.",
                         e
                     );
-                    episode_list = manifest_data.episode_list.unwrap_or(vec![]);
+                    fetch_remote_state = false;
+                    if let Some(local_manifest_data) = &local_manifest.manifest_data {
+                        local_manifest_data.episode_list.clone().unwrap_or(vec![])
+                    }else{
+                        vec![]
+                    }
                 }
             };
 
@@ -145,6 +151,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
                         "[View] Failed to load remote manifest: {}\n=> Loading local manifest.",
                         e
                     );
+                    fetch_remote_state = false;
                     view_data = ViewData {
                         manifest_data: Some(
                             local_manifest
@@ -234,7 +241,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
 
         let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
         local_manifest.last_save_timestamp = Some(current_timestamp);
-        if ((current_timestamp - local_timestamp) >= CACHE_DELAY) || force_remote {
+        if (((current_timestamp - local_timestamp) >= CACHE_DELAY) || force_remote) && fetch_remote_state {
             save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
         }
     }
