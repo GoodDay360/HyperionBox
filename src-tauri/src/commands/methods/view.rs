@@ -200,7 +200,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
             if !poster_path.exists() || !banner_path.exists() {
                 should_cache_media = true;
             } else {
-                if (current_timestamp - local_timestamp) >= CACHE_DELAY {
+                if ((current_timestamp - local_timestamp) >= CACHE_DELAY) || force_remote {
                     should_cache_media = true;
                 }
             }

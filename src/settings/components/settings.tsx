@@ -26,6 +26,7 @@ import toast from 'solid-toast';
 import NavigationBar from "@src/app/components/navigation_bar";
 import PullRefresh from '@src/app/components/pull_refresh';
 import Select from "@src/app/components/Select";
+import Login from "./login";
 
 
 // Style Imports
@@ -55,6 +56,8 @@ export default function Settings() {
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [is_working, set_is_working] = createSignal<boolean>(false);
+
+    const [show_login, set_show_login] = createSignal<boolean>(true);
 
     const get_data = async () => {
         if (is_working()) return;
@@ -137,6 +140,50 @@ export default function Settings() {
             <div class={styles.body_container}>
                 {!is_loading()
                     ? <div class={styles.content_container}>
+                        {/* General */}
+                        <fieldset
+                            style={{
+                                border:"2.5px solid var(--color-1)",
+                            }}
+                        >
+                            <legend class={`float-none w-auto`}
+                                style={{
+                                    color:"var(--color-1)",
+                                }}
+                            >Profile</legend>
+                            
+                            <div class={styles.item_container}
+                                style={{
+                                    padding: "12px",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        "flex-direction": "row",
+                                        gap: "8px"
+                                    }}
+                                >
+                                    <Button variant="contained" color="primary" disabled={is_loading() || is_working()}
+                                        sx={{
+                                            textTransform: "none",
+                                            color: "var(--color-1)",
+                                            fontSize: "calc((100vw + 100vh)/2*0.02)",
+                                        }}
+                                        onClick={() => {
+                                            set_show_login(true);
+                                        }}
+                                    >Login with HyperSync</Button>
+
+                                </div>
+
+                                
+                            </div>
+
+                        </fieldset>
+                        {/* --- */}
+
+                        {/* General */}
                         <fieldset
                             style={{
                                 border:"2.5px solid var(--color-1)",
@@ -326,7 +373,9 @@ export default function Settings() {
                             </div>
 
                         </fieldset>
-
+                        {/* --- */}
+                        
+                        {/* Download */}
                         <fieldset
                             style={{
                                 border:"2.5px solid var(--color-1)",
@@ -446,7 +495,7 @@ export default function Settings() {
                             </div>
 
                         </fieldset>
-
+                        {/* --- */}
 
                     </div>
                     : <div
@@ -474,9 +523,16 @@ export default function Settings() {
                     </div>
                 }
             </div>
-
+            
         </div>
-
+            
+        {show_login() &&
+            <Login
+                onClose={()=>{
+                    set_show_login(false);
+                }}
+            />
+        }
 
         {/* Navigation Bar For Small Screen Width */}
         {(context?.screen_size?.()?.width ?? 0) <= 550 &&

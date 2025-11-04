@@ -140,7 +140,7 @@ pub async fn home(source: String, force_remote: bool) -> Result<HomeData, String
         content_data.insert(
             0,
             Content {
-                label: "Continue watching".to_string(),
+                label: "Continue Watching".to_string(),
                 data: recent_content_data,
             },
         );
