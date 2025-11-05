@@ -1,8 +1,7 @@
 use dotenv::dotenv;
 use std::env;
 use tauri::Manager;
-use tracing::Level;
-use tracing_subscriber::fmt;
+use tracing_subscriber::FmtSubscriber;
 use tauri::async_runtime;
 
 use chlaty_core;
@@ -25,16 +24,10 @@ pub const IS_DEV: bool = false;
 pub fn run() {
     dotenv().ok();
     if IS_DEV {
-        fmt()
-            .with_max_level(Level::DEBUG)
-            .with_max_level(Level::ERROR)
-            .with_max_level(Level::WARN)
-            .with_thread_names(true)
-            .with_thread_ids(true)
-            .with_target(true)
-            .with_file(true)
-            .with_line_number(true)
-            .init();
+        /* Initialize Logger */
+        let subscriber = FmtSubscriber::new();
+        tracing::subscriber::set_global_default(subscriber).unwrap();
+        /* --- */
     }
 
     #[allow(unused_mut)]

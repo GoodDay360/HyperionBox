@@ -39,6 +39,7 @@ import {
     get_storage_size, format_bytes, clean_storage
 } from '../scripts/settings';
 import { Configs } from '../types/settings_type';
+import { login } from "../scripts/login";
 
 // Types Import
 
@@ -48,50 +49,84 @@ import { Configs } from '../types/settings_type';
 export default function Login(
 {
     onClose = () => {},
+    onSuccess = () => {},
 }:{
     onClose: () => void,
+    onSuccess: () => void,
 }
 ) {
-    
+    const [is_loading, set_is_loading] = createSignal(false);
+
+    const [email, set_email] = createSignal<string>("");
+    const [password, set_password] = createSignal<string>("");
     
     return (<div class={styles.container}>
-        <div class={`${styles.login_box} animate__animated animate__zoomIn`}
-        style={{
-            "--animate-duration": "250ms",
-        }}>
+        <form class={`${styles.login_box} animate__animated animate__zoomIn`}
+            style={{
+                "--animate-duration": "250ms",
+            }}
+            onSubmit={(e)=>{
+                e.preventDefault();
+                set_is_loading(true);
+                login(email(), password())
+                    .then(()=>{
+                        onSuccess();
+                        onClose();
+                    }).catch((e)=>{
+                        console.error(e);
+                        toast.remove();
+                        toast.error(e,{
+                            style: {
+                                color:"red",
+                            }
+                        })
+                    }).finally(()=>{
+                        set_is_loading(false);
+                    });
+            }}
+        >
             <h2 class={styles.title}>HyperSync</h2>
             <div class={styles.text_field_box}>
                 <TextField label="Email" variant="filled" required
+                    value={email()}
+                    onChange={(e)=>{
+                        set_email(e.target.value);
+                    }}
                     sx={{
                         width: "100%",
                         "& .MuiInputLabel-root": {
                             color:"var(--color-1)"
                         }
                     }}
-                    inputProps={{ style: { color: "var(--color-1)" } }}
+                    inputProps={{ style: { color: "var(--color-1)" }, readOnly: is_loading() }}
                 ></TextField>
 
                 <TextField label="Password" variant="filled" required type="password"
+                    value={password()}
+                    onChange={(e)=>{
+                        set_password(e.target.value);
+                    }}
                     sx={{
                         width: "100%",
                         "& .MuiInputLabel-root": {
                             color:"var(--color-1)"
                         }
                     }}
-                    inputProps={{ style: { color: "var(--color-1)" } }}
+                    inputProps={{ style: { color: "var(--color-1)" }, readOnly: is_loading() }}
                 ></TextField>
             </div>
-
+            
             <div class={styles.button_box}>
-                <Button variant="text" color="error"
+                <Button variant="text" color="error" disabled={is_loading()}
                     onClick={()=>{
                         onClose();
                     }}
                 >Cancel</Button>
-                <Button variant="contained">Login</Button>
+                <Button variant="contained" type="submit" disabled={is_loading()}
+                >Login</Button>
 
             </div>
-        </div>
+        </form>
     </div>)
 }
 
