@@ -69,7 +69,15 @@ pub fn run() {
             /* Spawn Worker */
             async_runtime::spawn(async move {
                 chlaty_core::init();
-                worker::download::new(app_handle.clone()).await
+            });
+            async_runtime::spawn(async move {
+                worker::download::new(app_handle.clone()).await;
+            });
+            async_runtime::spawn(async move {
+                worker::hypersync::favorite::new().await;
+            });
+            async_runtime::spawn(async move {
+                worker::hypersync::watch_state::new().await;
             });
             /* --- */
             return Ok(());

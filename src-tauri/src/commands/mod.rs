@@ -10,3 +10,4 @@ pub mod watch_state;
 pub mod dialog;
 pub mod update;
 pub mod manage_storage;
+pub mod hypersync;

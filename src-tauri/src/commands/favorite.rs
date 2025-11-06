@@ -2,11 +2,11 @@ use chrono::Utc;
 use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use serde_json::{to_string};
 
 use crate::utils::configs::Configs;
-
-use crate::commands::local_manifest::{get_local_manifest};
+use crate::commands::hypersync::favorite::{
+    add_favorite_cache
+};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ItemFromFavorite {
@@ -61,7 +61,7 @@ pub fn get_db() -> Result<Connection, String> {
 
     /* Table for cache upload to HyperSync Server */
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS hypersync_cache (
+        "CREATE TABLE IF NOT EXISTS favorite_cache (
             source TEXT NOT NULL,
             id TEXT NOT NULL,
             tags TEXT NOT NULL,
@@ -136,7 +136,7 @@ pub async fn rename_tag(old_tag: String, new_tag: String) -> Result<(), String> 
 
     let tags = get_item_from_favorite(new_tag.clone())?;
     for tag in tags {
-        add_hypersync_cache(tag.source, tag.id).await?;
+        add_favorite_cache(tag.source, tag.id).await?;
     }
 
     Ok(())
@@ -163,7 +163,7 @@ pub async fn remove_tag(tag_name: String) -> Result<(), String> {
 
     let tags = get_item_from_favorite(tag_name.clone())?;
     for tag in tags {
-        add_hypersync_cache(tag.source, tag.id).await?;
+        add_favorite_cache(tag.source, tag.id).await?;
     }
 
     Ok(())
@@ -193,7 +193,7 @@ pub async fn add_favorite(tag_name: String, source: String, id: String) -> Resul
     )
     .map_err(|e| e.to_string())?;
 
-    add_hypersync_cache(source, id).await?;
+    add_favorite_cache(source, id).await?;
 
     Ok(())
 }
@@ -326,109 +326,8 @@ pub async fn remove_favorite(tag_name: String, source: String, id: String) -> Re
     )
     .map_err(|e| e.to_string())?;
 
-    add_hypersync_cache(source, id).await?;
+    add_favorite_cache(source, id).await?;
 
     Ok(())
 }
 
-#[tauri::command]
-pub async fn get_all_hypersync_cache() -> Result<Vec<HypersyncCache>, String> {
-    let conn = get_db()?;
-    
-    let mut stmt = conn
-        .prepare("
-            SELECT 
-            source, id, tags, 
-            link_plugin_id, link_id, 
-            current_watch_season_index, current_watch_episode_index, 
-            timestamp FROM hypersync_cache ORDER BY timestamp ASC
-        ")
-        .map_err(|e| e.to_string())?;
-
-
-    let result = stmt.query_map([], |row| {
-        Ok(HypersyncCache {
-            source: row.get(0)?,
-            id: row.get(1)?,
-            tags: row.get(2)?,
-            link_plugin_id: row.get(3)?,
-            link_id: row.get(4)?,
-            current_watch_season_index: row.get(5)?,
-            current_watch_episode_index: row.get(6)?,
-            timestamp: row.get(7)?,
-        })
-    }).map_err(|e| e.to_string())?;
-
-    let data: Result<Vec<_>, _> = result
-        .map(|r| r.map_err(|e| e.to_string()))
-        .collect();
-
-    return data;
-
-    
-}
-
-#[tauri::command]
-pub async fn add_hypersync_cache(
-    source: String,
-    id: String,
-) -> Result<(), String> {
-    let configs_data = Configs::get()?;
-
-    /* Check if token is empty */
-    /* Skip add to cache since not logged in yet. */
-    if let Some(token) = configs_data.hypersync_token {
-        if token.is_empty() {
-            return Ok(());
-        }
-    }else {
-        return Ok(());
-    }
-    /* --- */
-
-    let tags = get_tag_from_favorite(source.clone(), id.clone()).await?;
-    let tags_to_string = to_string(&tags).map_err(|e| e.to_string())?;
-
-    let local_manifest = get_local_manifest(source.clone(), id.clone()).await?;
-
-    let link_plugin_id = match &local_manifest.link_plugin {
-        Some(link_plugin) => link_plugin.plugin_id.clone(),
-        None => None,
-    };
-
-    let link_id = match &local_manifest.link_plugin {
-        Some(link_plugin) => link_plugin.id.clone(),
-        None => None,
-    };
-
-    let current_watch_season_index = local_manifest.current_watch_season_index;
-    let current_watch_episode_index = local_manifest.current_watch_episode_index;
-
-    let current_timestamp = Utc::now().timestamp_millis();
-
-    let conn = get_db()?;
-
-    conn.execute(
-    "
-        INSERT OR REPLACE INTO hypersync_cache (
-            source, id, tags,
-            link_plugin_id, link_id,
-            current_watch_season_index, current_watch_episode_index,
-            timestamp
-        ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
-    ",
-        rusqlite::params![
-            source,
-            id,
-            tags_to_string,
-            link_plugin_id,
-            link_id,
-            current_watch_season_index,
-            current_watch_episode_index,
-            current_timestamp
-        ],
-    )
-    .map_err(|e| e.to_string())?;
-
-    Ok(())
-}

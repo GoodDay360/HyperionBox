@@ -4,7 +4,10 @@ use tracing::error;
 use chlaty_core::request_plugin;
 use chlaty_core::request_plugin::get_episode_server::DataResult;
 
-use crate::commands::favorite::{update_timestamp_favorite, add_hypersync_cache, get_tag_from_favorite};
+use crate::commands::favorite::{update_timestamp_favorite, get_tag_from_favorite};
+use crate::commands::hypersync::favorite::{
+    add_favorite_cache
+};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 
 
@@ -40,7 +43,7 @@ pub async fn get_episode_server(
 
         let tags = get_tag_from_favorite(source.clone(), id.clone()).await?;
         if tags.len() > 0 {
-            add_hypersync_cache(source, id).await?;
+            add_favorite_cache(source, id).await?;
         }
     }
     /* --- */
