@@ -30,7 +30,7 @@ import Select from "@src/app/components/Select";
 
 
 // Style Imports
-import styles from "../styles/login.module.css"
+import styles from "../styles/change_password.module.css"
 
 // Script Imports
 import { ContextManager } from '@src/app/components/app';
@@ -40,7 +40,7 @@ import {
     get_storage_size, format_bytes, clean_storage
 } from '../scripts/settings';
 import { Configs } from '../types/settings_type';
-import { login } from "../scripts/profile";
+import { change_password } from "../scripts/profile";
 
 // Type Imports
 
@@ -51,7 +51,7 @@ import Discord from "@src/assets/media/Discord.png";
 
 
 
-export default function Login(
+export default function ChangePassword(
 {
     onClose = () => {},
     onSuccess = () => {},
@@ -62,8 +62,8 @@ export default function Login(
 ) {
     const [is_loading, set_is_loading] = createSignal(false);
 
-    const [email, set_email] = createSignal<string>("");
-    const [password, set_password] = createSignal<string>("");
+    const [current_password, set_current_password] = createSignal<string>("");
+    const [new_password, set_new_password] = createSignal<string>("");
     
     return (<div class={styles.container}>
         <form class={`${styles.login_box} animate__animated animate__zoomIn`}
@@ -73,12 +73,12 @@ export default function Login(
             onSubmit={(e)=>{
                 e.preventDefault();
                 set_is_loading(true);
-                login(email(), password())
+                change_password(current_password(), new_password())
                     .then(()=>{
                         onSuccess();
                         onClose();
                         toast.remove();
-                        toast.success("Logged in successfully.",{
+                        toast.success("Password changed successfully.",{
                             style: {
                                 color:"green",
                             }
@@ -96,12 +96,12 @@ export default function Login(
                     });
             }}
         >
-            <h2 class={styles.title}>HyperSync</h2>
+            <h2 class={styles.title}>Change Password</h2>
             <div class={styles.text_field_box}>
-                <TextField label="Email" variant="filled" required
-                    value={email()}
+                <TextField label="Current Password" variant="filled" required type="password"
+                    value={current_password()}
                     onChange={(e)=>{
-                        set_email(e.target.value);
+                        set_current_password(e.target.value);
                     }}
                     sx={{
                         width: "100%",
@@ -111,14 +111,14 @@ export default function Login(
                     }}
                     inputProps={{ 
                         style: { color: "var(--color-1)" }, readOnly: is_loading(),
-                        maxLength: 254,
+                        maxLength: 32,
                     }}
                 ></TextField>
 
-                <TextField label="Password" variant="filled" required type="password"
-                    value={password()}
+                <TextField label="New Password" variant="filled" required type="password"
+                    value={new_password()}
                     onChange={(e)=>{
-                        set_password(e.target.value);
+                        set_new_password(e.target.value);
                     }}
                     sx={{
                         width: "100%",
@@ -140,32 +140,7 @@ export default function Login(
                     }}
                 >Cancel</Button>
                 <Button variant="contained" type="submit" disabled={is_loading()}
-                >Login</Button>
-            </div>
-
-            <div class={styles.feed_container}>
-                <span class={styles.feed_text}>Don't have account?</span>
-                <div
-                    style={{
-                        display: "flex",
-                        "flex-direction": "row",
-                        gap: "8px",
-                        "align-items": "center"
-                    }}
-                >
-                    <span class={styles.feed_text}>Join our discord: </span>
-                    <IconButton
-                        onClick={() => {
-                            const url = "https://discord.com/invite/TkArvnVvNG"
-                            openUrl(url);
-                            writeText(url);
-                        }}
-                    >
-                        <img class={styles.feed_img} src={Discord}/>
-                    </IconButton>
-                    
-
-                </div>
+                >Save</Button>
             </div>
         </form>
     </div>)

@@ -27,6 +27,7 @@ import NavigationBar from "@src/app/components/navigation_bar";
 import PullRefresh from '@src/app/components/pull_refresh';
 import Select from "@src/app/components/Select";
 import Login from "./login";
+import ChangePassword from "./change_password";
 
 
 // Style Imports
@@ -58,6 +59,7 @@ export default function Settings() {
     const [is_working, set_is_working] = createSignal<boolean>(false);
 
     const [show_login, set_show_login] = createSignal<boolean>(false);
+    const [show_change_password, set_show_change_password] = createSignal<boolean>(false);
 
     const get_data = async () => {
         if (is_working()) return;
@@ -212,6 +214,17 @@ export default function Settings() {
                                                             })
                                                     }}
                                                 >Logout</Button>
+
+                                                <Button variant="contained" color="primary" disabled={is_loading() || is_working()}
+                                                    sx={{
+                                                        textTransform: "none",
+                                                        color: "var(--color-1)",
+                                                        fontSize: "calc((100vw + 100vh)/2*0.02)",
+                                                    }}
+                                                    onClick={() => {
+                                                        set_show_change_password(true);
+                                                    }}
+                                                >Change Password</Button>
                                             </div>
                                         </div>
                                         : <div 
@@ -249,6 +262,7 @@ export default function Settings() {
                                                 }}
                                             >
                                                 <input class={styles.item_input}
+                                                    placeholder="Leave empty and save to use default."
                                                     onChange={(e)=>{
                                                         const current_config = CONFIGS_DATA();
 
@@ -651,6 +665,17 @@ export default function Settings() {
             <Login
                 onClose={()=>{
                     set_show_login(false);
+                }}
+                onSuccess={()=>{
+                    get_data()
+                }}
+            />
+        }
+
+        {show_change_password() &&
+            <ChangePassword
+                onClose={()=>{
+                    set_show_change_password(false);
                 }}
                 onSuccess={()=>{
                     get_data()
