@@ -9,7 +9,7 @@ import { createSignal, onMount, Index, useContext, For } from "solid-js";
 
 
 // SUID Imports
-import { IconButton, ButtonBase, Skeleton, MenuItem, Button, TextField } from '@suid/material';
+import { IconButton, ButtonBase, Skeleton, MenuItem, Button } from '@suid/material';
 
 
 // SUID Icon Imports

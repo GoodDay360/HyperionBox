@@ -36,8 +36,8 @@ export const login = async (email: string, password: string):Promise<void> => {
 
 
 export const change_password = async (current_password: string, new_password: string):Promise<void> => {
-    return new Promise(async (resolve, reject) => {
-        const configs = await get_configs();
+    const configs = await get_configs();
+    return new Promise((resolve, reject) => {
         if (current_password === new_password) {
             reject("Current and new password cannot be the same.");
             return;

@@ -18,14 +18,13 @@ pub struct Configs {
     pub download_worker_threads: Option<usize>,
 }
 
-
+const DEFAULT_HYPERSYNC_SERVER: &str = "https://hypersync.up.railway.app";
 
 impl Configs {
     pub fn is_all_set(&self) -> bool {
         return self.plugin_dir.is_some() 
             && self.storage_dir.is_some()
             && self.cache_dir.is_some()
-            && self.hypersync_server.is_some()
             && self.selected_source_id.is_some()
             && self.download_worker_threads.is_some();
     }
@@ -51,7 +50,7 @@ impl Configs {
         if cfg!(debug_assertions) {
             hypersync_server = "http://localhost:3000".to_string();
         }else{
-            hypersync_server = "https://hypersync.goodday360.io".to_string();
+            hypersync_server = DEFAULT_HYPERSYNC_SERVER.to_string();
         }
 
         return Ok(Configs {
@@ -129,8 +128,14 @@ impl Configs {
 
         if let Some(hs) = &self.hypersync_server {
             if hs.is_empty() {
-                self.hypersync_server = default_config_data.hypersync_server;
+                self.hypersync_server = None;
+            }else{
+                if self.hypersync_server == default_config_data.hypersync_server {
+                    self.hypersync_server = None;
+                }
             }
+        }else{
+            self.hypersync_server = None;
         }
 
         let appdata_dir = get_appdata::new()?;

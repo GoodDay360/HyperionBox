@@ -1,21 +1,19 @@
 // Tauri API
-import { openUrl } from '@tauri-apps/plugin-opener';
-import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+
 
 // SolidJS Imports
-import { createSignal, onMount, Index, useContext, For } from "solid-js";
+import { createSignal } from "solid-js";
 
 // SolidJS Router Imports
 // import { useNavigate } from '@solidjs/router';
 
 
 // SUID Imports
-import { IconButton, ButtonBase, Skeleton, MenuItem, Button, TextField } from '@suid/material';
+import {Button, TextField } from '@suid/material';
 
 
 // SUID Icon Imports
-import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
-import FolderRoundedIcon from '@suid/icons-material/FolderRounded';
+
 
 
 // Solid Toast
@@ -24,29 +22,21 @@ import toast from 'solid-toast';
 
 
 // Component Imports
-import NavigationBar from "@src/app/components/navigation_bar";
-import PullRefresh from '@src/app/components/pull_refresh';
-import Select from "@src/app/components/Select";
+
 
 
 // Style Imports
 import styles from "../styles/change_password.module.css"
 
 // Script Imports
-import { ContextManager } from '@src/app/components/app';
-import { pick_dir } from '@src/app/scripts/dialog';
-import { 
-    get_configs, set_configs, is_available_download, 
-    get_storage_size, format_bytes, clean_storage
-} from '../scripts/settings';
-import { Configs } from '../types/settings_type';
+
 import { change_password } from "../scripts/profile";
 
 // Type Imports
 
 
 // Media Imports
-import Discord from "@src/assets/media/Discord.png";
+
 
 
 
@@ -135,11 +125,18 @@ export default function ChangePassword(
             
             <div class={styles.button_box}>
                 <Button variant="text" color="error" disabled={is_loading()}
+                    sx={{
+                        fontSize: "calc((100vw + 100vh)/2*0.02)"
+                    }}
                     onClick={()=>{
                         onClose();
                     }}
                 >Cancel</Button>
                 <Button variant="contained" type="submit" disabled={is_loading()}
+                    sx={{
+                        color: "var(--color-1)",
+                        fontSize: "calc((100vw + 100vh)/2*0.02)"
+                    }}
                 >Save</Button>
             </div>
         </form>

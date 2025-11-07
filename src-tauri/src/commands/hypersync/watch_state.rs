@@ -2,7 +2,6 @@ use chrono::Utc;
 use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use serde_json::{to_string};
 
 use reqwest::Client;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, AUTHORIZATION};
@@ -10,8 +9,6 @@ use tokio::{self,time::{Duration}};
 
 use crate::utils::configs::Configs;
 
-use crate::commands::local_manifest::{get_local_manifest};
-use crate::commands::favorite::{get_tag_from_favorite};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct HyperSyncCache {
