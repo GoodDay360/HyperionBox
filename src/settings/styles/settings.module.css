@@ -61,6 +61,14 @@
 	white-space: nowrap;
 }
 
+.item_text{
+	font-size: calc((100vw + 100vh)/2*0.025);
+	font-weight: 400;
+	color: var(--color-1);
+	font-family: var(--font-family);
+	user-select: none;
+}
+
 .item_input_box{
 	display: flex;
 	flex-direction: row;

@@ -1,5 +1,7 @@
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
 use crate::models::local_manifest::{LinkPlugin, LocalManifest};
+use crate::commands::hypersync::favorite::{add_favorite_cache};
+use crate::commands::favorite::{get_tag_from_favorite};
 
 #[tauri::command]
 pub async fn link_plugin(
@@ -16,7 +18,12 @@ pub async fn link_plugin(
         id: Some(to_id.clone()),
     });
 
-    save_local_manifest(source, from_id, manifest_data).await?;
+    save_local_manifest(source.clone(), from_id.clone(), manifest_data).await?;
+
+    let tags = get_tag_from_favorite(source.clone(), from_id.clone()).await?;
+    if tags.len() > 0 {
+        add_favorite_cache(source.clone(), from_id.clone()).await?;
+    }
 
     return Ok(());
 }

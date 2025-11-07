@@ -1,8 +1,7 @@
 use dotenv::dotenv;
 use std::env;
 use tauri::Manager;
-use tracing::Level;
-use tracing_subscriber::fmt;
+use tracing_subscriber::FmtSubscriber;
 use tauri::async_runtime;
 
 use chlaty_core;
@@ -25,16 +24,10 @@ pub const IS_DEV: bool = false;
 pub fn run() {
     dotenv().ok();
     if IS_DEV {
-        fmt()
-            .with_max_level(Level::DEBUG)
-            .with_max_level(Level::ERROR)
-            .with_max_level(Level::WARN)
-            .with_thread_names(true)
-            .with_thread_ids(true)
-            .with_target(true)
-            .with_file(true)
-            .with_line_number(true)
-            .init();
+        /* Initialize Logger */
+        let subscriber = FmtSubscriber::new();
+        tracing::subscriber::set_global_default(subscriber).unwrap();
+        /* --- */
     }
 
     #[allow(unused_mut)]
@@ -76,7 +69,18 @@ pub fn run() {
             /* Spawn Worker */
             async_runtime::spawn(async move {
                 chlaty_core::init();
-                worker::download::new(app_handle.clone()).await
+            });
+            async_runtime::spawn(async move {
+                worker::download::new(app_handle.clone()).await;
+            });
+            async_runtime::spawn(async move {
+                worker::hypersync::favorite::upload::new().await;
+            });
+            async_runtime::spawn(async move {
+                worker::hypersync::favorite::get::new().await;
+            });
+            async_runtime::spawn(async move {
+                worker::hypersync::watch_state::new().await;
             });
             /* --- */
             return Ok(());
@@ -147,6 +151,11 @@ pub fn run() {
             commands::download::remove_download_item,
             commands::download::get_current_download_status,
             commands::download::get_local_download_manifest,
+            /* --- */
+
+            /* HyperSync */
+            commands::hypersync::reset::reset_hypersync_cache,
+            commands::hypersync::favorite::upload_all_local_favorite,
             /* --- */
 
             /* Settings */

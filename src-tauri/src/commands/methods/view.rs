@@ -81,11 +81,11 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
         }
     }
     /* --- */
-
+    
     /* Fetch from remote if cache expire/not exist and not in favorite */
     /* This fallback to use local manifest if it failed to fetch. */
 
-    let mut fetch_remote_state: bool = true;
+    let mut fetch_remote_state: bool = true; // To check if remote data is fetched successfully
 
     if should_fetch_remote {
         if !link_plugin_id.is_empty() && !link_id.is_empty() {
@@ -108,7 +108,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
             };
 
             let episode_list: Vec<Vec<Vec<DataResult>>> = match task_get_episode_list {
-                Ok(data) => data,
+                Ok(data) => {data},
                 Err(e) => {
                     warn!(
                         "[View] Failed to load remote episode list: {}\n=> Loading local episode list.",
@@ -122,7 +122,7 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
                     }
                 }
             };
-
+            
             manifest_data.episode_list = Some(episode_list);
             manifest_data
                 .meta_data
@@ -197,12 +197,10 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
 
             let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
 
-            if !poster_path.exists() || !banner_path.exists() {
-                should_cache_media = true;
-            } else {
-                if (current_timestamp - local_timestamp) >= CACHE_DELAY {
+            if ((current_timestamp - local_timestamp) >= CACHE_DELAY) || force_remote {
+                if !poster_path.exists() || !banner_path.exists() {
                     should_cache_media = true;
-                }
+                } 
             }
 
             if should_cache_media {
@@ -241,7 +239,11 @@ pub async fn view(source: String, id: String, force_remote: bool) -> Result<View
 
         let current_timestamp: usize = Utc::now().timestamp_millis() as usize;
         local_manifest.last_save_timestamp = Some(current_timestamp);
-        if (((current_timestamp - local_timestamp) >= CACHE_DELAY) || force_remote) && fetch_remote_state {
+        
+        if (((current_timestamp - local_timestamp) >= CACHE_DELAY) || should_fetch_remote) && fetch_remote_state {
+            if let Some(manifest_data) = &mut local_manifest.manifest_data {
+                manifest_data.episode_list = manifest_data.episode_list.clone();
+            }
             save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
         }
     }

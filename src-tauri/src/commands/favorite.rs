@@ -4,6 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 
 use crate::utils::configs::Configs;
+use crate::commands::hypersync::favorite::{
+    add_favorite_cache
+};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ItemFromFavorite {
@@ -11,6 +14,7 @@ pub struct ItemFromFavorite {
     pub id: String,
     pub timestamp: usize,
 }
+
 
 pub fn get_db() -> Result<Connection, String> {
     let config_data = Configs::get()?;
@@ -43,6 +47,25 @@ pub fn get_db() -> Result<Connection, String> {
         [],
     )
     .map_err(|e| e.to_string())?;
+
+    /* Table for cache upload to HyperSync Server */
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS favorite_cache (
+            source TEXT NOT NULL,
+            id TEXT NOT NULL,
+            tags TEXT NOT NULL,
+            link_plugin_id TEXT,
+            link_id TEXT,
+            current_watch_season_index INT NOT NULL,
+            current_watch_episode_index INT NOT NULL,
+            timestamp BIGINT NOT NULL,
+            UNIQUE(source, id)
+        )",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
+
+    /* --- */
 
     Ok(conn)
 }
@@ -100,6 +123,11 @@ pub async fn rename_tag(old_tag: String, new_tag: String) -> Result<(), String> 
     )
     .map_err(|e| e.to_string())?;
 
+    let tags = get_item_from_favorite(new_tag.clone())?;
+    for tag in tags {
+        add_favorite_cache(tag.source, tag.id).await?;
+    }
+
     Ok(())
 }
 
@@ -118,6 +146,12 @@ pub async fn remove_tag(tag_name: String) -> Result<(), String> {
 
     conn.execute("DELETE FROM favorite WHERE tag_name = ?1", [&tag_name])
         .map_err(|e| e.to_string())?;
+
+
+    let tags = get_item_from_favorite(tag_name.clone())?;
+    for tag in tags {
+        add_favorite_cache(tag.source, tag.id).await?;
+    }
 
     Ok(())
 }
@@ -145,6 +179,8 @@ pub async fn add_favorite(tag_name: String, source: String, id: String) -> Resul
         params![tag_name, source, id, 0],
     )
     .map_err(|e| e.to_string())?;
+
+    add_favorite_cache(source, id).await?;
 
     Ok(())
 }
@@ -277,5 +313,8 @@ pub async fn remove_favorite(tag_name: String, source: String, id: String) -> Re
     )
     .map_err(|e| e.to_string())?;
 
+    add_favorite_cache(source, id).await?;
+
     Ok(())
 }
+

@@ -15,7 +15,7 @@ import { IconButton, ButtonBase, Skeleton, MenuItem, Button } from '@suid/materi
 // SUID Icon Imports
 import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
 import FolderRoundedIcon from '@suid/icons-material/FolderRounded';
-
+import SaveRoundedIcon from '@suid/icons-material/SaveRounded';
 
 // Solid Toast
 import toast from 'solid-toast';
@@ -26,6 +26,8 @@ import toast from 'solid-toast';
 import NavigationBar from "@src/app/components/navigation_bar";
 import PullRefresh from '@src/app/components/pull_refresh';
 import Select from "@src/app/components/Select";
+import Login from "./login";
+import ChangePassword from "./change_password";
 
 
 // Style Imports
@@ -55,6 +57,9 @@ export default function Settings() {
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [is_working, set_is_working] = createSignal<boolean>(false);
+
+    const [show_login, set_show_login] = createSignal<boolean>(false);
+    const [show_change_password, set_show_change_password] = createSignal<boolean>(false);
 
     const get_data = async () => {
         if (is_working()) return;
@@ -137,6 +142,183 @@ export default function Settings() {
             <div class={styles.body_container}>
                 {!is_loading()
                     ? <div class={styles.content_container}>
+                        {/* Profile */}
+                        <fieldset
+                            style={{
+                                border:"2.5px solid var(--color-1)",
+                            }}
+                        >
+                            <legend class={`float-none w-auto`}
+                                style={{
+                                    color:"var(--color-1)",
+                                }}
+                            >Profile</legend>
+                            
+                            <div class={styles.item_container}
+                                style={{
+                                    padding: "12px",
+                                }}
+                            >
+                                <div class={styles.item_box}>
+                                    {CONFIGS_DATA()?.hypersync_token
+                                        ? <div 
+                                            style={{
+                                                display: "flex",
+                                                "flex-direction":"column",
+                                                gap: "12px"
+                                            }}
+                                        >
+                                            <span class={styles.item_text}>
+                                                Logged in using HyperSync Server:
+                                            </span>
+                                            <input class={styles.item_input} readOnly
+                                                value={CONFIGS_DATA()?.hypersync_server ?? ""}
+                                            />
+
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    "flex-direction": "row",
+                                                    gap: "8px"
+                                                }}
+                                            >
+                                                <Button variant="contained" color="error" disabled={is_loading() || is_working()}
+                                                    sx={{
+                                                        textTransform: "none",
+                                                        color: "var(--color-1)",
+                                                        fontSize: "calc((100vw + 100vh)/2*0.02)",
+                                                    }}
+                                                    onClick={() => {
+                                                        const new_config = {
+                                                            ...CONFIGS_DATA()!,
+                                                            hypersync_token: undefined,
+                                                        }
+                                                        set_configs(new_config)
+                                                            .then(() => {
+                                                                get_data();
+                                                                toast.remove();
+                                                                toast.success("Logged out successfully.",{
+                                                                    style: {
+                                                                        color:"green",
+                                                                    }
+                                                                })
+                                                            })
+                                                            .catch((e) => {
+                                                                console.error(e);
+                                                                toast.remove();
+                                                                toast.error("Something went wrong while logging out.",{
+                                                                    style: {
+                                                                        color:"red",
+                                                                    }
+                                                                })
+                                                            })
+                                                    }}
+                                                >Logout</Button>
+
+                                                <Button variant="contained" color="primary" disabled={is_loading() || is_working()}
+                                                    sx={{
+                                                        textTransform: "none",
+                                                        color: "var(--color-1)",
+                                                        fontSize: "calc((100vw + 100vh)/2*0.02)",
+                                                    }}
+                                                    onClick={() => {
+                                                        set_show_change_password(true);
+                                                    }}
+                                                >Change Password</Button>
+                                            </div>
+                                        </div>
+                                        : <div 
+                                            style={{
+                                                display: "flex",
+                                                "flex-direction":"column",
+                                                gap: "12px"
+                                            }}
+                                        >
+                                            <h2 class={styles.item_title}>HyperSync Server</h2>
+                                            <form class={styles.item_input_box}
+                                                onSubmit={(e)=>{
+                                                    e.preventDefault();
+                                                        const current_config = CONFIGS_DATA()!;
+
+                                                        set_configs(current_config)
+                                                            .then(() => {
+                                                                get_data();
+                                                                toast.remove();
+                                                                toast.success("HyperSync server set successfully.",{
+                                                                    style: {
+                                                                        color:"green",
+                                                                    }
+                                                                })
+                                                            })
+                                                            .catch((e) => {
+                                                                console.error(e);
+                                                                toast.remove();
+                                                                toast.error("Something went wrong while setting configs.",{
+                                                                    style: {
+                                                                        color:"red",
+                                                                    }
+                                                                })
+                                                            })
+                                                }}
+                                            >
+                                                <input class={styles.item_input}
+                                                    placeholder="Leave empty and save to use default."
+                                                    onChange={(e)=>{
+                                                        const current_config = CONFIGS_DATA();
+
+                                                        const new_config: Configs = {
+                                                            ...current_config!,
+                                                            hypersync_server: e.target.value
+                                                        };
+
+                                                        SET_CONFIGS_DATA(new_config);
+                                                    }}
+                                                    value={CONFIGS_DATA()?.hypersync_server ?? ""}
+                                                />
+                                                <ButtonBase
+                                                    sx={{
+                                                        color: 'aqua',
+                                                        fontSize: 'max(18px, calc((100vw + 100vh)/2*0.025))',
+                                                        background: 'var(--background-2)',
+                                                        padding: '8px',
+                                                    }}
+                                                    type="submit"
+                                                >
+                                                    <SaveRoundedIcon color="inherit" fontSize='inherit' />
+                                                </ButtonBase>
+                                            </form>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    "flex-direction": "row",
+                                                    gap: "8px"
+                                                }}
+                                            >
+                                                
+                                                <Button variant="contained" color="primary" disabled={is_loading() || is_working()}
+                                                    sx={{
+                                                        textTransform: "none",
+                                                        color: "var(--color-1)",
+                                                        fontSize: "calc((100vw + 100vh)/2*0.02)",
+                                                    }}
+                                                    onClick={() => {
+                                                        set_show_login(true);
+                                                    }}
+                                                >Login with HyperSync</Button>
+
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                
+
+                                
+                            </div>
+
+                        </fieldset>
+                        {/* --- */}
+
+                        {/* General */}
                         <fieldset
                             style={{
                                 border:"2.5px solid var(--color-1)",
@@ -326,7 +508,9 @@ export default function Settings() {
                             </div>
 
                         </fieldset>
-
+                        {/* --- */}
+                        
+                        {/* Download */}
                         <fieldset
                             style={{
                                 border:"2.5px solid var(--color-1)",
@@ -446,7 +630,7 @@ export default function Settings() {
                             </div>
 
                         </fieldset>
-
+                        {/* --- */}
 
                     </div>
                     : <div
@@ -474,9 +658,30 @@ export default function Settings() {
                     </div>
                 }
             </div>
-
+            
         </div>
+            
+        {show_login() &&
+            <Login
+                onClose={()=>{
+                    set_show_login(false);
+                }}
+                onSuccess={()=>{
+                    get_data()
+                }}
+            />
+        }
 
+        {show_change_password() &&
+            <ChangePassword
+                onClose={()=>{
+                    set_show_change_password(false);
+                }}
+                onSuccess={()=>{
+                    get_data()
+                }}
+            />
+        }
 
         {/* Navigation Bar For Small Screen Width */}
         {(context?.screen_size?.()?.width ?? 0) <= 550 &&

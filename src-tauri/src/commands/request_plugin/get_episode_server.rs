@@ -4,8 +4,12 @@ use tracing::error;
 use chlaty_core::request_plugin;
 use chlaty_core::request_plugin::get_episode_server::DataResult;
 
-use crate::commands::favorite::update_timestamp_favorite;
+use crate::commands::favorite::{update_timestamp_favorite, get_tag_from_favorite};
+use crate::commands::hypersync::favorite::{
+    add_favorite_cache
+};
 use crate::commands::local_manifest::{get_local_manifest, save_local_manifest};
+
 
 #[tauri::command]
 pub async fn get_episode_server(
@@ -35,7 +39,12 @@ pub async fn get_episode_server(
         local_manifest.current_watch_season_index = Some(season_index);
         local_manifest.current_watch_episode_index = Some(episode_index);
         save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
-        update_timestamp_favorite(source, id).await?;
+        update_timestamp_favorite(source.clone(), id.clone()).await?;
+
+        let tags = get_tag_from_favorite(source.clone(), id.clone()).await?;
+        if tags.len() > 0 {
+            add_favorite_cache(source, id).await?;
+        }
     }
     /* --- */
 

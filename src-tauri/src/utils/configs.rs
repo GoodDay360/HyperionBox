@@ -12,11 +12,13 @@ pub struct Configs {
     pub plugin_dir: Option<PathBuf>,
     pub storage_dir: Option<PathBuf>,
     pub cache_dir: Option<PathBuf>,
+    pub hypersync_server: Option<String>,
+    pub hypersync_token: Option<String>,
     pub selected_source_id: Option<String>,
     pub download_worker_threads: Option<usize>,
 }
 
-
+const DEFAULT_HYPERSYNC_SERVER: &str = "https://hypersync.up.railway.app";
 
 impl Configs {
     pub fn is_all_set(&self) -> bool {
@@ -44,10 +46,19 @@ impl Configs {
         let storage_dir = appdata_dir.join("storage").to_string_lossy().to_string();
         let cache_dir = appdata_dir.join("cache").to_string_lossy().to_string();
 
+        let hypersync_server: String;
+        if cfg!(debug_assertions) {
+            hypersync_server = "http://localhost:3000".to_string();
+        }else{
+            hypersync_server = DEFAULT_HYPERSYNC_SERVER.to_string();
+        }
+
         return Ok(Configs {
             plugin_dir: Some(PathBuf::from(plugin_dir)),
             storage_dir: Some(PathBuf::from(storage_dir)),
             cache_dir: Some(PathBuf::from(cache_dir)),
+            hypersync_server: Some(hypersync_server),
+            hypersync_token: None,
             selected_source_id: Some("anime".to_string()),
             download_worker_threads: Some(3),
         });
@@ -100,19 +111,38 @@ impl Configs {
         if config_data.download_worker_threads.is_none() {
             config_data.download_worker_threads = default_configs.download_worker_threads;
         }
+
+        if config_data.hypersync_server.is_none() {
+            config_data.hypersync_server = default_configs.hypersync_server;
+        }
         /* --- */
 
         return Ok(config_data);
     }
 
-    pub fn set(&self) -> Result<(), String> {
-        if !Configs::is_all_set(self) {
+    pub fn set(mut self) -> Result<(), String> {
+        if !Configs::is_all_set(&self) {
             return Err("Not all configs are set".to_string());
         }
+        let default_config_data = Configs::default().map_err(|e| e.to_string())?;
+
+        if let Some(hs) = &self.hypersync_server {
+            if hs.is_empty() {
+                self.hypersync_server = None;
+            }else{
+                if self.hypersync_server == default_config_data.hypersync_server {
+                    self.hypersync_server = None;
+                }
+            }
+        }else{
+            self.hypersync_server = None;
+        }
+
         let appdata_dir = get_appdata::new()?;
 
         let config_file = appdata_dir.join("configs.json");
-        let config_data_to_string = to_string_pretty(self).map_err(|e| e.to_string())?;
+        let config_data_to_string = to_string_pretty(&self).map_err(|e| e.to_string())?;
+
         fs::write(&config_file, config_data_to_string).map_err(|e| e.to_string())?;
 
         return Ok(());
