@@ -74,7 +74,10 @@ pub fn run() {
                 worker::download::new(app_handle.clone()).await;
             });
             async_runtime::spawn(async move {
-                worker::hypersync::favorite::new().await;
+                worker::hypersync::favorite::upload::new().await;
+            });
+            async_runtime::spawn(async move {
+                worker::hypersync::favorite::get::new().await;
             });
             async_runtime::spawn(async move {
                 worker::hypersync::watch_state::new().await;
@@ -148,6 +151,11 @@ pub fn run() {
             commands::download::remove_download_item,
             commands::download::get_current_download_status,
             commands::download::get_local_download_manifest,
+            /* --- */
+
+            /* HyperSync */
+            commands::hypersync::reset::reset_hypersync_cache,
+            commands::hypersync::favorite::upload_all_local_favorite,
             /* --- */
 
             /* Settings */

@@ -66,3 +66,13 @@ export const change_password = async (current_password: string, new_password: st
         })
     })
 };
+
+
+export const reset_hypersync_cache = async ():Promise<void> => {
+    return invoke<void>('reset_hypersync_cache');
+};
+
+
+export const upload_all_local_favorite = async ():Promise<void> => {
+    return invoke<void>('upload_all_local_favorite');
+};

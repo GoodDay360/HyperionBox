@@ -7,7 +7,7 @@ use serde_json::{to_string};
 use crate::utils::configs::Configs;
 
 use crate::commands::local_manifest::{get_local_manifest};
-use crate::commands::favorite::{get_tag_from_favorite};
+use crate::commands::favorite::{get_tag_from_favorite, get_all_item_from_favorite};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct HyperSyncCache {
@@ -155,6 +155,17 @@ pub async fn add_favorite_cache(
     Ok(())
 }
 
+#[tauri::command]
+pub async fn upload_all_local_favorite() -> Result<(), String> {
+    let local_favorite = get_all_item_from_favorite()?;
+
+    for favorite in local_favorite {
+        add_favorite_cache(favorite.source, favorite.id).await?;
+    }
+
+    return Ok(());
+}
+
 pub async fn clear_favorite_cache(source: String, id: String, timestamp: usize) -> Result<(), String> {
     let conn = get_db()?;
 
@@ -166,3 +177,4 @@ pub async fn clear_favorite_cache(source: String, id: String, timestamp: usize) 
 
     Ok(())
 }
+

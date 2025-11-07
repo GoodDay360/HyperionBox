@@ -15,17 +15,6 @@ pub struct ItemFromFavorite {
     pub timestamp: usize,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct HypersyncCache {
-    pub source: String,
-    pub id: String,
-    pub tags: String,
-    pub link_plugin_id: Option<String>,
-    pub link_id: Option<String>,
-    pub current_watch_season_index: i32,
-    pub current_watch_episode_index: i32,
-    pub timestamp: i64,
-}
 
 pub fn get_db() -> Result<Connection, String> {
     let config_data = Configs::get()?;
@@ -145,8 +134,6 @@ pub async fn rename_tag(old_tag: String, new_tag: String) -> Result<(), String> 
 #[tauri::command]
 pub async fn remove_tag(tag_name: String) -> Result<(), String> {
     let conn = get_db()?;
-
-    
 
     // Delete the tag
     let rows_deleted = conn

@@ -68,7 +68,7 @@ async fn upload() -> Result<(), String> {
             .post(url)
             .headers(headers)
             .json(&payload)
-            .timeout(Duration::from_secs(8))
+            .timeout(Duration::from_secs(30))
             .send()
             .await.map_err(|e| e.to_string())?;
 

@@ -3,9 +3,10 @@ use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use serde_json::{to_string};
-use tracing::{info};
+
 use reqwest::Client;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, AUTHORIZATION};
+use tokio::{self,time::{Duration}};
 
 use crate::utils::configs::Configs;
 
@@ -72,7 +73,7 @@ pub fn get_db() -> Result<Connection, String> {
 #[tauri::command]
 pub async fn get_all_watch_state_cache() -> Result<Vec<HyperSyncCache>, String> {
     let conn = get_db()?;
-    info!("get_all_watch_state_cache");
+    
     let mut stmt = conn
         .prepare("SELECT 
             source, 
@@ -219,6 +220,7 @@ pub async fn get_remote_watch_state(
     let response = client
         .post(url)
         .headers(headers)
+        .timeout(Duration::from_secs(30))
         .json(&payload)
         .send()
         .await.map_err(|e| e.to_string())?;

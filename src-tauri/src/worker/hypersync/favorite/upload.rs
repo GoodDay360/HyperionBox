@@ -67,6 +67,7 @@ async fn upload() -> Result<(), String> {
         let response = client
             .post(url)
             .headers(headers)
+            .timeout(Duration::from_secs(30))
             .json(&payload)
             .send()
             .await.map_err(|e| e.to_string())?;
@@ -87,10 +88,10 @@ pub async fn new(){
     loop {
         match upload().await {
             Ok(()) => {
-                // info!("[Worker:HyperSync:Favorite]: All tasks completed successfully.");
+                // info!("[Worker:HyperSync:Favorite::Upload]: All tasks completed successfully.");
             }
             Err(e) => {
-                error!("[Worker:HyperSync:Favorite]: {}", e);
+                error!("[Worker:HyperSync:Favorite::Upload]: {}", e);
                 sleep(Duration::from_secs(10)).await;
             },
         }
