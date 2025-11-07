@@ -1,5 +1,5 @@
 use tokio::{time::{sleep, Duration}};
-use tracing::{error, info, warn};
+use tracing::{error, warn};
 use reqwest::Client;
 use reqwest::header::{HeaderMap, HeaderValue, CONTENT_TYPE, AUTHORIZATION};
 use serde::{Deserialize, Serialize};
@@ -129,7 +129,7 @@ async fn get_remote() -> Result<(), String> {
         }
 
         let data = response.json::<Response>().await.map_err(|e| e.to_string())?.data;
-        info!("data {:?}", data);
+        
 
         for favorite in &data {
             let mut local_manifest = get_local_manifest(favorite.source.to_string(), favorite.id.to_string()).await?;

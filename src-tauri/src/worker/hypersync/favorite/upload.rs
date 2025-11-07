@@ -51,7 +51,7 @@ async fn upload() -> Result<(), String> {
             tags: from_str(&favorite.tags).map_err(|e| e.to_string())?,
             current_watch_season_index: favorite.current_watch_season_index,
             current_watch_episode_index: favorite.current_watch_episode_index,
-            timestamp: favorite.timestamp as usize,
+            timestamp: current_timestamp,
         };
 
         let mut headers = HeaderMap::new();

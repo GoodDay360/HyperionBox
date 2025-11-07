@@ -47,7 +47,7 @@ impl Configs {
         let cache_dir = appdata_dir.join("cache").to_string_lossy().to_string();
 
         let hypersync_server: String;
-        if cfg!(debug_assertions) {
+        if !cfg!(debug_assertions) {
             hypersync_server = "http://localhost:3000".to_string();
         }else{
             hypersync_server = DEFAULT_HYPERSYNC_SERVER.to_string();
