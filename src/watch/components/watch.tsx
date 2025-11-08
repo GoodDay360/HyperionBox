@@ -315,16 +315,17 @@ export default function Watch() {
     /* Main Mount */
     onMount(() => {
         console.log(source, link_plugin_id, link_id, season_index, episode_index);
-
+        /* Load player configs */
         let player_configs:PlayerConfigs = {
             auto_next: true,
             auto_skip_intro_outro: true
         }
-        /* Load player configs */
         try {
-            const saved_player_configs = localStorage.getItem("player_configs") ?? "{}";
-            const configs:PlayerConfigs = JSON.parse(saved_player_configs);
-            player_configs = configs;
+            const saved_player_configs = localStorage.getItem("player_configs");
+            if (saved_player_configs) {
+                const configs:PlayerConfigs = JSON.parse(saved_player_configs) || player_configs;
+                player_configs = configs;
+            }
         }catch(e){
             console.error(e);
         };

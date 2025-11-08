@@ -40,11 +40,10 @@ import {
     get_configs, set_configs, is_available_download, 
     get_storage_size, format_bytes, clean_storage
 } from '../scripts/settings';
-import { Configs } from '../types/settings_type';
+import { verify } from '../scripts/profile';
 
 // Types Import
-
-
+import { Configs } from '../types/settings_type';
 
 
 export default function Settings() {
@@ -60,6 +59,21 @@ export default function Settings() {
 
     const [show_login, set_show_login] = createSignal<boolean>(false);
     const [show_change_password, set_show_change_password] = createSignal<boolean>(false);
+
+    /* Verify Hypersync Token if logged in */
+    onMount(()=>{(async()=>{
+        const configs = await get_configs();
+        if (configs.hypersync_token) {
+            verify(configs.hypersync_token)
+                .then((status)=>{
+                    if (!status) {
+                        toast.remove();
+                        toast.error("Your HyperSync profile token has expired or invalidated. Try logging in again.",{style: {color: "red"}});
+                    }
+                });
+        }
+    })()})
+    /* --- */
 
     const get_data = async () => {
         if (is_working()) return;
