@@ -33,6 +33,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'animate.css';
 import "../styles/app.css";
 
+// Scripts Imports
+import { get_configs } from '@src/settings/scripts/settings';
+import { verify } from '@src/settings/scripts/profile';
+
 
 
 
@@ -60,6 +64,21 @@ export default function App() {
 
     const [safe_area, set_safe_area] = createSignal({top: 0, bottom: 0, left: 0, right: 0});
     const [screen_size, set_screen_size] = createSignal({width: 0, height: 0});
+
+    /* Verify Hypersync Token if logged in */
+    onMount(()=>{(async()=>{
+        const configs = await get_configs();
+        if (configs.hypersync_token) {
+            verify(configs.hypersync_token)
+                .then((status)=>{
+                    if (!status) {
+                        toast.remove();
+                        toast.error("Your HyperSync profile token has expired or invalidated. Try logging in again.",{style: {color: "red"}});
+                    }
+                });
+        }
+    })()})
+    /* --- */
     
     /* Handle fullscreen on F11 key */
     onMount(()=>{
@@ -130,8 +149,7 @@ export default function App() {
             <div
                 style={{
                     width: "auto",
-                    height: "auto",
-                    "user-select": "none",
+                    height: "auto"
                 }}
                 onClick={() => toast.remove()}
             >

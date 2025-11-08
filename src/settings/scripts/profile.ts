@@ -8,6 +8,32 @@ import { Configs } from '../types/settings_type';
 // Scripts Imports
 import { get_configs, set_configs } from './settings';
 
+export const verify = async (token: string):Promise<boolean> => {
+    const configs = await get_configs();
+    return new Promise<boolean>((resolve, reject) => {
+        fetch(`${configs.hypersync_server}/api/user/verify`,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({token})
+        }).then(async (res)=>{
+            if (res.status === 200) {
+                const data:{status: boolean} = await res.json();
+                const status = data.status;
+                resolve(status);
+            }else{
+                const e_data = await res.json()
+                reject(e_data.message);
+            }
+        }).catch((e)=>{
+            console.error(e);
+            reject("Something went wrong while logging in.");
+        })
+    })
+};
+
+
 export const login = async (email: string, password: string):Promise<void> => {
     const configs = await get_configs();
     return new Promise((resolve, reject) => {
@@ -28,7 +54,8 @@ export const login = async (email: string, password: string):Promise<void> => {
                 const e_data = await res.json()
                 reject(e_data.message);
             }
-        }).catch(()=>{
+        }).catch((e)=>{
+            console.error(e);
             reject("Something went wrong while logging in.");
         })
     })
