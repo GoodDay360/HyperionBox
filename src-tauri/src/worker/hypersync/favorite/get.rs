@@ -8,11 +8,11 @@ use chrono::Utc;
 use std::fs;
 
 use crate::commands::favorite::{
-    create_tag, add_favorite
+    create_tag, add_favorite, update_timestamp_favorite, full_remove_favorite
 };
 use crate::utils::configs::Configs;
 use crate::commands::local_manifest::{
-    get_local_manifest, save_local_manifest
+    get_local_manifest, save_local_manifest,
 };
 use crate::commands::methods::view::view;
 
@@ -132,6 +132,11 @@ async fn get_remote() -> Result<(), String> {
         
 
         for favorite in &data {
+            if favorite.tags.len() == 0 {
+                full_remove_favorite(favorite.source.clone(), favorite.id.clone()).await?;
+                continue;
+            }
+
             let mut local_manifest = get_local_manifest(favorite.source.to_string(), favorite.id.to_string()).await?;
 
             if local_manifest.manifest_data.is_none() {
@@ -147,10 +152,11 @@ async fn get_remote() -> Result<(), String> {
             local_manifest.current_watch_episode_index = favorite.current_watch_episode_index;
             local_manifest.current_watch_season_index = favorite.current_watch_season_index;
 
-            let current_timestamp = Utc::now().timestamp_millis() as usize;
-            local_manifest.last_save_timestamp = Some(current_timestamp);
+            local_manifest.last_save_timestamp = Some(favorite.timestamp);
             save_local_manifest(favorite.source.to_string(), favorite.id.to_string(), local_manifest).await?;
-            
+            let current_timestamp = Utc::now().timestamp_millis() as usize;
+            update_timestamp_favorite(favorite.source.clone(), favorite.id.clone(), current_timestamp).await?;
+
             let tags = &favorite.tags;
             for tag in tags {
                 match create_tag(tag.to_string()).await {
@@ -170,8 +176,11 @@ async fn get_remote() -> Result<(), String> {
                 };
             }
         }
-        
 
+        if (data.len() == 0) && (cache_get_favorite.page == 1) {
+            break;
+        }
+        
         if data.len() == 0 {
             let current_timestamp = Utc::now().timestamp_millis() as usize;
             cache_get_favorite.page = 1;

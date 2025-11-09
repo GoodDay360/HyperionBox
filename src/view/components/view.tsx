@@ -290,7 +290,7 @@ export default function View() {
 
                     <div class={styles.container_3}>
                         <div class={styles.container_3_title_box}>
-                            <h2 class={styles.container_3_title}>Description</h2>
+                            <h2 class={styles.container_3_title}>Descriptions</h2>
                             <Button
                                 sx={{
                                     textTransform: 'none',
@@ -313,6 +313,11 @@ export default function View() {
                                     })
                                 }}
                             >&nbsp;&nbsp;&nbsp;&nbsp;{DATA()?.manifest_data?.description}</span>
+                            {show_more() && <>
+                                <span class={styles.container_3_text}>
+                                    <br/>Title: {DATA()?.manifest_data?.title}
+                                </span>
+                            </>}
                         </div>
                     </div>
                     
