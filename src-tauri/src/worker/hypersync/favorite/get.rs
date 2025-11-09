@@ -154,8 +154,7 @@ async fn get_remote() -> Result<(), String> {
 
             local_manifest.last_save_timestamp = Some(favorite.timestamp);
             save_local_manifest(favorite.source.to_string(), favorite.id.to_string(), local_manifest).await?;
-            let current_timestamp = Utc::now().timestamp_millis() as usize;
-            update_timestamp_favorite(favorite.source.clone(), favorite.id.clone(), current_timestamp).await?;
+            update_timestamp_favorite(favorite.source.clone(), favorite.id.clone(), favorite.timestamp).await?;
 
             let tags = &favorite.tags;
             for tag in tags {
