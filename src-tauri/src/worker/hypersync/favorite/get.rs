@@ -170,6 +170,10 @@ async fn get_remote() -> Result<(), String> {
                 };
             }
         }
+
+        if (data.len() == 0) && (cache_get_favorite.page == 1) {
+            break;
+        }
         
 
         if data.len() == 0 {
