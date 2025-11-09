@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use tracing::error;
-
+use chrono::Utc;
 use chlaty_core::request_plugin;
 use chlaty_core::request_plugin::get_episode_server::DataResult;
 
@@ -39,7 +39,8 @@ pub async fn get_episode_server(
         local_manifest.current_watch_season_index = Some(season_index);
         local_manifest.current_watch_episode_index = Some(episode_index);
         save_local_manifest(source.clone(), id.clone(), local_manifest).await?;
-        update_timestamp_favorite(source.clone(), id.clone()).await?;
+        let current_timestamp = Utc::now().timestamp_millis() as usize;
+        update_timestamp_favorite(source.clone(), id.clone(), current_timestamp).await?;
 
         let tags = get_tag_from_favorite(source.clone(), id.clone()).await?;
         if tags.len() > 0 {

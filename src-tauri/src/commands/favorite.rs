@@ -1,4 +1,3 @@
-use chrono::Utc;
 use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -290,12 +289,12 @@ pub fn get_all_item_from_favorite() -> Result<Vec<ItemFromFavorite>, String> {
 }
 
 #[tauri::command]
-pub async fn update_timestamp_favorite(source: String, id: String) -> Result<(), String> {
+pub async fn update_timestamp_favorite(source: String, id: String, timestamp: usize) -> Result<(), String> {
     let conn = get_db()?; // Reuse your existing get_db function
 
     conn.execute(
         "UPDATE favorite SET timestamp = ?1 WHERE source = ?2 AND id = ?3",
-        rusqlite::params![Utc::now().timestamp_millis(), source, id],
+        rusqlite::params![timestamp, source, id],
     )
     .map_err(|e| e.to_string())?;
 
@@ -314,6 +313,19 @@ pub async fn remove_favorite(tag_name: String, source: String, id: String) -> Re
     .map_err(|e| e.to_string())?;
 
     add_favorite_cache(source, id).await?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn full_remove_favorite(source: String, id: String) -> Result<(), String> {
+    let conn = get_db()?;
+
+    conn.execute(
+        "DELETE FROM favorite WHERE source = ?1 AND id = ?2",
+        params![source, id],
+    )
+    .map_err(|e| e.to_string())?;
 
     Ok(())
 }
