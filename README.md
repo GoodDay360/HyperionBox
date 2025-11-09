@@ -20,10 +20,10 @@
 
 # Download
 
-### Windows, Android
+### <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Windows_logo_-_2012.svg" alt="Android" width="20" height="20"> Windows, <img src="https://upload.wikimedia.org/wikipedia/commons/d/d7/Android_robot.svg" alt="Android" width="20" height="20"> Android
 [![Download](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge&logo=github)](https://github.com/GoodDay360/HyperionBox/releases/latest)
 
-### Linux (Delayed)
+### <img src="https://upload.wikimedia.org/wikipedia/commons/d/dd/Linux_logo.jpg" alt="Android" width="20" height="20"> Linux (Delayed Release)
 [![Get it from the Snap Store](https://snapcraft.io/en/dark/install.svg)](https://snapcraft.io/hyperionbox)
 
 
@@ -32,7 +32,8 @@ An open-source anime and movie streaming app that supports many sources through 
 
 # ✨ Features
 - 🎬 **Stream anime and movies** seamlessly from various sources.
-- 📌 **Track watch progress** across multiple sessions.
+- 📌 **Track your watch progress** and pick up where you left off.
+- ☁️ **Integrate with [HyperSync](https://github.com/GoodDay360/HyperSync)** to sync your favorites and watch history across all your devices.
 - ⬇️ **Download** for offline watching.
 - 🎨 **Modern UI** for a smooth and intuitive experience.
 - 🔍 **Advanced search** for quick content discovery.
