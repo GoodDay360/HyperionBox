@@ -393,14 +393,15 @@ export default function Home() {
                                 <div class={`${styles.content_data_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                     onWheel={(e) => {
                                         const el = e.currentTarget;
-                                        const hasOverflow = el.scrollWidth > el.clientWidth;
-                                        if (!hasOverflow) return;
+                                        const isOverflowing = el.scrollWidth > el.clientWidth;
 
+                                        if (isOverflowing) {
                                         e.preventDefault();
-                                        e.currentTarget.scrollBy({
+                                        el.scrollBy({
                                             left: e.deltaY,
                                             behavior: "smooth",
                                         });
+                                        }
                                     }}
                                 >
                                     <For each={item.data}>

@@ -326,14 +326,15 @@ export default function View() {
                             <div class={`${styles.season_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                 onWheel={(e) => {
                                     const el = e.currentTarget;
-                                    const hasOverflow = el.scrollWidth > el.clientWidth;
-                                    if (!hasOverflow) return;
+                                    const isOverflowing = el.scrollWidth > el.clientWidth;
 
+                                    if (isOverflowing) {
                                     e.preventDefault();
-                                    e.currentTarget.scrollBy({
+                                    el.scrollBy({
                                         left: e.deltaY,
                                         behavior: "smooth",
                                     });
+                                    }
                                 }}
                             >
                                 <For each={[...Array(DATA()?.manifest_data?.episode_list?.length ?? 0)]}>

@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "HyperionBox"
-version = "2.1.2"
+version = "2.1.3"
 dependencies = [
  "bytes",
  "chlaty-core",
@@ -570,7 +570,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 [[package]]
 name = "chlaty-core"
 version = "0.1.0"
-source = "git+https://github.com/chlaty/chlaty-core?branch=main#a554dfaa449a29e877a0c7a0075fd36bba6eb3d6"
+source = "git+https://github.com/chlaty/chlaty-core?branch=main#5a3efde913018c50eda9e6453a86b73dc7a7d096"
 dependencies = [
  "chrono",
  "dashmap",
@@ -966,7 +966,7 @@ version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "330c60081dcc4c72131f8eb70510f1ac07223e5d4163db481a04a0befcffa412"
 dependencies = [
- "libloading 0.8.9",
+ "libloading 0.7.4",
 ]
 
 [[package]]

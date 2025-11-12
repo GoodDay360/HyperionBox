@@ -142,12 +142,16 @@ export default function Plugin() {
                 console.log(data);
                 SET_INSTALLED_PLUGIN_DATA(data);
                 if (current_tab() === 0) {
-                    if (Object.keys(SEARCH_IN_PLUGIN_DATA()).length === 0) {
+                    if ((Object.keys(SEARCH_IN_PLUGIN_DATA()).length === 0) || (Object.keys(SEARCH_IN_PLUGIN_DATA()).length !== Object.keys(INSTALLED_PLUGIN_DATA()).length)) {
                         request_search_in_plugin()
+                    }else{
+                        set_is_loading(false);
                     }
-                };
+                }else{
+                    set_is_loading(false);
+                }
             })
-            .finally(() => {
+            .catch(() => {
                 set_is_loading(false);
             })
 
@@ -303,11 +307,16 @@ export default function Plugin() {
                                                 </div>
                                                 <div class={`${styles.content_data_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                     onWheel={(e) => {
+                                                        const el = e.currentTarget;
+                                                        const isOverflowing = el.scrollWidth > el.clientWidth;
+
+                                                        if (isOverflowing) {
                                                         e.preventDefault();
-                                                        e.currentTarget.scrollBy({
+                                                        el.scrollBy({
                                                             left: e.deltaY,
                                                             behavior: "smooth",
                                                         });
+                                                        }
                                                     }}
                                                 >
                                                     {SEARCH_IN_PLUGIN_DATA()[plugin_id].length > 0 
