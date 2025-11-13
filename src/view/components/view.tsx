@@ -3,7 +3,7 @@ import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { platform } from '@tauri-apps/plugin-os';
 
 // SolidJS Imports
-import { createSignal, onMount, Index, For, useContext, createEffect, on } from "solid-js";
+import { createSignal, onMount, Index, For, createEffect, on } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
@@ -33,7 +33,6 @@ import toast from 'solid-toast';
 
 // Component Imports
 import LazyLoadImage from '@src/app/components/lazyloadimage';
-import PullRefresh from '@src/app/components/pull_refresh';
 import Download from './download';
 import PluginUpdate from './plugin_update';
 
@@ -41,7 +40,6 @@ import PluginUpdate from './plugin_update';
 import styles from "../styles/view.module.css"
 
 // Script Imports
-import { ContextManager } from '@src/app/components/app';
 import { request_view } from '../scripts/view';
 import { request_get_local_download_manifest } from '@src/watch/scripts/watch';
 import check_plugin_update from '../scripts/check_plugin_update';
@@ -52,12 +50,10 @@ import { ViewData, DownloadEpisode } from '../types/view_type';
 
 export default function View() {
     const navigate = useNavigate();
-    const context = useContext(ContextManager);
+
     const [queryParams] = useSearchParams();
     const source = queryParams?.source as string ?? "";
     const id = queryParams?.id as string ?? "";
-
-    const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
 
@@ -84,11 +80,23 @@ export default function View() {
         request_view(source, id, forceRemote)
             .then((data) => {
                 SET_DATA(data);
+
+                let current_ep_pages = data.manifest_data?.episode_list?.[data.current_watch_season_index??0] ?? [];
+                set_current_season_index(data.current_watch_season_index ?? 0);
+                for (const [index, ep_page] of current_ep_pages.entries()) {
+                    for (const ep of ep_page) {
+                        if (ep.index === data.current_watch_episode_index) {
+                            set_current_episode_page_index(index);
+                        }
+                    }
+                    
+                }
+                
                 console.table(data)
                 set_is_loading(false);
                 check_plugin_update(source, data.link_plugin?.plugin_id ?? "")
                     .then((data) => {
-                        set_plugin_update(data)
+                        set_plugin_update(data);
                     })
 
             })
@@ -110,12 +118,7 @@ export default function View() {
 
 
     return (<>
-        {CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550 &&
-            <PullRefresh container={CONTAINER_REF() as HTMLElement}
-                onRefresh={()=>get_data(true)}
-            />
-        }
-        <div class={styles.container} ref={SET_CONTAINER_REF}
+        <div class={styles.container}
             style={{
                 "overflow-y": is_loading() ? "hidden" : "auto",
             }}
@@ -134,7 +137,7 @@ export default function View() {
                                 sx={{
                                     color: "var(--color-1)",
                                     fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
-                                    margin: "12px",
+                                    margin: "8px",
                                 }}
                                 onClick={() => {
                                     navigate(-1);
@@ -142,21 +145,20 @@ export default function View() {
                             >
                                 <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
                             </IconButton>
-
-                            {CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) > 550 &&
-                                <IconButton
-                                    sx={{
-                                        color: "var(--color-1)",
-                                        fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
-                                        margin: "12px",
-                                    }}
-                                    onClick={() => {
-                                        get_data(true);
-                                    }}
-                                >
-                                    <RefreshRoundedIcon color='inherit' fontSize='inherit' />
-                                </IconButton>
-                            }
+                            
+                            <IconButton disabled={is_loading()}
+                                sx={{
+                                    color: "var(--color-1)",
+                                    fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
+                                    margin: "8px",
+                                }}
+                                onClick={() => {
+                                    get_data(true);
+                                }}
+                            >
+                                <RefreshRoundedIcon color='inherit' fontSize='inherit' />
+                            </IconButton>
+                            
                         </div>
                         {/* === */}
                         
