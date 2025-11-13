@@ -83,13 +83,16 @@ export default function View() {
 
                 let current_ep_pages = data.manifest_data?.episode_list?.[data.current_watch_season_index??0] ?? [];
                 set_current_season_index(data.current_watch_season_index ?? 0);
+                let found:boolean = false;
                 for (const [index, ep_page] of current_ep_pages.entries()) {
                     for (const ep of ep_page) {
                         if (ep.index === data.current_watch_episode_index) {
                             set_current_episode_page_index(index);
+                            found = true;
+                            break;
                         }
                     }
-                    
+                    if (found) break;
                 }
                 
                 console.table(data)
