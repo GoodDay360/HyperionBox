@@ -213,6 +213,7 @@ export default function Favorites() {
                         }}
                     >
                         <RefreshRoundedIcon color="inherit" fontSize='inherit' />
+                            
                     </IconButton>
                 </div>
                 <div class={styles.grid_box_container}>

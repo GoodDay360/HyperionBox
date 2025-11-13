@@ -30,14 +30,14 @@ import toast from 'solid-toast';
 // Component Imports
 import LazyLoadImage from '@src/app/components/lazyloadimage';
 import GridBox from '@src/app/components/grid_box';
-import PullRefresh from '@src/app/components/pull_refresh';
+
 
 
 // Style Imports
 import styles from "../styles/search.module.css"
 
 // Script Imports
-import { ContextManager } from '@src/app/components/app';
+
 
 
 interface SEARCH_DATA {
@@ -50,18 +50,17 @@ interface SEARCH_DATA {
 export default function Search() {
     const navigate = useNavigate();
     const [queryParams] = useSearchParams();
-    const context = useContext(ContextManager);
+    
     const source:string = queryParams?.source as string ?? ""
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
     
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
-    const [is_search_change, set_is_search_change] = createSignal<boolean>(false);
     const [search, set_search] = createSignal<string>(queryParams?.search as string ?? "");
     const [is_page_max, set_is_page_max] = createSignal<boolean>(false);
     const [page, set_page] = createSignal<number>(1);
 
-    let last_search: string = queryParams?.search as string ?? "";
+
     const [DATA, SET_DATA] = createSignal<SEARCH_DATA[]>([]);
     
     const check_scroll = () => {
@@ -73,7 +72,7 @@ export default function Search() {
 
         if (height - position <= threshold) {
             set_page(page() + 1);
-            get_data({page: page(), search: last_search});
+            get_data({page: page(), search: search()});
         }
     }
 
@@ -100,7 +99,6 @@ export default function Search() {
                 })
             })
             .finally(() => {
-                set_is_search_change(false);
                 set_is_loading(false);
                 check_scroll();
             });
@@ -120,18 +118,6 @@ export default function Search() {
     })
     
     return (<>
-        {(CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550) &&
-            <PullRefresh container={CONTAINER_REF() as HTMLElement}
-                onRefresh={()=> {
-                    if (is_loading() && !search()) return;
-                    (document.activeElement as HTMLElement)?.blur();
-                    set_is_loading(true);
-                    set_is_page_max(false);
-                    SET_DATA([]);
-                    get_data({page: 1, search: search()});
-                }}
-            />
-        }
         <div class={styles.container} ref={SET_CONTAINER_REF}>
             <div class={styles.header_container}>
                 <IconButton
@@ -154,7 +140,6 @@ export default function Search() {
                         set_is_loading(true);
                         set_is_page_max(false);
                         SET_DATA([]);
-                        last_search = search().trim();
                         navigate(`/search?source=${encodeURIComponent(source)}&search=${encodeURIComponent(search().trim())}`, {replace: true});
                         get_data({page: 1, search: search().trim()});
                     }}
@@ -166,11 +151,6 @@ export default function Search() {
                         value={search()}
                         onInput={(e) => {
                             const value = e.currentTarget.value;
-                            if (value.trim() === last_search) {
-                                set_is_search_change(false);
-                            }else{
-                                set_is_search_change(true);
-                            };
                             set_search(value);
                         }}
                     /> 
@@ -189,24 +169,6 @@ export default function Search() {
                         <SearchRoundedIcon color="inherit" fontSize='inherit' />
                     </ButtonBase>
                 </form>
-                {(context?.screen_size?.()?.width ?? 0) > 550 && 
-                    <IconButton disabled={is_loading()}
-                        sx={{
-                            color: 'var(--color-1)',
-                            fontSize: 'calc((100vw + 100vh)/2*0.035)'
-                        }}
-                        onClick={() => {
-                            if (is_loading() && !search()) return;
-                            (document.activeElement as HTMLElement)?.blur();
-                            set_is_loading(true);
-                            set_is_page_max(false);
-                            SET_DATA([]);
-                            get_data({page: 1, search: search()});
-                        }}
-                    >
-                        <RefreshRoundedIcon color="inherit" fontSize='inherit' />
-                    </IconButton>
-                }
             </div>
             
             <div class={styles.grid_box_container}>
@@ -214,39 +176,39 @@ export default function Search() {
                     row_gap={16}
                     column_gap={16}
                 >
-                    {!is_search_change() &&
-                        <For each={DATA()}>
-                            {(item) => (
-                                <div class={styles.content_data_box}>
-                                    <ButtonBase
-                                        sx={{
-                                            width: "100%",
-                                            height: "auto",
-                                        }}
-                                        onClick={() => {
-                                            navigate(`/view?source=${source}&id=${item.id}`);
-                                        }}
-                                    >
-                                        <LazyLoadImage 
-                                            src={item.poster}
-                                            className={styles.content_data_img}
+                    
+                    <For each={DATA()}>
+                        {(item) => (
+                            <div class={styles.content_data_box}>
+                                <ButtonBase
+                                    sx={{
+                                        width: "100%",
+                                        height: "auto",
+                                    }}
+                                    onClick={() => {
+                                        navigate(`/view?source=${source}&id=${item.id}`);
+                                    }}
+                                >
+                                    <LazyLoadImage 
+                                        src={item.poster}
+                                        className={styles.content_data_img}
 
-                                            skeleton_sx={{
-                                                width: "calc((100vw + 100vh)/2*0.18)",
-                                                height: "calc((100vw + 100vh)/2*0.25)",
-                                                background: "var(--background-2)",
-                                                borderRadius: "5px",
-                                            }}
-                                        />
-                                    </ButtonBase>
-                                    <span class={styles.content_data_title}>{item.title}</span>
-                                </div>
-                                    
+                                        skeleton_sx={{
+                                            width: "calc((100vw + 100vh)/2*0.18)",
+                                            height: "calc((100vw + 100vh)/2*0.25)",
+                                            background: "var(--background-2)",
+                                            borderRadius: "5px",
+                                        }}
+                                    />
+                                </ButtonBase>
+                                <span class={styles.content_data_title}>{item.title}</span>
+                            </div>
                                 
-                            )}
-                        </For>
-                    }
-                    {(is_loading() || is_search_change()) && 
+                            
+                        )}
+                    </For>
+                    
+                    {is_loading() && 
                         <Index each={[...Array(20)]}>
                             {(_) => <div class={styles.content_data_box}>
                                 <Skeleton 
