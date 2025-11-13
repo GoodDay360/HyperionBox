@@ -22,7 +22,6 @@ import toast from 'solid-toast';
 
 // Component Imports
 import LazyLoadImage from '@src/app/components/lazyloadimage';
-import PullRefresh from '@src/app/components/pull_refresh';
 import NavigationBar from "@src/app/components/navigation_bar";
 import GridBox from '@src/app/components/grid_box';
 
@@ -42,8 +41,6 @@ export default function Favorites() {
     const navigate = useNavigate();
     
     const context = useContext(ContextManager);
-
-    const [BODY_CONTAINER_REF, SET_BODY_CONTAINER_REF] = createSignal<HTMLDivElement>();
 
     const [FAVORITE_TAG_DATA, SET_FAVORITE_TAG_DATA] = createSignal<string[]>([]);
     const [FAVORITE_ITEM_DATA, SET_FAVORITE_ITEM_DATA] = createSignal<ItemFromFavorite[]>([]);
@@ -106,27 +103,11 @@ export default function Favorites() {
 
 
     return (<>
-        {(BODY_CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550) &&
-            <PullRefresh container={BODY_CONTAINER_REF() as HTMLElement}
-                onRefresh={()=>{}}
-            />
-        }
         {((context?.screen_size?.()?.width ?? 0) > 550) &&
             <div class={styles.top_navigation_bar_container}>
                 <div style={{flex:1}}>
                     <NavigationBar type="top" />
                 </div>
-                <IconButton disabled={is_loading()}
-                    sx={{
-                        color: 'var(--color-1)',
-                        fontSize: 'calc((100vw + 100vh)/2*0.035)'
-                    }}
-                    onClick={() => {
-                        get_data();
-                    }}
-                >
-                    <RefreshRoundedIcon color="inherit" fontSize='inherit' />
-                </IconButton>
             </div>
         }
 
@@ -191,38 +172,49 @@ export default function Favorites() {
                 </ButtonBase>
             </div>
 
-            <div class={styles.body_container} ref={SET_BODY_CONTAINER_REF}
+            <div class={styles.body_container}
                 style={{
                     overflow: is_loading() ? "hidden" : "auto",
                 }}
             >
-                <div class={styles.search_container}
-                    style={{
-                        "padding-left": "12px",
-                    }}
-                > 
-                    <input class={styles.search_input} type='text' placeholder='Search'
-                        value={search()}
-                        onInput={(e) => {
-                            const value = e.currentTarget.value;
-                            set_search(value);
-                        }}
-                    /> 
-                    <ButtonBase
+                <div class={styles.top_box}>
+                    <div class={styles.search_container}> 
+                        <ButtonBase
+                            sx={{
+                                color: 'var(--color-1)',
+                                fontSize: 'calc((100vw + 100vh)/2*0.035)',
+                                minHeight: "100%",
+                                borderTopLeftRadius: "16px",
+                                borderBottomLeftRadius: "16px",
+                                padding: "8px"
+                            }}
+                            disabled={is_loading()}
+                        >
+                            <SearchRoundedIcon color="inherit" fontSize='inherit' />
+                        </ButtonBase>
+
+                        <input class={styles.search_input} type='text' placeholder='Search'
+                            value={search()}
+                            onInput={(e) => {
+                                const value = e.currentTarget.value;
+                                set_search(value);
+                            }}
+                        /> 
+                        
+                    </div>
+
+                    <IconButton disabled={is_loading()}
                         sx={{
                             color: 'var(--color-1)',
-                            fontSize: 'calc((100vw + 100vh)/2*0.035)',
-                            minHeight: "100%",
-                            borderTopRightRadius: "16px",
-                            borderBottomRightRadius: "16px",
-                            padding: "8px"
+                            fontSize: 'calc((100vw + 100vh)/2*0.035)'
                         }}
-                        disabled={is_loading()}
+                        onClick={() => {
+                            get_data();
+                        }}
                     >
-                        <SearchRoundedIcon color="inherit" fontSize='inherit' />
-                    </ButtonBase>
+                        <RefreshRoundedIcon color="inherit" fontSize='inherit' />
+                    </IconButton>
                 </div>
-
                 <div class={styles.grid_box_container}>
                     {FAVORITE_ITEM_DATA().length > 0 &&
                     
