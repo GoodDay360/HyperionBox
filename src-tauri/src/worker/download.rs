@@ -1,7 +1,7 @@
 use dashmap::DashMap;
 use lazy_static::lazy_static;
 use m3u8_rs::{Playlist, MediaSegment};
-use reqwest::header::{HeaderMap, HeaderValue, HeaderName};
+use reqwest::header::{HeaderMap, HeaderValue, HeaderName, USER_AGENT};
 use reqwest::Client;
 use rusqlite::{params, Error::QueryReturnedNoRows, Result};
 use serde::{Deserialize, Serialize};
@@ -26,6 +26,7 @@ use crate::utils::configs::Configs;
 use crate::commands::download::{get_db, set_done_download, set_error_download, is_available_download};
 use crate::models::download::{Download, DownloadItem, DownloadStatusManifest};
 use crate::utils::download_file;
+use crate::utils::url::normalize_base_url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CurrentDownloadStatus {
@@ -240,6 +241,10 @@ async fn get_media_hls(
     let client = Client::new();
 
     let mut headers = HeaderMap::new();
+    headers.insert(USER_AGENT, HeaderValue::from_static(
+        "Chrome/112.0.0.0"
+    ));
+
     if !config.host.is_empty() {
         headers.insert(
             "Host",
@@ -325,7 +330,7 @@ async fn get_media_hls(
                 if config.playlist_base_url.is_empty() {
                     _url = selected_media_uri;
                 } else {
-                    _url = format!("{}/{}", &config.playlist_base_url, selected_media_uri);
+                    _url = normalize_base_url(&format!("{}/{}", &config.playlist_base_url, selected_media_uri));
                 }
 
                 let response = client
@@ -395,6 +400,9 @@ async fn download_episode(
 
             /* Modify Headers */
             let mut headers = HeaderMap::new();
+            headers.insert(USER_AGENT, HeaderValue::from_static(
+                "Chrome/112.0.0.0"
+            ));
             if !config.host.is_empty() {
                 headers.insert(
                     "Host",
@@ -583,7 +591,7 @@ async fn download_episode(
                         let mut _url: String = "".to_string();
 
                         if !config_clone.segment_base_url.is_empty() {
-                            _url = format!("{}/{}", &config_clone.segment_base_url, segment.uri);
+                            _url = normalize_base_url(&format!("{}/{}", &config_clone.segment_base_url, segment.uri));
                         } else {
                             _url = segment.uri.clone();
                         }

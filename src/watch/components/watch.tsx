@@ -4,7 +4,7 @@ import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
 
 // SolidJS Imports
-import { createSignal, onMount, For, Index, useContext, onCleanup } from "solid-js";
+import { createSignal, onMount, For, Index, onCleanup } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
@@ -24,6 +24,7 @@ import {
 import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
 import SaveRoundedIcon from '@suid/icons-material/SaveRounded';
+import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
 
 
 // Solid Toast
@@ -33,7 +34,7 @@ import toast from 'solid-toast';
 
 
 // Component Imports
-import PullRefresh from '@src/app/components/pull_refresh';
+import VerifyRobot from '@src/verify_robot/components/verify_robot';
 
 
 // Style Imports
@@ -43,7 +44,6 @@ import "../styles/modify_player.css"
 
 
 // Script Imports
-import { ContextManager } from '@src/app/components/app';
 import MODIFY_PLOADER from '../scripts/modify_ploader';
 import MODIFY_FLOADER from '../scripts/modify_floader';
 import { 
@@ -78,7 +78,7 @@ import Hls from 'hls.js';
 export default function Watch() {
     const navigate = useNavigate();
     const [queryParams] = useSearchParams();
-    const context = useContext(ContextManager);
+
 
     const source:string = queryParams.source as string ?? "";
     const id:string = queryParams.id as string ?? "";
@@ -119,6 +119,8 @@ export default function Watch() {
     const [view_season_index, set_view_season_index] = createSignal<number>(season_index);
     const [view_episode_page_index, set_view_episode_page_index] = createSignal<number>(0);
     /* --- */
+
+    const [verify_robot, set_verify_robot] = createSignal<{state:boolean, url:string|null}>({state:false, url:null});
     
     let hls_instance:Hls|null = null;
 
@@ -169,7 +171,7 @@ export default function Watch() {
             current_episode_id(),
             true
         );
-        console.log("Episode Server: ", data);
+        console.log("Episode Server Data: ", data);
         SET_EPISODE_SERVER_DATA(data);
         /* Loading prefer server from local storage */
         const prefer_server_type:string = localStorage.getItem("prefer_server_type") ?? "";
@@ -183,22 +185,29 @@ export default function Watch() {
             selected_server_type = Object.keys(data)[0];
         }
         
-
+        /* Lookup for matching prefer server */
         let selected_server_index:number = 0;
         let selected_server_id:string = "";
+        let verify_url:string|null = null;
         for (const server of data[selected_server_type]) {
             if (server.index === prefer_server_index) {
                 selected_server_index = server.index;
                 selected_server_id = server.id;
+                verify_url = server.verify_url;
                 break;
             }
         }
+        /* --- */
         
+        /* Apply default */
         if (!selected_server_id) {
             selected_server_id = data[selected_server_type][0].id;
             selected_server_index = data[selected_server_type][0].index;
+            verify_url = data[selected_server_type][0].verify_url;
         }
+        /* --- */
 
+        /* Load if server exist */
         if (selected_server_type && selected_server_id) {
 
             localStorage.setItem("prefer_server_type", selected_server_type);
@@ -206,7 +215,9 @@ export default function Watch() {
 
             set_selected_server_index(selected_server_index);
             set_selected_server_id(selected_server_id);
+            set_verify_robot({state: false, url: verify_url});
         }
+        /* --- */
 
 
         /* --- */
@@ -237,6 +248,10 @@ export default function Watch() {
             console.error(e);
             toast.remove();
             toast.error("Something went wrong while getting server data.",{style:{color:"red"}});
+
+            if (verify_robot().url){
+                set_verify_robot({...verify_robot(), state:true});
+            }
         }
         
         
@@ -436,13 +451,6 @@ export default function Watch() {
     };
     
     return (<>
-        {(CONTAINER_REF() && (context?.screen_size?.()?.width ?? 0) <= 550) &&
-            <PullRefresh container={CONTAINER_REF() as HTMLElement}
-                onRefresh={()=> {
-                    get_data();
-                }}
-            />
-        }
         <div class={styles.container} ref={SET_CONTAINER_REF}>
             <div class={styles.header_container}>
                 <IconButton
@@ -455,6 +463,18 @@ export default function Watch() {
                     }}
                 >
                     <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
+                </IconButton>
+
+                <IconButton disabled={is_loading() || is_loading_server()}
+                    sx={{
+                        color: "var(--color-1)",
+                        fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
+                    }}
+                    onClick={() => {
+                        get_data();
+                    }}
+                >
+                    <RefreshRoundedIcon color='inherit' fontSize='inherit' />
                 </IconButton>
             </div>
             
@@ -644,11 +664,16 @@ export default function Watch() {
                                                 <span class={styles.server_label}>{server_type.toUpperCase()}:</span>
                                                 <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                     onWheel={(e) => {
+                                                        const el = e.currentTarget;
+                                                        const isOverflowing = el.scrollWidth > el.clientWidth;
+
+                                                        if (isOverflowing) {
                                                         e.preventDefault();
-                                                        e.currentTarget.scrollBy({
+                                                        el.scrollBy({
                                                             left: e.deltaY,
                                                             behavior: "smooth",
                                                         });
+                                                        }
                                                     }}
                                                 >
                                                     <For each={EPISIDE_SERVER_DATA()?.[server_type]}>
@@ -658,7 +683,7 @@ export default function Watch() {
                                                                 sx={{
                                                                     color: "var(--color-1)",
                                                                     fontSize: "calc((100vw + 100vh)/2*0.015)",
-                                                                    minWidth: 0,
+                                                                    minWidth: "fit-content",
                                                                     width: "fit-content",
                                                                     margin:0,
                                                                     padding: "8px 12px",
@@ -1013,6 +1038,23 @@ export default function Watch() {
             }
 
         </div>
+        
+        {(verify_robot().state && verify_robot().url) &&
+            <VerifyRobot 
+                url={verify_robot().url||""}
+                onClose={()=>{
+                    set_verify_robot({...verify_robot(), state:false});
+                }}
+                onCancel={()=>{
+                    set_verify_robot({...verify_robot(), state:false});
+                }}
+                onDone={()=>{
+                    get_data();
+                }}
+                
+            />
+        }
+
     </>)
 }
 
