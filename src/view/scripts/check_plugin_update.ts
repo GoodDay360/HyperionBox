@@ -12,7 +12,7 @@ import { get_plugin_list, get_plugin_release, get_installed_plugin_list } from "
 // Types Imports
 import { CheckPluginUpdate } from "../types/check_plugin_update_type";
 
-const CHECK_DELAY = 30 * 60 * 1000;
+const CHECK_DELAY = 15 * 60 * 1000;
 
 export default async function check_plugin_update(source:string, plugin_id:string):Promise<CheckPluginUpdate> {
     if (!source || !plugin_id) return {state:false};

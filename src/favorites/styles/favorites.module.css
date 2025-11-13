@@ -49,8 +49,17 @@
 }
 
 
-.search_container {
+.top_box{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 8px;
 	width: 100%;
+	height: auto;
+}
+
+.search_container {
+	flex:1;
 	height: auto;
 	border-radius: 16px;
 	background: var(--background-2);
@@ -61,7 +70,6 @@
 
 .search_input {
 	all: unset;
-
 	flex: 1;
 	margin: 8px;
 	color: var(--color-1);
