@@ -84,7 +84,7 @@ export default function PluginUpdate({
                 }}
             />
             <span class={styles.title}>Plugin Update</span>
-            <span class={styles.text}>There is a new version available for plugin "HydraHD".</span>
+            <span class={styles.text}>There is a new version available for plugin "{pluginManifest.title}".</span>
             
             {!is_installing()
                 
