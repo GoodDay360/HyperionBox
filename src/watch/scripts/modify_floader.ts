@@ -1,7 +1,7 @@
 // Tauri API
-import { fetch } from '@tauri-apps/plugin-http';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { normalize } from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api/core';
 
 // Scripts Imorts
 
@@ -14,6 +14,8 @@ import type {
 } from "hls.js";
 
 
+// Types Imports
+import { GetPlaylistResponse } from '../types/modify_loader';
 
 
 // Below code use a lot of any for types.
@@ -56,96 +58,77 @@ const MODIFY_FLOADER = ({
 				return;
 			}
 			
-			const headers:{
-				"Host"?:string,
-				"Origin"?:string,
-				"Referer"?:string,
-				"User-Agent":string,
-				"Sec-Fetch-Site":string,
-			} = {
-				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-				"Sec-Fetch-Site": "same-origin",
+			
+			const headers = {
+				"host": host||null,
+				"origin": origin||null,
+				"referer": referer||null
 			};
 
-			let current_url = context.url;
-
+			const current_url = context.url;
 			
-			if (host) {headers["Host"] = host};
-			if (origin) {headers["Origin"] = origin};
-			if (referer) {headers["Referer"] = referer};
 			
+			console.log("FLOADER:", current_url);
+			console.log("FLOADER REQUEST HEADERS:", headers);
+			try {
+				
+				if (mode === "online") {
+					let response = await invoke<GetPlaylistResponse>("get_fragment", { url: current_url, headers });
 
-			for (;;) {
-				console.log("FLOADER:", current_url);
-				console.log("FLOADER HEADERS:", headers);
-				try {
+					console.log("FLOADER RESPONSE:", response);
+
+					let raw_data = new Uint8Array(response.data);
 					
-					if (mode === "online") {
-						let response = await fetch(current_url,
-							{headers}
-						)
-						
-						if ((response.url !== current_url)) {
-							
-							let url_obj = new URL(response.url);
-							headers.Origin = origin;
-							headers.Host = url_obj.host;
-							headers.Referer = referer;
-							current_url = response.url;
-
-							console.log("Redirect FLOADER:", current_url);
-
-							continue;
-						}
-						const responseData = await response.arrayBuffer()
-						const responseText = new TextDecoder().decode(responseData);
-						
-						this.loader = {
-							readyState: 4,
-							status: response.status,
-							statusText: '',
-							responseType: context.responseType,
-							response: responseData,
-							responseText: responseText,
-							responseURL: response.url,
-						};
-						this.readystatechange();
-					}else if (mode === "offline") {
-
-						let file = await normalize(context.url);
-
-						const responseData = (await readFile(file)).buffer;
-						const responseText = new TextDecoder().decode(responseData);
-
-
-						this.loader = {
-							readyState: 4,
-							status: 200,
-							statusText: '',
-							responseType: context.responseType,
-							response: responseData,
-							responseText: responseText,
-							responseURL: context.url,
-						};
-						this.readystatechange();
-					}
-
-					break;
-				}catch(error) {
-					console.error(error);
+					const responseData = raw_data.buffer;
+					const responseText = new TextDecoder().decode(responseData);
+					
+					
 					this.loader = {
 						readyState: 4,
-						status: 500,
+						status: response.status,
 						statusText: '',
 						responseType: context.responseType,
-						response: null,
-						responseText: null,
-						responseURL: current_url,
+						response: responseData,
+						responseText: responseText,
+						responseURL: response.url,
 					};
 					this.readystatechange();
-					break
+				}else if (mode === "offline") {
+
+					let file = await normalize(context.url);
+
+					const responseData = (await readFile(file)).buffer;
+					const responseText = new TextDecoder().decode(responseData);
+
+
+					this.loader = {
+						readyState: 4,
+						status: 200,
+						statusText: '',
+						responseType: context.responseType,
+						response: responseData,
+						responseText: responseText,
+						responseURL: context.url,
+					};
+					this.readystatechange();
+				}
+
+			
+			}catch(error) {
+				console.error("FLOADER ERROR: ",error);
+				this.loader = {
+					readyState: 4,
+					status: 500,
+					statusText: '',
+					responseType: context.responseType,
+					response: null,
+					responseText: null,
+					responseURL: context.url,
 				};
-			}
+				this.readystatechange();
+			
+			};
+			
 			
 		}
 	}

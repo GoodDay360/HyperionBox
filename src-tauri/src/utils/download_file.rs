@@ -36,8 +36,10 @@ where
                 .await
                 .map_err(|e| format!("[download_file] Request failed: {}", e))?;
 
-            if response.url().to_string() != current_url {
-                let parsed_url = Url::parse(&current_url).map_err(|e| e.to_string())?;
+            let res_url = response.url().to_string();
+
+            if res_url != current_url {
+                let parsed_url = Url::parse(&res_url).map_err(|e| e.to_string())?;
                 let new_host = parsed_url
                     .host_str()
                     .ok_or_else(|| "[download_file] Host not found from parsed URL.")?;
@@ -46,7 +48,7 @@ where
                     HeaderValue::from_str(new_host).map_err(|e| e.to_string())?,
                 );
 
-                current_url = response.url().to_string();
+                current_url = res_url;
                 continue;
             }else{
                 break;
