@@ -1,7 +1,7 @@
 use dashmap::DashMap;
 use lazy_static::lazy_static;
 use m3u8_rs::{Playlist, MediaSegment};
-use reqwest::header::{HeaderMap, HeaderValue, HeaderName, USER_AGENT};
+use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT, ACCEPT, ACCEPT_ENCODING, HOST, REFERER, ORIGIN};
 use reqwest::Client;
 use rusqlite::{params, Error::QueryReturnedNoRows, Result};
 use serde::{Deserialize, Serialize};
@@ -17,6 +17,7 @@ use tauri::async_runtime;
 use std::sync::Arc;
 use async_runtime::JoinHandle;
 use futures::future::join_all;
+use url::Url;
 
 use chlaty_core::request_plugin::{get_episode_server, get_server, get_server::ServerResult};
 
@@ -238,35 +239,45 @@ async fn get_media_hls(
 
     let config = server_data.config.clone();
 
-    let client = Client::new();
+    
 
     let mut headers = HeaderMap::new();
-    headers.insert(USER_AGENT, HeaderValue::from_static(
-        "Chrome/112.0.0.0"
-    ));
 
     if !config.host.is_empty() {
+        let parsed_url = Url::parse(&hls_file).map_err(|e| e.to_string())?;
+        let parsed_url_host = parsed_url.host_str().ok_or("no host")?.to_string();
+        let new_host = if config.host == parsed_url_host { &config.host } else { &parsed_url_host };
+
         headers.insert(
-            "Host",
-            HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
+            HOST,
+            HeaderValue::from_str(&new_host).map_err(|e| e.to_string())?,
         );
     }
     
     if !config.referer.is_empty() {
         headers.insert(
-            "Referer",
+            REFERER,
             HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
         );
     }
     
     if !config.origin.is_empty() {
         headers.insert(
-            "Origin",
+            ORIGIN,
             HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
         );
     }
-    headers.insert(HeaderName::from_static("sec-fetch-site"), HeaderValue::from_static("same-origin"));
-    
+    headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"));
+    headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
+    headers.insert(ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
+
+    let client = Client::builder()
+        .cookie_store(true)
+        .pool_idle_timeout(None)
+        .pool_max_idle_per_host(5)
+        .default_headers(headers.clone())
+        .build()
+        .map_err(|e| e.to_string())?;
 
     info!("[worker:download] Downloading HLS... | {}", hls_file);
     let response = client
@@ -281,86 +292,88 @@ async fn get_media_hls(
         response.status()
     );
 
-    if response.status().is_success() {
-        let hls_data = response.bytes().await.map_err(|e| e.to_string())?;
-        match m3u8_rs::parse_playlist(&hls_data) {
-            Result::Ok((_, Playlist::MasterPlaylist(pl))) => {
-                if pl.variants.len() == 0 {
-                    return Err("Master playlist is empty".to_string());
-                }
-                let mut selected_media_uri: String = "".to_string();
+    if !response.status().is_success() {
+        return Err(format!("[get_media_hls] Request failed. {}", response.status()))?;
+    }
 
-                let mut selected_quality: usize = 0;
-                let mut qualities: Vec<usize> = vec![];
+    let hls_data = response.bytes().await.map_err(|e| e.to_string())?;
+    match m3u8_rs::parse_playlist(&hls_data) {
+        Result::Ok((_, Playlist::MasterPlaylist(pl))) => {
+            if pl.variants.len() == 0 {
+                return Err("Master playlist is empty".to_string());
+            }
+            let mut selected_media_uri: String = "".to_string();
 
-                for variant in pl.variants.clone() {
-                    if let Some(resolution) = variant.resolution {
-                        qualities.push((resolution.width + resolution.height) as usize);
-                    }
-                }
-                qualities.sort(); // (low -> high)
+            let mut selected_quality: usize = 0;
+            let mut qualities: Vec<usize> = vec![];
 
-                if prefer_quality == 0 {
-                    selected_quality = qualities[0];
-                } else if prefer_quality == 3 {
-                    selected_quality = qualities[qualities.len() - 1];
-                } else {
-                    if (qualities.len() % 2) == 1 {
-                        selected_quality =
-                            qualities[(qualities.len() as f32 / 2.0).ceil() as usize - 1];
-                    } else {
-                        if prefer_quality == 1 {
-                            selected_quality = qualities[(qualities.len() / 2) - 1];
-                        } else if prefer_quality == 2 {
-                            selected_quality = qualities[qualities.len() / 2];
-                        }
-                    }
-                }
-
-                for variant in pl.variants {
-                    if let Some(resolution) = variant.resolution {
-                        if (resolution.width + resolution.height) as usize == selected_quality {
-                            selected_media_uri = variant.uri;
-                            break;
-                        }
-                    }
-                }
-                
-                let mut _url: String = "".to_string();
-                if config.playlist_base_url.is_empty() {
-                    _url = selected_media_uri;
-                } else {
-                    _url = normalize_base_url(&format!("{}/{}", &config.playlist_base_url, selected_media_uri));
-                }
-
-                let response = client
-                    .get(_url)
-                    .timeout(Duration::from_secs(10))
-                    .headers(headers)
-                    .send()
-                    .await
-                    .map_err(|e| format!("Request failed: {}", e))?;
-
-                if response.status().is_success() {
-                    return Ok(MediaHLS {
-                        data: response.text().await.map_err(|e| e.to_string())?,
-                        server: server_data,
-                    });
+            for variant in pl.variants.clone() {
+                if let Some(resolution) = variant.resolution {
+                    qualities.push((resolution.width + resolution.height) as usize);
                 }
             }
-            Result::Ok((_, Playlist::MediaPlaylist(_))) => {
+            qualities.sort(); // (low -> high)
+
+            if prefer_quality == 0 {
+                selected_quality = qualities[0];
+            } else if prefer_quality == 3 {
+                selected_quality = qualities[qualities.len() - 1];
+            } else {
+                if (qualities.len() % 2) == 1 {
+                    selected_quality =
+                        qualities[(qualities.len() as f32 / 2.0).ceil() as usize - 1];
+                } else {
+                    if prefer_quality == 1 {
+                        selected_quality = qualities[(qualities.len() / 2) - 1];
+                    } else if prefer_quality == 2 {
+                        selected_quality = qualities[qualities.len() / 2];
+                    }
+                }
+            }
+
+            for variant in pl.variants {
+                if let Some(resolution) = variant.resolution {
+                    if (resolution.width + resolution.height) as usize == selected_quality {
+                        selected_media_uri = variant.uri;
+                        break;
+                    }
+                }
+            }
+            
+            let mut _url: String = "".to_string();
+            if config.playlist_base_url.is_empty() {
+                _url = selected_media_uri;
+            } else {
+                _url = normalize_base_url(&format!("{}/{}", &config.playlist_base_url, selected_media_uri));
+            }
+
+            let response = client
+                .get(_url)
+                .timeout(Duration::from_secs(10))
+                .headers(headers)
+                .send()
+                .await
+                .map_err(|e| format!("Request failed: {}", e))?;
+
+            if response.status().is_success() {
                 return Ok(MediaHLS {
-                    data: from_utf8(&hls_data).map_err(|e| e.to_string())?.to_string(),
+                    data: response.text().await.map_err(|e| e.to_string())?,
                     server: server_data,
                 });
             }
-            Result::Err(e) => {
-                return Err(e.to_string())?;
-            }
         }
-    }else{
-        return Err(format!("[get_media_hls] Request failed. {}", response.status()))?;
+        Result::Ok((_, Playlist::MediaPlaylist(_))) => {
+            return Ok(MediaHLS {
+                data: from_utf8(&hls_data).map_err(|e| e.to_string())?.to_string(),
+                server: server_data,
+            });
+        }
+        Result::Err(e) => {
+            return Err(e.to_string())?;
+        }
     }
+
+        
 
     return Err("[get_media_hls] Request failed.".to_string())?;
 }
@@ -400,29 +413,31 @@ async fn download_episode(
 
             /* Modify Headers */
             let mut headers = HeaderMap::new();
-            headers.insert(USER_AGENT, HeaderValue::from_static(
-                "Chrome/112.0.0.0"
-            ));
+            
             if !config.host.is_empty() {
                 headers.insert(
-                    "Host",
+                    HOST,
                     HeaderValue::from_str(&config.host).map_err(|e| e.to_string())?,
                 );
             };
 
             if !config.referer.is_empty() {
                 headers.insert(
-                    "Referer",
+                    REFERER,
                     HeaderValue::from_str(&config.referer).map_err(|e| e.to_string())?,
                 );
             };
 
             if !config.origin.is_empty() {
                 headers.insert(
-                    "Origin",
+                    ORIGIN,
                     HeaderValue::from_str(&config.origin).map_err(|e| e.to_string())?,
                 );
             };
+
+            headers.insert(USER_AGENT, HeaderValue::from_static("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"));
+            headers.insert(ACCEPT, HeaderValue::from_static("*/*"));
+            headers.insert(ACCEPT_ENCODING, HeaderValue::from_static("gzip, deflate, br"));
 
             /* --- */
 
@@ -597,6 +612,7 @@ async fn download_episode(
                         }
 
                         let segment_path = segment_dir_clone.join(format!("segment-{}", start_index+index));
+
 
                         download_file::new(&_url, &segment_path, Some(header_clone.clone()), 30, |_, _| {})
                             .await

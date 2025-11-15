@@ -63,7 +63,7 @@ import { PlayerConfigs } from '../types/watch_type';
 
 // Vidstack Imports
 import 'vidstack/bundle';
-import { MediaPlayerElement } from 'vidstack/elements';
+import type { MediaPlayerElement } from 'vidstack/elements';
 import {
     isHLSProvider,
     type MediaProviderChangeEvent,
@@ -123,6 +123,7 @@ export default function Watch() {
     const [verify_robot, set_verify_robot] = createSignal<{state:boolean, url:string|null}>({state:false, url:null});
     
     let hls_instance:Hls|null = null;
+    let tried_level:number[] = [];
 
     let max_duration:number = 0;
     let current_watch_time:number = 0;
@@ -224,6 +225,7 @@ export default function Watch() {
     }
 
     const load_server = async () => {
+        tried_level = [];
         /* Reset State */
         clearInterval(set_hls_instance_interval);
         clearTimeout(set_allow_instant_next_timeout);
@@ -390,6 +392,7 @@ export default function Watch() {
     })
     /* --- */
 
+    
     const onProviderChange = async (e: MediaProviderChangeEvent) => {
         if (!CONTAINER_REF()) return;
 
@@ -400,6 +403,30 @@ export default function Watch() {
             clearInterval(set_hls_instance_interval);
             set_hls_instance_interval = setInterval(() => {
                 hls_instance = provider.instance;
+
+                if (!hls_instance) return;
+
+                hls_instance.on(Hls.Events.ERROR, (_, data) => {
+                    if (data.type === Hls.ErrorTypes.NETWORK_ERROR &&
+                    (data.details === Hls.ErrorDetails.FRAG_LOAD_ERROR ||
+                    data.details === Hls.ErrorDetails.FRAG_LOAD_TIMEOUT)) {
+                        
+                        console.warn("Segment error at level:", hls_instance!.currentLevel);
+                        const levels = hls_instance!.levels.map((_, i) => i);
+                        // Find next unused level in order
+                        const unusedLevels = levels.filter(l => !tried_level.includes(l));
+                        if (unusedLevels.length > 0) {
+                            const next = unusedLevels[0]; // sequential pick
+                            // hls_instance!.nextLevel = next;
+                            hls_instance!.currentLevel = next;
+                            tried_level.push(next);
+                            console.log("Switching to next unused level:", next);
+                            
+                        }
+                    }
+                });
+
+                
             }, 100);
 
             provider.config = {

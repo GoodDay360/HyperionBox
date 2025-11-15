@@ -3,7 +3,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 
 // SolidJS Imports
-import { createSignal, onMount, For, Index, useContext } from "solid-js";
+import { createSignal, onMount, For, Index } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
@@ -19,7 +19,6 @@ import {
 // SUID Icon Imports
 import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
-import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
 
 
 // Solid Toast

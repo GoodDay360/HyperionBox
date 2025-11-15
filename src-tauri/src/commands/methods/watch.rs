@@ -38,8 +38,12 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
     let mut headers_map = HeaderMap::new();
 
     if let Some(host) = &headers.host {
+        let parsed_url = Url::parse(&url).map_err(|e| e.to_string())?;
+        let parsed_url_host = parsed_url.host_str().ok_or("no host")?.to_string();
+        let new_host = if host == &parsed_url_host { host } else { &parsed_url_host };
+
         headers_map.insert(HOST, 
-            HeaderValue::from_str(&host).map_err(|e| e.to_string())?
+            HeaderValue::from_str(&new_host).map_err(|e| e.to_string())?
         );
     }
 
@@ -73,6 +77,8 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
 
     let mut _current_url: String = url.clone();
     
+    let mut retry = 0;
+
     loop {
         
         
@@ -106,7 +112,14 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
             let status = res.status();
             error!("[get_playlist] Error Status: {}", status);
             error!("[get_playlist] Error Text: {}", res.text().await.map_err(|e| e.to_string())?);
-            return Err(status.to_string());
+            
+            retry += 1;
+
+            if retry >= 3 {
+                return Err(status.to_string());
+            }else{
+                continue;
+            }
         }
         
 
@@ -164,6 +177,8 @@ pub async fn get_fragment(url: String, headers: Headers) -> Result<Response, Str
     
     let mut _current_url: String = url.clone();
 
+    let mut retry = 0;
+
     loop {
         
         
@@ -198,7 +213,14 @@ pub async fn get_fragment(url: String, headers: Headers) -> Result<Response, Str
             let status = res.status();
             error!("[get_fragment] Error Status: {}", status);
             error!("[get_fragment] Error Text: {}", res.text().await.map_err(|e| e.to_string())?);
-            return Err(status.to_string());
+            retry += 1;
+
+            if retry >= 3 {
+                return Err(status.to_string());
+            }else{
+                continue;
+            }
+            
         }
         
         
