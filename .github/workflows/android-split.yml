@@ -67,7 +67,7 @@ jobs:
         rm -rf "$OUTPUT_DIR"
 
     - name: Build split-ABI APKs
-      run: bun tauri android build --apk --split-per-abi
+      run: bun tauri android build --apk true --split-per-abi
 
     - name: Rename and collect split-ABI APKs
       run: |
