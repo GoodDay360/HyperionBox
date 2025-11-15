@@ -1,7 +1,7 @@
 // Tauri API
-import { fetch } from '@tauri-apps/plugin-http';
 import { readFile } from '@tauri-apps/plugin-fs';
 import { join } from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api/core';
 
 // Scripts Imorts
 import { get_configs } from '@src/settings/scripts/settings';
@@ -12,6 +12,10 @@ import type {
 	LoaderContext,
 	LoaderConfiguration
 } from "hls.js";
+
+
+// Types Imports
+import { GetPlaylistResponse } from '../types/modify_loader';
 
 
 
@@ -54,92 +58,75 @@ const MODIFY_PLOADER = ({
 			}
 			
 			
-			const headers:{
-				"Host"?:string,
-				"Origin"?:string,
-				"Referer"?:string,
-				"User-Agent":string,
-				"Sec-Fetch-Site":string,
-			} = {
-				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-				"Sec-Fetch-Site": "same-origin",
+			const headers = {
+				"host": host||null,
+				"origin": origin||null,
+				"referer": referer||null
 			};
-
-			let current_url = context.url;
 			
-			if (host) {headers["Host"] = "192.168.0.102"};
-			if (origin) {headers["Origin"] = origin};
-			if (referer) {headers["Referer"] = referer};
+			const current_url = context.url;
+			
+			console.log("PLOADER:", current_url);
+			console.log("PLOADER REQUEST HEADERS:", headers)
+			try {
+				if (mode === "online") {
+					let response = await invoke<GetPlaylistResponse>("get_playlist", { url: current_url , headers });
 
-			for (;;) {
-				console.log("PLOADER:", current_url)
-				console.log("PLOADER HEADERS:", headers)
-				try {
-					if (mode === "online") {
-						let response = await fetch(current_url,
-							{headers}
-						)
-						
-						if ((response.url !== current_url)) {
-							
-							let url_obj = new URL(response.url);
-							headers.Origin = "";
-							headers.Host = url_obj.host;
-							current_url = response.url;
-							console.log("Redirect PLOADER:", current_url)
-							continue;
-						}
-						const responseData = await response.arrayBuffer()
-						const responseText = new TextDecoder().decode(responseData);
-						
-						this.loader = {
-							readyState: 4,
-							status: response.status,
-							statusText: '',
-							responseType: context.responseType,
-							response: responseData,
-							responseText: responseText,
-							responseURL: response.url,
-						};
-						this.readystatechange();
-					}else if (mode === "offline") {
-						const app_configs = await get_configs();
-						let storage_dir = app_configs.storage_dir;
-						const file = await join(storage_dir, context.url);
-						console.log("Local-PLOADER", file)
+					console.log("PLOADER RESPONSE:", response);
 
-						const responseData = (await readFile(file)).buffer;
-						const responseText = new TextDecoder().decode(responseData);
-
-
-						this.loader = {
-							readyState: 4,
-							status: 200,
-							statusText: '',
-							responseType: context.responseType,
-							response: responseData,
-							responseText: responseText,
-							responseURL: `${storage_dir}/`,
-						};
-						this.readystatechange();
-					}
-
-					break;
-				}catch(error) {
-					console.error(error);
+					let raw_data = new Uint8Array(response.data);
+					
+					const responseData = raw_data.buffer;
+					const responseText = new TextDecoder().decode(responseData);
+					
 					this.loader = {
 						readyState: 4,
-						status: 500,
+						status: response.status,
 						statusText: '',
 						responseType: context.responseType,
-						response: null,
-						responseText: null,
-						responseURL: current_url,
+						response: responseData,
+						responseText: responseText,
+						responseURL: response.url,
 					};
 					this.readystatechange();
-					break
+				}else if (mode === "offline") {
+					const app_configs = await get_configs();
+					let storage_dir = app_configs.storage_dir;
+					const file = await join(storage_dir, context.url);
+					console.log("Local-PLOADER", file)
+
+					const responseData = (await readFile(file)).buffer;
+					const responseText = new TextDecoder().decode(responseData);
+
+
+					this.loader = {
+						readyState: 4,
+						status: 200,
+						statusText: '',
+						responseType: context.responseType,
+						response: responseData,
+						responseText: responseText,
+						responseURL: `${storage_dir}/`,
+					};
+					this.readystatechange();
+				}
+
+				
+			}catch(error) {
+				console.error("PLOADER ERROR: ",error);
+				this.loader = {
+					readyState: 4,
+					status: 500,
+					statusText: '',
+					responseType: context.responseType,
+					response: null,
+					responseText: null,
+					responseURL: context.url,
 				};
-			}
+				this.readystatechange();
+				
+			};
+			
 			
 		}
 	}

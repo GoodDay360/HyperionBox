@@ -103,6 +103,8 @@ pub fn run() {
             commands::methods::home::home,
             commands::methods::search::search,
             commands::methods::view::view,
+            commands::methods::watch::get_playlist,
+            commands::methods::watch::get_fragment,
             /* --- */
 
             /* Manage Plugin */

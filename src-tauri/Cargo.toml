@@ -28,24 +28,24 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 chlaty-core = { git = "https://github.com/chlaty/chlaty-core", branch = "main" }
 
-reqwest = { version = "0.12.23", default-features = false, features = ["rustls-tls", "json", "stream"] }
-tauri = { version = "2", features = ["protocol-asset", "macos-private-api"] }
-tauri-plugin-opener = "2"
-serde = { version = "1.0.225", features = ["derive"] }
+reqwest = { version = "0.12.24", default-features = false, features = ["rustls-tls", "json", "stream"] }
+tauri = { version = "2.9.3", features = ["protocol-asset", "macos-private-api"] }
+tauri-plugin-opener = "2.5.2"
+serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.145"
-tokio = {version = "1.47.1", features = ["full"] }
-visdom = "1.0.3"
+tokio = {version = "1.48.0", features = ["full"] }
+visdom = "1.0.4"
 tracing = "0.1.41"
 tracing-subscriber = "0.3.20"
 dotenv = "0.15.0"
-thiserror = "2.0.16"
+thiserror = "2.0.17"
 futures = "0.3.31"
-tauri-plugin-os = "2"
+tauri-plugin-os = "2.3.2"
 chrono = "0.4.42"
 parsidate = "1.7.1"
-tauri-plugin-http = { version = "2", features = ["unsafe-headers"] }
+tauri-plugin-http = { version = "2.5.4", default-features = false, features = ["cookies", "rustls-tls", "gzip", "brotli", "deflate", "unsafe-headers"] }
 urlencoding = "2.1.3"
-tauri-plugin-clipboard-manager = "2"
+tauri-plugin-clipboard-manager = "2.3.2"
 tauri-plugin-fs = "2"
 rusqlite = { version = "0.37.0", features = ["bundled"] }
 futures-util = "0.3.31"
@@ -54,8 +54,8 @@ bytes = "1.10.1"
 url = "2.5.7"
 dashmap = "6.1.0"
 lazy_static = "1.5.0"
-tauri-plugin-android-fs = "16.1.2"
-tauri-plugin-dialog = "2"
+tauri-plugin-android-fs = "21.0.0"
+tauri-plugin-dialog = "2.4.2"
 dunce = "1.0.5"
 html-escape = "0.2.13"
 fs_extra = "1.3.0"
@@ -65,7 +65,7 @@ regex = "1.12.2"
 tauri-plugin-android-package-install = "2.0.2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-single-instance = "2"
+tauri-plugin-single-instance = "2.3.6"
 tauri-plugin-updater = "2"
 
 
