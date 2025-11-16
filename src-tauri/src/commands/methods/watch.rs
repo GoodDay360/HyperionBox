@@ -7,6 +7,7 @@ use reqwest::{
 use lazy_static::lazy_static;
 use dashmap::DashMap;
 use url::Url;
+use tokio::{time::{Duration}};
 
 
 
@@ -70,6 +71,7 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
         .cookie_store(true)
         .pool_idle_timeout(None)
         .pool_max_idle_per_host(5)
+        .timeout(Duration::from_secs(30))
         .default_headers(headers_map.clone())
         .build()
         .map_err(|e| e.to_string())?;
@@ -180,11 +182,10 @@ pub async fn get_fragment(url: String, headers: Headers) -> Result<Response, Str
     let mut retry = 0;
 
     loop {
-        
-        
         let res = client
             .get(_current_url.clone())
             .headers(headers_map.clone())
+            .timeout(Duration::from_secs(30))
             .send()
             .await
             .map_err(|e| {

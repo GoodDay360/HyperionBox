@@ -1,6 +1,6 @@
 name: hyperionbox
 base: core22
-version: '2.1.6'
+version: '2.1.7'
 summary: An open-source anime and movie streaming app. # 79 char long summary
 description: |
   An open-source anime and movie streaming app that support watch progress and download for many sources.
