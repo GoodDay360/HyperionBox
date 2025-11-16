@@ -1,5 +1,5 @@
 use futures_util::StreamExt;
-use reqwest::header::{HeaderMap, HeaderValue};
+use reqwest::header::{HeaderMap, HeaderValue, HOST};
 use reqwest::{Client, Response};
 use std::fs::File;
 use std::io::Write;
@@ -44,7 +44,7 @@ where
                     .host_str()
                     .ok_or_else(|| "[download_file] Host not found from parsed URL.")?;
                 new_headers.insert(
-                    "Host",
+                    HOST,
                     HeaderValue::from_str(new_host).map_err(|e| e.to_string())?,
                 );
 
