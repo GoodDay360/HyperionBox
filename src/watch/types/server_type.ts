@@ -12,6 +12,7 @@ export interface TrackInfo {
   file: string;
   label?: string;
   kind: string;
+  default?: boolean;
 }
 
 export interface Config {

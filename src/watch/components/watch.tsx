@@ -623,7 +623,10 @@ export default function Watch() {
                                                 src={item.file}
                                                 kind={item.kind as JSX.TrackHTMLAttributes<HTMLTrackElement>['kind']}
                                                 label={item.label}
-                                                default={localStorage.getItem("prefer_caption") === item.label?.toLowerCase()}
+                                                default={
+                                                    (localStorage.getItem("prefer_caption") === item.label?.toLowerCase()) ||
+                                                    (item.default || false)
+                                                }
                                             />
                                         }</For>
                                     </media-provider>
