@@ -224,7 +224,6 @@ export default function Watch() {
     }
 
     const load_server = async () => {
-        tried_level = [];
         /* Reset State */
         clearInterval(set_hls_instance_interval);
         clearTimeout(set_allow_instant_next_timeout);
