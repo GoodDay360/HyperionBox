@@ -50,7 +50,10 @@ export const ContextManager = createContext<{
     screen_size: () => {
         width: number;
         height: number;
-    }
+    },
+
+    is_enter_fullscreen: () => boolean,
+    set_is_enter_fullscreen: (value: boolean) => void,
 }>();
 
 export default function App() {
@@ -144,7 +147,9 @@ export default function App() {
 
     return (<ThemeProvider theme={theme}>
         <ContextManager.Provider value={{
-            screen_size
+            screen_size, 
+            is_enter_fullscreen,
+            set_is_enter_fullscreen
         }}>
             <div
                 style={{

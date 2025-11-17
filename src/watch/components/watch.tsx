@@ -2,9 +2,10 @@
 import { platform } from '@tauri-apps/plugin-os';
 import { join } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/core';
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 // SolidJS Imports
-import { createSignal, onMount, For, Index, onCleanup } from "solid-js";
+import { createSignal, onMount, For, Index, onCleanup, useContext } from "solid-js";
 
 // SolidJS Router Imports
 import { useSearchParams, useNavigate } from "@solidjs/router";
@@ -51,7 +52,7 @@ import {
     get_watch_state, save_watch_state,
     request_get_local_download_manifest
 } from '../scripts/watch';
-
+import { ContextManager } from '@src/app/components/app';
 import { get_configs } from '@src/settings/scripts/settings';
 
 // Type Imports
@@ -78,6 +79,8 @@ import Hls from 'hls.js';
 export default function Watch() {
     const navigate = useNavigate();
     const [queryParams] = useSearchParams();
+
+    const context = useContext(ContextManager);
 
 
     const source:string = queryParams.source as string ?? "";
@@ -123,7 +126,6 @@ export default function Watch() {
     const [verify_robot, set_verify_robot] = createSignal<{state:boolean, url:string|null}>({state:false, url:null});
     
     let hls_instance:Hls|null = null;
-
     let max_duration:number = 0;
     let current_watch_time:number = 0;
     let allow_instant_next = false;
@@ -490,7 +492,20 @@ export default function Watch() {
                                 ? <media-player id="player" ref={PLAYER_REF}
                                     playsInline webkit-playsinline crossOrigin autoPlay
                                     fullscreenOrientation='landscape'
-                                    onfullscreenchange={(e) => {console.log(e)}}
+                                    on:media-enter-fullscreen-request={async ()=>{
+                                        const current_window = getCurrentWindow();
+                                        await current_window.setFullscreen(true);
+                                    }}
+                                    on:media-exit-fullscreen-request={async ()=>{
+                                        const current_window = getCurrentWindow();
+                                        if (context?.is_enter_fullscreen()) {
+                                            await current_window.setFullscreen(true);
+                                            context?.set_is_enter_fullscreen(true);
+                                        }else{
+                                            await current_window.setFullscreen(false);
+                                            context?.set_is_enter_fullscreen(false);
+                                        }
+                                    }}
                                     streamType='on-demand'
                                     style={{ 
                                         "border-radius": '0',
