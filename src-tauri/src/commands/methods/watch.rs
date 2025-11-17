@@ -73,6 +73,7 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
         .pool_max_idle_per_host(5)
         .timeout(Duration::from_secs(30))
         .default_headers(headers_map.clone())
+        .use_rustls_tls()
         .build()
         .map_err(|e| e.to_string())?;
     
@@ -175,7 +176,11 @@ pub async fn get_fragment(url: String, headers: Headers) -> Result<Response, Str
 
     info!("[get_fragment] url: {}, headers: {:#?}", url, headers_map);
 
-    let client = CLIENT.get(&0).ok_or("[get_fragment] Client not setup yet")?;
+    let client: Client;
+    {
+        let raw_client = CLIENT.get(&0).ok_or("[get_fragment] Client not setup yet")?;
+        client = raw_client.clone();
+    }
     
     let mut _current_url: String = url.clone();
 
