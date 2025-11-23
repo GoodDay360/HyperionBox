@@ -240,6 +240,28 @@ export default function Watch() {
         current_watch_time = 0;
         max_duration = 0;
         /* --- */
+
+        /* Get Last Watched Duration */
+        let last_watch_state: WatchState | undefined | null;
+        try{
+            last_watch_state = await get_watch_state(
+                source,
+                id,
+                current_season_index(),
+                current_episode_index()
+            );
+        }catch(e){
+            console.error(e);
+            toast.remove();
+            toast.error("Something went wrong while getting watch state.",{
+                style: {
+                    color:"red",
+                }
+            })
+        }
+        current_watch_time = last_watch_state?.current_time || 0;
+        /* --- */
+
         try {
             console.log(source, link_plugin_id, selected_server_id());
             const data = await get_server(source, link_plugin_id, selected_server_index(), selected_server_id());
@@ -523,32 +545,15 @@ export default function Watch() {
                                         
                                         player.volume = parseFloat(localStorage.getItem("volume") || "1") || 1;
 
-                                        /* Get Watched Duration and Apply it */
-                                        let watch_state: WatchState | undefined | null;
-                                        try{
-                                            watch_state = await get_watch_state(
-                                                source,
-                                                id,
-                                                current_season_index(),
-                                                current_episode_index()
-                                            );
-                                        }catch(e){
-                                            console.error(e);
-                                            toast.remove();
-                                            toast.error("Something went wrong while getting watch state.",{
-                                                style: {
-                                                    color:"red",
-                                                }
-                                            })
-                                        }
-                                        current_watch_time = watch_state?.current_time || 0
+                                        /* Apply last watch duration. */
                                         player.currentTime = current_watch_time;
                                         /* --- */
+
                                         set_is_player_ready(true);
                                     }}
                                     volume={parseFloat(localStorage.getItem("volume") || "1") || 1}
                                     on:time-update={(e)=>{
-                                        if (is_loading()) return;
+                                        if (is_loading() || is_loading_server() || !is_player_ready()) return;
                                         const player = e.target;
                                         current_watch_time = e.detail.currentTime;
 

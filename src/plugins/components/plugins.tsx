@@ -144,7 +144,8 @@ export default function Plugin() {
                 if (current_tab() === 0) {
                     if (
                         (Object.keys(SEARCH_IN_PLUGIN_DATA()).length === 0) || 
-                        (Object.keys(SEARCH_IN_PLUGIN_DATA()).length !== Object.keys(INSTALLED_PLUGIN_DATA()).length)
+                        (Object.keys(SEARCH_IN_PLUGIN_DATA()).length !== Object.keys(INSTALLED_PLUGIN_DATA()).length) ||
+                        ((Object.keys(SEARCH_IN_PLUGIN_DATA()).length === 0) && (Object.keys(INSTALLED_PLUGIN_DATA()).length > 0))
                     ) {
                         request_search_in_plugin()
                     }else{

@@ -69,7 +69,7 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
 
     let client = Client::builder()
         .cookie_store(true)
-        .pool_idle_timeout(None)
+        .pool_idle_timeout(Duration::from_secs(30))
         .pool_max_idle_per_host(5)
         .timeout(Duration::from_secs(30))
         .default_headers(headers_map.clone())
@@ -83,8 +83,6 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
     let mut retry = 0;
 
     loop {
-        
-        
         let res = client.get(&_current_url)
             .send()
             .await
@@ -100,7 +98,7 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
         let res_url = res.url().to_string();
 
 
-        if res_url != _current_url {
+        if (res_url != _current_url) && !res.status().is_success() {
             _current_url = res_url;
             let redirect_url = res.url();
             let redirect_host = redirect_url.host_str().ok_or("no host")?.to_string();
@@ -200,11 +198,10 @@ pub async fn get_fragment(url: String, headers: Headers) -> Result<Response, Str
         
         
         
-
         let res_status = res.status().as_u16();
         let res_url = res.url().to_string();
 
-        if res_url != _current_url {
+        if (res_url != _current_url) && !res.status().is_success() {
             _current_url = res_url;
             let redirect_url = res.url();
             let redirect_host = redirect_url.host_str().ok_or("no host")?.to_string();

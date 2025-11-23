@@ -100,7 +100,7 @@ export default function PluginUpdate({
                     >
                         Later
                     </Button>
-                    <Button variant='text' color="primary" disabled={is_installing()}
+                    <Button variant='contained' color="primary" disabled={is_installing()}
                         sx={{
                             fontSize: "calc((100vw + 100vh)/2*0.0225)",
                             textTransform: "none",
