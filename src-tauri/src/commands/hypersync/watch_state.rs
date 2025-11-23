@@ -40,13 +40,13 @@ pub struct RemoteWatchStateResponse {
 
 pub fn get_db() -> Result<Connection, String> {
     let config_data = Configs::get()?;
-    let cache_dir = config_data.cache_dir.ok_or("Storage directory not set".to_string())?;
+    let storage_dir = config_data.storage_dir.ok_or("Storage directory not set".to_string())?;
 
-    if !cache_dir.exists() {
-        fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
+    if !storage_dir.exists() {
+        fs::create_dir_all(&storage_dir).map_err(|e| e.to_string())?;
     }
 
-    let db_path = cache_dir.join("hypersync.db");
+    let db_path = storage_dir.join("hypersync.db");
 
     let conn = Connection::open(&db_path).map_err(|e| e.to_string())?;
 

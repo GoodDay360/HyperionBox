@@ -534,7 +534,7 @@ export default function Settings() {
                                 style={{
                                     color:"var(--color-1)",
                                 }}
-                            >Download</legend>
+                            >Download & Cache</legend>
                             
                             <div class={styles.item_container}
                                 style={{
@@ -615,7 +615,9 @@ export default function Settings() {
                                             onClick={() => {
                                                 set_is_working(true);
                                                 clean_storage()
-                                                    .then(() => {
+                                                    .then(async () => {
+                                                        set_is_working(false);
+                                                        await get_data();
                                                         toast.remove();
                                                         toast.success("Storage cleaned successfully.",{
                                                             style: {

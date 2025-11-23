@@ -49,8 +49,8 @@ async fn get_cache() -> Result<Cache, String> {
 
     let default_cache = Cache { page: 1, timestamp: 0 };
 
-    let storage_dir = configs_data.storage_dir.ok_or("Storage directory not set".to_string())?;
-    let cache_path = storage_dir.join("hypersync_get_favorite_cache.json");
+    let cache_dir = configs_data.cache_dir.ok_or("Cache directory not set".to_string())?;
+    let cache_path = cache_dir.join("hypersync_get_favorite_cache.json");
     if cache_path.exists() {
         let cache_str = std::fs::read_to_string(&cache_path).map_err(|e| e.to_string())?;
         let cache: Cache = from_str(&cache_str).map_err(|e| e.to_string()).unwrap_or(default_cache);
@@ -63,11 +63,11 @@ async fn get_cache() -> Result<Cache, String> {
 async fn save_cache(cache: &Cache) -> Result<(), String> {
     let configs_data = Configs::get()?;
 
-    let storage_dir = configs_data.storage_dir.ok_or("Storage directory not set".to_string())?;
-    if !storage_dir.exists() {
-        fs::create_dir_all(&storage_dir).map_err(|e| e.to_string())?;
+    let cache_dir = configs_data.cache_dir.ok_or("Cache directory not set".to_string())?;
+    if !cache_dir.exists() {
+        fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
     }
-    let cache_path = storage_dir.join("hypersync_get_favorite_cache.json");
+    let cache_path = cache_dir.join("hypersync_get_favorite_cache.json");
 
     let cache_str = serde_json::to_string(cache).map_err(|e| e.to_string())?;
     fs::write(&cache_path, cache_str).map_err(|e| e.to_string())?;
