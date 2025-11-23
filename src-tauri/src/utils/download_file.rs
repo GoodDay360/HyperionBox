@@ -38,7 +38,7 @@ where
 
             let res_url = response.url().to_string();
 
-            if res_url != current_url {
+            if (res_url != current_url) && !response.status().is_success() {
                 let parsed_url = Url::parse(&res_url).map_err(|e| e.to_string())?;
                 let new_host = parsed_url
                     .host_str()
