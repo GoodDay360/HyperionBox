@@ -49,6 +49,7 @@ export default function LazyLoadImage({
                 observer.disconnect();
             });
         }else{
+            console.log("Force load ! with url: ", src);
             set_is_in_view(true);
         }
     })
@@ -61,8 +62,14 @@ export default function LazyLoadImage({
             <Skeleton variant="rectangular" sx={skeleton_sx} />
         }
         {is_in_view() && 
-            <img src={src.trim() ? src : NO_IMG} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
-                onLoad={() => set_is_loaded(true)}
+            <img src={(src.trim().length > 0) ? src : NO_IMG} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
+                on:load={() => set_is_loaded(true)}
+                ref={el => {
+                    // If the image is already cached and complete, fire manually
+                    if (el && el.complete) {
+                        set_is_loaded(true);
+                    }
+                }}
             />
         }
         
