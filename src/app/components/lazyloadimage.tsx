@@ -32,7 +32,6 @@ export default function LazyLoadImage({
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        console.log("IN VIEW");
                         set_is_in_view(true);
                         observer.disconnect();
                     }
@@ -49,7 +48,6 @@ export default function LazyLoadImage({
                 observer.disconnect();
             });
         }else{
-            console.log("Force load ! with url: ", src);
             set_is_in_view(true);
         }
     })
