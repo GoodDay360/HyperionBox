@@ -192,7 +192,7 @@ export default function View() {
                                 <LazyLoadImage
                                     className={styles.container_1_box_img}
                                     src={DATA()?.manifest_data?.poster ?? ""}
-
+                                    in_view_only={false}
                                     skeleton_sx={{
                                         width: "100%",
                                         height: "calc((100vw + 100vh)/2*0.18)",
