@@ -13,37 +13,44 @@ export default function LazyLoadImage({
     src,
     className,
     style,
-    skeleton_sx
+    skeleton_sx,
+    in_view_only=true
 }:{
     src: string,
     className?: string,
     style?: JSX.CSSProperties,
-    skeleton_sx?: SxProps
+    skeleton_sx?: SxProps,
+    in_view_only?: boolean
 }) {
 
-    let REF!: HTMLImageElement;
+    let REF!: HTMLDivElement;
     const [is_loaded, set_is_loaded] = createSignal(false);
     const [is_in_view, set_is_in_view] = createSignal(false);
     
     onMount(()=>{
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    set_is_in_view(true);
-                    observer.disconnect();
-                }
+        if (in_view_only) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        console.log("IN VIEW");
+                        set_is_in_view(true);
+                        observer.disconnect();
+                    }
+                });
+            }, {
+                root: null, // viewport
+                rootMargin: '0px',
+                threshold: 0.1 // trigger when 10% of the element is visible
             });
-        }, {
-            root: null, // viewport
-            rootMargin: '0px',
-            threshold: 0.1 // trigger when 10% of the element is visible
-        });
 
-        observer.observe(REF);
+            observer.observe(REF);
 
-        onCleanup(() => {
-            observer.disconnect();
-        });
+            onCleanup(() => {
+                observer.disconnect();
+            });
+        }else{
+            set_is_in_view(true);
+        }
     })
 
     return (<div ref={REF}
