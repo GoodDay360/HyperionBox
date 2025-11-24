@@ -135,7 +135,28 @@ export default function Watch() {
     let play_next_timeout:ReturnType<typeof setTimeout> | undefined;
     let set_allow_instant_next_timeout:ReturnType<typeof setTimeout> | undefined;
     
-    
+    const load_watch_state = async () => {
+        /* Get Last Watched Duration */
+        let last_watch_state: WatchState | undefined | null;
+        try{
+            last_watch_state = await get_watch_state(
+                source,
+                id,
+                current_season_index(),
+                current_episode_index()
+            );
+        }catch(e){
+            console.error(e);
+            toast.remove();
+            toast.error("Something went wrong while getting watch state.",{
+                style: {
+                    color:"red",
+                }
+            })
+        }
+        current_watch_time = last_watch_state?.current_time || 0;
+        /* --- */
+    }
 
     const load_episode_list = async () => {
         const data = await get_episode_list(source, id, link_plugin_id, link_id);
@@ -241,26 +262,7 @@ export default function Watch() {
         max_duration = 0;
         /* --- */
 
-        /* Get Last Watched Duration */
-        let last_watch_state: WatchState | undefined | null;
-        try{
-            last_watch_state = await get_watch_state(
-                source,
-                id,
-                current_season_index(),
-                current_episode_index()
-            );
-        }catch(e){
-            console.error(e);
-            toast.remove();
-            toast.error("Something went wrong while getting watch state.",{
-                style: {
-                    color:"red",
-                }
-            })
-        }
-        current_watch_time = last_watch_state?.current_time || 0;
-        /* --- */
+        await load_watch_state();
 
         try {
             console.log(source, link_plugin_id, selected_server_id());
@@ -281,6 +283,8 @@ export default function Watch() {
         
         
     }
+
+    
 
     const get_data = async () => {
         /* Reset State */
@@ -306,11 +310,12 @@ export default function Watch() {
 
             let local_download_manifest = null;
             
+            /* Check if local download available and not force to use remote server. */
             if (mode().force_online === false){
                 local_download_manifest = await request_get_local_download_manifest(source, id, current_season_index(), current_episode_index(), true);
                 
                 if (local_download_manifest !== null){
-                    /* Modify Tracks URL */
+                    /* Modify Tracks URL for offline loading */
                     const tracks = local_download_manifest?.data?.tracks;
                     const app_configs = await get_configs();
                     const storage_dir = app_configs.storage_dir;
@@ -326,6 +331,7 @@ export default function Watch() {
                         current: "offline",
                         force_online: false
                     });
+                    await load_watch_state();
                     set_is_loading_server(false);
                 }
             }
@@ -336,7 +342,7 @@ export default function Watch() {
                     force_online: false
                 });
                 await load_episode_server();
-                load_server();
+                await load_server();
                 
             }
             set_is_loading(false);
