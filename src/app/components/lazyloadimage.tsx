@@ -32,7 +32,6 @@ export default function LazyLoadImage({
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        console.log("IN VIEW");
                         set_is_in_view(true);
                         observer.disconnect();
                     }
@@ -61,8 +60,14 @@ export default function LazyLoadImage({
             <Skeleton variant="rectangular" sx={skeleton_sx} />
         }
         {is_in_view() && 
-            <img src={src.trim() ? src : NO_IMG} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
-                onLoad={() => set_is_loaded(true)}
+            <img src={(src.trim().length > 0) ? src : NO_IMG} class={className} style={{...style, display: is_loaded() ? "block" : "none"}} 
+                on:load={() => set_is_loaded(true)}
+                ref={el => {
+                    // If the image is already cached and complete, fire manually
+                    if (el && el.complete) {
+                        set_is_loaded(true);
+                    }
+                }}
             />
         }
         

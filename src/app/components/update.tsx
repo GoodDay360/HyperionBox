@@ -44,7 +44,10 @@ export default function Update() {
     const [is_done_download, set_is_done_download] = createSignal(false);
 
     let update_file_path:string = "";
+    let update_checker_interval: NodeJS.Timeout;
+    let is_checking_update:boolean = false;
 
+    /* Setup Update Checker Interval */
     onMount(()=>{
         check_update()
             .then(async (data) => {
@@ -52,7 +55,26 @@ export default function Update() {
                 set_current_version(await getVersion());
                 set_update_available(data);
             })
+        
+        update_checker_interval = setInterval(()=>{
+            if (is_checking_update) return;
+            is_checking_update = true;
+            check_update()
+                .then(async (data) => {
+                    console.log(data);
+                    set_current_version(await getVersion());
+                    set_update_available(data);
+                })
+                .finally(()=>{
+                    is_checking_update = false;
+                })
+        }, 3600000);
+
+        onCleanup(() => {
+            clearInterval(update_checker_interval);
+        })
     })
+    /* --- */
 
     onMount(() => {
         let unlisten = () => {};
