@@ -80,6 +80,7 @@ export default function Plugin() {
     const request_search_in_plugin = () => {
         if (current_tab() === 0 && link_from.id) {
             set_is_loading(true);
+            set_is_working(true);
             const plugin_id_list = Object.keys(INSTALLED_PLUGIN_DATA());
             Promise.all(
                 plugin_id_list.map(plugin_id =>
@@ -95,6 +96,7 @@ export default function Plugin() {
                 })
                 .finally(() => {
                     set_is_loading(false);
+                    set_is_working(false);
                 });
         }
     }
