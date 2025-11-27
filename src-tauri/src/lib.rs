@@ -70,8 +70,14 @@ pub fn run() {
             async_runtime::spawn(async move {
                 chlaty_core::init();
             });
+            let app_handle_clone = app_handle.clone();
             async_runtime::spawn(async move {
-                worker::download::new(app_handle.clone()).await;
+                worker::update_plugins::new(app_handle_clone).await;
+            });
+
+            let app_handle_clone = app_handle.clone();
+            async_runtime::spawn(async move {
+                worker::download::new(app_handle_clone).await;
             });
             async_runtime::spawn(async move {
                 worker::hypersync::favorite::upload::new().await;
@@ -108,7 +114,7 @@ pub fn run() {
             /* --- */
 
             /* Manage Plugin */
-            commands::manage_plugin::get_plugin_list::get_plugin_list,
+            commands::manage_plugin::get_plugin_list::get_plugin_list_from_source,
             commands::manage_plugin::get_plugin_release::get_plugin_release,
             commands::manage_plugin::get_installed_plugin_list::get_installed_plugin_list,
             commands::manage_plugin::install_plugin::install_plugin,

@@ -38,7 +38,7 @@ import LazyLoadImage from '@src/app/components/lazyloadimage';
 import styles from "../styles/plugin.module.css"
 
 // Script Imports
-import { get_plugin_list, install_plugin, get_installed_plugin_list, remove_plugin, get_plugin_release } from '../scripts/manage_plugins';
+import { get_plugin_list_from_source, install_plugin, get_installed_plugin_list, remove_plugin, get_plugin_release } from '../scripts/manage_plugins';
 import { search_in_plugin } from '../scripts/request_plugin';
 
 // Script Type Imports
@@ -108,7 +108,7 @@ export default function Plugin() {
         SET_SEARCH_IN_PLUGIN_DATA({});
         
         Promise.all([
-            get_plugin_list(select_source_id()),
+            get_plugin_list_from_source(select_source_id()),
             get_installed_plugin_list(select_source_id()),
         ])
             .then(([plugin_data, installed_plugin_data]) => {

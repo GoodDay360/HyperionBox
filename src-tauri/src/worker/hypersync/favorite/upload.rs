@@ -93,6 +93,7 @@ pub async fn new(){
             Err(e) => {
                 error!("[Worker:HyperSync:Favorite::Upload]: {}", e);
                 sleep(Duration::from_secs(10)).await;
+                continue;
             },
         }
         sleep(Duration::from_secs(5)).await;
