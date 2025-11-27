@@ -5,9 +5,9 @@ import { invoke } from '@tauri-apps/api/core';
 import { PluginData, InstalledPluginData, PluginRelease } from '../types/manage_plugin_type';
 
 
-export function get_plugin_list(source: string): Promise<Record<string, PluginData>> {
+export function get_plugin_list_from_source(source: string): Promise<Record<string, PluginData>> {
     
-    let plugin_list = invoke<Record<string, PluginData>>("get_plugin_list", { source });
+    let plugin_list = invoke<Record<string, PluginData>>("get_plugin_list_from_source", { source });
 
     return plugin_list;
 }

@@ -7,7 +7,7 @@ import utc from 'dayjs/plugin/utc'
 dayjs.extend(utc)
 
 // Scripts Imports
-import { get_plugin_list, get_plugin_release, get_installed_plugin_list } from "@src/plugins/scripts/manage_plugins"
+import { get_plugin_list_from_source, get_plugin_release, get_installed_plugin_list } from "@src/plugins/scripts/manage_plugins"
 
 // Types Imports
 import { CheckPluginUpdate } from "../types/check_plugin_update_type";
@@ -29,7 +29,7 @@ export default async function check_plugin_update(source:string, plugin_id:strin
         
         let installed_plugin_version = installed_plugin_list[plugin_id].version;
 
-        let plugin_list = await get_plugin_list(source);
+        let plugin_list = await get_plugin_list_from_source(source);
         
         let select_plugin_title = plugin_list[plugin_id].title;
         let select_plugin_manifest_url = plugin_list[plugin_id].manifest
