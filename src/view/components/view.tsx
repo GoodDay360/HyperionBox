@@ -607,13 +607,27 @@ export default function View() {
                 </>
                 : <> {/* Loading Skeleton */}
                     <div class={styles.skeleton_container}>
-                        <Skeleton variant="rectangular"
-                            sx={{
-                                width: "100%",
-                                height: "calc((100vw + 100vh)/2*0.45)",
-                                background: "var(--background-2)",
-                            }}
-                        />
+                        <div class={styles.container_1}>
+                            <IconButton
+                                sx={{
+                                    color: "var(--color-1)",
+                                    fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
+                                    margin: "8px"
+                                }}
+                                onClick={() => {
+                                    navigate(-1);
+                                }}
+                            >
+                                <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
+                            </IconButton>
+                            <Skeleton variant="rectangular"
+                                sx={{
+                                    width: "100%",
+                                    height: "calc((100vw + 100vh)/2*0.45)",
+                                    background: "var(--background-2)",
+                                }}
+                            />
+                        </div>
                         <div class={styles.skeleton_box_1}>
                             <div
                                 style={{
