@@ -169,61 +169,66 @@ export default function Search() {
                     </ButtonBase>
                 </form>
             </div>
-            
-            <div class={styles.grid_box_container}>
-                <GridBox
-                    row_gap={16}
-                    column_gap={16}
-                >
-                    
-                    <For each={DATA()}>
-                        {(item) => (
-                            <div class={styles.content_data_box}>
-                                <ButtonBase
-                                    sx={{
-                                        width: "100%",
-                                        height: "auto",
-                                    }}
-                                    onClick={() => {
-                                        navigate(`/view?source=${source}&id=${item.id}`);
-                                    }}
-                                >
-                                    <LazyLoadImage 
-                                        src={item.poster}
-                                        className={styles.content_data_img}
+            {(DATA().length > 0 || is_loading()) &&
+                <div class={styles.grid_box_container}>
+                    <GridBox
+                        row_gap={16}
+                        column_gap={16}
+                    >
+                        
+                        <For each={DATA()}>
+                            {(item) => (
+                                <div class={styles.content_data_box}>
+                                    <ButtonBase
+                                        sx={{
+                                            width: "100%",
+                                            height: "auto",
+                                        }}
+                                        onClick={() => {
+                                            navigate(`/view?source=${source}&id=${item.id}`);
+                                        }}
+                                    >
+                                        <LazyLoadImage 
+                                            src={item.poster}
+                                            className={styles.content_data_img}
 
-                                        skeleton_sx={{
-                                            width: "calc((100vw + 100vh)/2*0.18)",
-                                            height: "calc((100vw + 100vh)/2*0.25)",
+                                            skeleton_sx={{
+                                                width: "calc((100vw + 100vh)/2*0.18)",
+                                                height: "calc((100vw + 100vh)/2*0.25)",
+                                                background: "var(--background-2)",
+                                                borderRadius: "5px",
+                                            }}
+                                        />
+                                    </ButtonBase>
+                                    <span class={styles.content_data_title}>{item.title}</span>
+                                </div>
+                                    
+                                
+                            )}
+                        </For>
+                        {is_loading() && 
+                            <Index each={[...Array(20)]}>
+                                {(_) => <div class={styles.content_data_box}>
+                                    <Skeleton 
+                                        sx={{
+                                            width: "100%",
+                                            height: "calc((100vw + 100vh)/2 * 0.25)",
                                             background: "var(--background-2)",
                                             borderRadius: "5px",
                                         }}
+                                        variant="rectangular"
                                     />
-                                </ButtonBase>
-                                <span class={styles.content_data_title}>{item.title}</span>
-                            </div>
-                                
-                            
-                        )}
-                    </For>
-                    
-                    {is_loading() && 
-                        <Index each={[...Array(20)]}>
-                            {(_) => <div class={styles.content_data_box}>
-                                <Skeleton 
-                                    sx={{
-                                        width: "100%",
-                                        height: "calc((100vw + 100vh)/2 * 0.25)",
-                                        background: "var(--background-2)",
-                                        borderRadius: "5px",
-                                    }}
-                                    variant="rectangular"
-                                />
-                            </div>}
-                        </Index>
-                    }
-                </GridBox>
-            </div>
+                                </div>}
+                            </Index>
+                        }
+                    </GridBox>
+                </div>
+            }
+            {(!is_loading() && DATA().length == 0) &&
+                <div class={styles.feedback_container}>
+                    <span class={styles.feedback_text}>No result found</span>
+                </div>
+            }
                 
             
         </div>

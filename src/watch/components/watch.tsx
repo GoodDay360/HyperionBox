@@ -45,11 +45,12 @@ import "../styles/modify_player.css"
 
 
 // Script Imports
+import horizontal_scroll from '@src/app/scripts/horizontal_scroll';
 import MODIFY_PLOADER from '../scripts/modify_ploader';
 import MODIFY_FLOADER from '../scripts/modify_floader';
 import { 
     get_episode_list, get_episode_server, get_server,
-    get_watch_state, save_watch_state,
+    update_watch_index, get_watch_state, save_watch_state,
     request_get_local_download_manifest
 } from '../scripts/watch';
 import { ContextManager } from '@src/app/components/app';
@@ -188,12 +189,12 @@ export default function Watch() {
 
     const load_episode_server = async () => {
         const data = await get_episode_server(
-            source, id, link_plugin_id, 
+            source, link_plugin_id, 
             current_season_index(), 
             current_episode_index(),
             current_episode_id(),
-            true
         );
+
         console.log("Episode Server Data: ", data);
         SET_EPISODE_SERVER_DATA(data);
         /* Loading prefer server from local storage */
@@ -305,7 +306,7 @@ export default function Watch() {
         max_duration = 0;
         /* --- */
         try {
-            
+            await update_watch_index(source, id, current_season_index(), current_episode_index());
             await load_episode_list();
 
             let local_download_manifest = null;
@@ -696,16 +697,7 @@ export default function Watch() {
                                                 <span class={styles.server_label}>{server_type.toUpperCase()}:</span>
                                                 <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                     onWheel={(e) => {
-                                                        const el = e.currentTarget;
-                                                        const isOverflowing = el.scrollWidth > el.clientWidth;
-
-                                                        if (isOverflowing) {
-                                                        e.preventDefault();
-                                                        el.scrollBy({
-                                                            left: e.deltaY,
-                                                            behavior: "smooth",
-                                                        });
-                                                        }
+                                                        horizontal_scroll(e);
                                                     }}
                                                 >
                                                     <For each={EPISIDE_SERVER_DATA()?.[server_type]}>
@@ -741,11 +733,7 @@ export default function Watch() {
                                             <span class={styles.server_label}>SERVER:</span>
                                             <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                 onWheel={(e) => {
-                                                    e.preventDefault();
-                                                    e.currentTarget.scrollBy({
-                                                        left: e.deltaY,
-                                                        behavior: "smooth",
-                                                    });
+                                                    horizontal_scroll(e);
                                                 }}
                                             >
                                                 <Button  color='primary'
@@ -933,7 +921,7 @@ export default function Watch() {
                         </div>
                         <div class={`${styles.episode_body_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}>
                             <For each={EPISODE_LIST()?.[view_season_index()]?.[view_episode_page_index()].filter(
-                                (item) => search() === "" || item.index.toString().includes(search().trim()) 
+                                (item) => search() === "" || (item.index+1).toString().includes(search().trim()) 
                                     || item.id.includes(search().trim()) || item.title.toLowerCase().includes(search().trim().toLowerCase())
                             )}>
                                 {(item)=>{
@@ -971,7 +959,7 @@ export default function Watch() {
                                                     background: 'var(--background-3)',
                                                 }
                                             }}
-                                            onClick={() => {
+                                            onClick={async () => {
                                                 set_mode({current: "online", force_online: false});
                                                 /* Apply View Index to Current Index */
                                                 set_current_episode_page_index(view_episode_page_index());

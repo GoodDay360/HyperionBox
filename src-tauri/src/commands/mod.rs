@@ -6,6 +6,7 @@ pub mod link_plugin;
 pub mod local_manifest;
 pub mod manage_plugin;
 pub mod request_plugin;
+pub mod watch_index;
 pub mod watch_state;
 pub mod dialog;
 pub mod update;

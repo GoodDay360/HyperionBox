@@ -43,6 +43,7 @@ import styles from "../styles/view.module.css"
 import { request_view } from '../scripts/view';
 import { request_get_local_download_manifest } from '@src/watch/scripts/watch';
 import check_plugin_update from '../scripts/check_plugin_update';
+import horizontal_scroll from '@src/app/scripts/horizontal_scroll';
 
 // Types Imports
 import { CheckPluginUpdate } from '../types/check_plugin_update_type';
@@ -330,16 +331,7 @@ export default function View() {
                         <div class={styles.season_frame}>
                             <div class={`${styles.season_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                 onWheel={(e) => {
-                                    const el = e.currentTarget;
-                                    const isOverflowing = el.scrollWidth > el.clientWidth;
-
-                                    if (isOverflowing) {
-                                    e.preventDefault();
-                                    el.scrollBy({
-                                        left: e.deltaY,
-                                        behavior: "smooth",
-                                    });
-                                    }
+                                    horizontal_scroll(e);
                                 }}
                             >
                                 <For each={[...Array(DATA()?.manifest_data?.episode_list?.length ?? 0)]}>
@@ -607,13 +599,27 @@ export default function View() {
                 </>
                 : <> {/* Loading Skeleton */}
                     <div class={styles.skeleton_container}>
-                        <Skeleton variant="rectangular"
-                            sx={{
-                                width: "100%",
-                                height: "calc((100vw + 100vh)/2*0.45)",
-                                background: "var(--background-2)",
-                            }}
-                        />
+                        <div class={styles.container_1}>
+                            <IconButton
+                                sx={{
+                                    color: "var(--color-1)",
+                                    fontSize: "max(25px, calc((100vw + 100vh)/2*0.035))",
+                                    margin: "8px"
+                                }}
+                                onClick={() => {
+                                    navigate(-1);
+                                }}
+                            >
+                                <ArrowBackRoundedIcon color='inherit' fontSize='inherit' />
+                            </IconButton>
+                            <Skeleton variant="rectangular"
+                                sx={{
+                                    width: "100%",
+                                    height: "calc((100vw + 100vh)/2*0.45)",
+                                    background: "var(--background-2)",
+                                }}
+                            />
+                        </div>
                         <div class={styles.skeleton_box_1}>
                             <div
                                 style={{

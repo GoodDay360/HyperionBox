@@ -41,6 +41,8 @@ import styles from "../styles/home.module.css"
 import { ContextManager } from '@src/app/components/app';
 import { get_configs } from '@src/settings/scripts/settings';
 import { request_home } from '../scripts/home';
+import horizontal_scroll from '@src/app/scripts/horizontal_scroll';
+
 
 // Types Import
 import { Content, RelevantContent } from '../types/home_type';
@@ -392,17 +394,10 @@ export default function Home() {
                                 </div>
                                 <div class={`${styles.content_data_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                     onWheel={(e) => {
-                                        const el = e.currentTarget;
-                                        const isOverflowing = el.scrollWidth > el.clientWidth;
-
-                                        if (isOverflowing) {
-                                        e.preventDefault();
-                                        el.scrollBy({
-                                            left: e.deltaY,
-                                            behavior: "smooth",
-                                        });
-                                        }
+                                        horizontal_scroll(e);
                                     }}
+
+
                                 >
                                     <For each={item.data}>
                                         {(data_item) => <div class={styles.content_data_box}>

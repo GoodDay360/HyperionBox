@@ -33,6 +33,7 @@ import styles from "../styles/favorites.module.css"
 import { ContextManager } from '@src/app/components/app';
 import { request_get_all_tag, request_get_item_from_favorite } from '@src/manage_favorite/scripts/manage_favorite';
 import { get_local_manifest_data } from '../scripts/favorites';
+import horizontal_scroll from '@src/app/scripts/horizontal_scroll';
 
 // Script Type Imports
 import { ItemFromFavorite } from '@src/manage_favorite/types/manage_favorite_type';
@@ -116,11 +117,7 @@ export default function Favorites() {
             <div class={styles.header_container}>
                 <div class={`${styles.tag_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                     onWheel={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.scrollBy({
-                            left: e.deltaY,
-                            behavior: "smooth",
-                        });
+                        horizontal_scroll(e);
                     }}
                 >
                     <For each={FAVORITE_TAG_DATA()}>
