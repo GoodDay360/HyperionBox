@@ -79,3 +79,22 @@
 	white-space: normal;
 	word-break: keep-all;
 }
+
+.feedback_container{
+	display: flex;
+	width: 100%;
+	flex: 1;
+	justify-content: center;
+	align-items: center;
+}
+
+.feedback_text{
+	color: var(--color-1);
+	font-family: var(--font-family);
+	font-size: calc((100vw + 100vh)/2*0.045);
+	user-select: none;
+
+	white-space: wrap;
+	font-weight: 600;
+	text-align: center;
+}
