@@ -921,7 +921,7 @@ export default function Watch() {
                         </div>
                         <div class={`${styles.episode_body_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}>
                             <For each={EPISODE_LIST()?.[view_season_index()]?.[view_episode_page_index()].filter(
-                                (item) => search() === "" || item.index.toString().includes(search().trim()) 
+                                (item) => search() === "" || (item.index+1).toString().includes(search().trim()) 
                                     || item.id.includes(search().trim()) || item.title.toLowerCase().includes(search().trim().toLowerCase())
                             )}>
                                 {(item)=>{
