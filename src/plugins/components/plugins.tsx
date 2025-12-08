@@ -44,6 +44,7 @@ import { search_in_plugin } from '../scripts/request_plugin';
 // Script Type Imports
 import { PluginData, InstalledPluginData } from '../types/manage_plugin_type';
 import { SearchInPluginData } from '../types/request_plugin_type';
+import horizontal_scroll from '@src/app/scripts/horizontal_scroll';
 
 const AVAILABLE_SOUCRES: Record<string, string> = {
     "anime": "Anime",
@@ -184,11 +185,7 @@ export default function Plugin() {
                 </IconButton>
                 <div class={`${styles.tab_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                     onWheel={(e) => {
-                        e.preventDefault();
-                        e.currentTarget.scrollBy({
-                            left: e.deltaY,
-                            behavior: "smooth",
-                        });
+                        horizontal_scroll(e);
                     }}
                 >
                     <For each={Tab}>
@@ -313,16 +310,7 @@ export default function Plugin() {
                                                 </div>
                                                 <div class={`${styles.content_data_container} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                     onWheel={(e) => {
-                                                        const el = e.currentTarget;
-                                                        const isOverflowing = el.scrollWidth > el.clientWidth;
-
-                                                        if (isOverflowing) {
-                                                        e.preventDefault();
-                                                        el.scrollBy({
-                                                            left: e.deltaY,
-                                                            behavior: "smooth",
-                                                        });
-                                                        }
+                                                        horizontal_scroll(e);
                                                     }}
                                                 >
                                                     {SEARCH_IN_PLUGIN_DATA()[plugin_id].length > 0 

@@ -45,6 +45,7 @@ import "../styles/modify_player.css"
 
 
 // Script Imports
+import horizontal_scroll from '@src/app/scripts/horizontal_scroll';
 import MODIFY_PLOADER from '../scripts/modify_ploader';
 import MODIFY_FLOADER from '../scripts/modify_floader';
 import { 
@@ -696,16 +697,7 @@ export default function Watch() {
                                                 <span class={styles.server_label}>{server_type.toUpperCase()}:</span>
                                                 <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                     onWheel={(e) => {
-                                                        const el = e.currentTarget;
-                                                        const isOverflowing = el.scrollWidth > el.clientWidth;
-
-                                                        if (isOverflowing) {
-                                                        e.preventDefault();
-                                                        el.scrollBy({
-                                                            left: e.deltaY,
-                                                            behavior: "smooth",
-                                                        });
-                                                        }
+                                                        horizontal_scroll(e);
                                                     }}
                                                 >
                                                     <For each={EPISIDE_SERVER_DATA()?.[server_type]}>
@@ -741,11 +733,7 @@ export default function Watch() {
                                             <span class={styles.server_label}>SERVER:</span>
                                             <div class={`${styles.server_item_box} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
                                                 onWheel={(e) => {
-                                                    e.preventDefault();
-                                                    e.currentTarget.scrollBy({
-                                                        left: e.deltaY,
-                                                        behavior: "smooth",
-                                                    });
+                                                    horizontal_scroll(e);
                                                 }}
                                             >
                                                 <Button  color='primary'
