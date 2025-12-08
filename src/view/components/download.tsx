@@ -69,7 +69,7 @@ export default function Download({
         const sample_episode_id = Object.keys(data)[0];
         const season_index = data[sample_episode_id].season_index;
         const episode_index = data[sample_episode_id].episode_index;
-        get_episode_server(source, id, plugin_id, season_index, episode_index, sample_episode_id, false)
+        get_episode_server(source, plugin_id, season_index, episode_index, sample_episode_id)
             .then((result)=>{
                 console.log(result);
                 SET_SERVER_DATA(result);

@@ -62,8 +62,11 @@ pub fn run() {
                 .path()
                 .app_data_dir()
                 .map_err(|e| e.to_string())?;
-
-            env::set_var("HYPERIONBOX_APPDATA", appdata_dir);
+            
+            unsafe {
+                env::set_var("HYPERIONBOX_APPDATA", appdata_dir);
+            }
+            
             utils::configs::Configs::init()?;
 
             /* Spawn Worker */
@@ -145,8 +148,10 @@ pub fn run() {
             /* --- */
 
             /* Watch State */
+            commands::watch_index::update_watch_index,
             commands::watch_state::get_watch_state,
             commands::watch_state::save_watch_state,
+            
             /* --- */
 
             /* Download */

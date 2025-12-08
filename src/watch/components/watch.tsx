@@ -49,7 +49,7 @@ import MODIFY_PLOADER from '../scripts/modify_ploader';
 import MODIFY_FLOADER from '../scripts/modify_floader';
 import { 
     get_episode_list, get_episode_server, get_server,
-    get_watch_state, save_watch_state,
+    update_watch_index, get_watch_state, save_watch_state,
     request_get_local_download_manifest
 } from '../scripts/watch';
 import { ContextManager } from '@src/app/components/app';
@@ -188,12 +188,12 @@ export default function Watch() {
 
     const load_episode_server = async () => {
         const data = await get_episode_server(
-            source, id, link_plugin_id, 
+            source, link_plugin_id, 
             current_season_index(), 
             current_episode_index(),
             current_episode_id(),
-            true
         );
+
         console.log("Episode Server Data: ", data);
         SET_EPISODE_SERVER_DATA(data);
         /* Loading prefer server from local storage */
@@ -305,7 +305,7 @@ export default function Watch() {
         max_duration = 0;
         /* --- */
         try {
-            
+            await update_watch_index(source, id, current_season_index(), current_episode_index());
             await load_episode_list();
 
             let local_download_manifest = null;
@@ -971,7 +971,7 @@ export default function Watch() {
                                                     background: 'var(--background-3)',
                                                 }
                                             }}
-                                            onClick={() => {
+                                            onClick={async () => {
                                                 set_mode({current: "online", force_online: false});
                                                 /* Apply View Index to Current Index */
                                                 set_current_episode_page_index(view_episode_page_index());
