@@ -141,7 +141,7 @@ export default function VerifyRobot({
                 </div>
                 <div class={styles.verify_iframe_box}>
                     <iframe src={url} class={styles.verify_iframe}
-                        sandbox="allow-scripts allow-same-origin allow-presentation"
+                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-modals"
                     />
                 </div>
             </div>
