@@ -132,7 +132,7 @@ pub async fn get_playlist(url: String, headers: Headers) -> Result<Response, Str
         info!("[get_playlist] status: {}", res_status);
 
         return Ok(Response {
-            status: res_status as usize,
+            status: 200,
             url: url,
             data:data.to_vec(),
         });
