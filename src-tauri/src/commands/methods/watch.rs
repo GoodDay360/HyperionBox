@@ -232,7 +232,7 @@ pub async fn get_fragment(url: String, headers: Headers) -> Result<Response, Str
         info!("[get_fragment] status: {}", res_status);
         
         return Ok(Response {
-            status: res_status as usize,
+            status: 200,
             url: url,
             data:data.to_vec(),
         });
