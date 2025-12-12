@@ -140,7 +140,9 @@ export default function VerifyRobot({
                     >Done</Button>
                 </div>
                 <div class={styles.verify_iframe_box}>
-                    <iframe src={url} class={styles.verify_iframe}/>
+                    <iframe src={url} class={styles.verify_iframe}
+                        sandbox="allow-scripts allow-same-origin allow-presentation"
+                    />
                 </div>
             </div>
 
