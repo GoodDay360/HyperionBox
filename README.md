@@ -45,6 +45,27 @@ An open-source anime and movie streaming app that supports many sources through 
 - By using this method, when a plugin is updated, HyperionBox does not need to update the entire application; only the new plugin needs to be updated.
 - HyperionBox can be compiled and used on almost every platform supported by Tauri, with minimal software limitations.
 
+# Stack
+
+- [Rust](https://www.rust-lang.org/pt-BR)
+  - [Tauri](https://v2.tauri.app/)
+    <details>
+      <summary>Tauri Official Plugins</summary>
+          <ul>
+            <li><a href="https://v2.tauri.app/plugin/sql/">@tauri-apps/plugin-sql</a></li>
+            <li><a href="https://v2.tauri.app/plugin/http/">@tauri-apps/plugin-http</a></li>
+            <li><a href="https://v2.tauri.app/plugin/file-system/">@tauri-apps/plugin-fs</a></li>
+            <li><a href="https://v2.tauri.app/plugin/updater/">@tauri-apps/plugin-updater</a></li>
+            <li><a href="https://v2.tauri.app/plugin/single-instance/">@tauri-apps/plugin-single-instance</a></li>
+            <li><a href="https://v2.tauri.app/plugin/opener/">@tauri-apps/plugin-opener</a></li>
+            <li><a href="https://v2.tauri.app/plugin/os-info/">@tauri-apps/plugin-os</a></li>
+          </ul>
+    </details>
+  - [@CrossCopy/tauri-plugin-clipboard](https://github.com/CrossCopy/tauri-plugin-clipboard)
+- [Typescript](https://www.typescriptlang.org/)
+- [SolidJS](https://www.solidjs.com/)
+- [Bootstrap](https://getbootstrap.com/)
+
 
 # 📸 Screenshot
 ### Home
@@ -62,3 +83,37 @@ An open-source anime and movie streaming app that supports many sources through 
 
 ### Watch
 <img width="1920" height="1080" alt="Screenshot (555)" src="https://github.com/user-attachments/assets/9f8c7c83-2682-4ff6-9dc7-abc7461e578c" />
+
+# Contribution Guide
+
+## Prerequisites
+
+This project is built with [Tauri](https://v2.tauri.app/start/prerequisites/).  
+Make sure you have installed all required prerequisites for your operating system.
+
+## Package Manager & Frameworks
+
+I use [Bun](https://bun.sh/) for package management. While Bun doesn’t directly affect how the app runs (since Tauri handles rendering), I prefer it for convenience. You’re free to use another package manager, but please avoid committing changes that are only needed for your local setup.  
+
+The application itself is developed with **SolidJS** for the frontend and  css reset from **Bootstrap**, all running inside Tauri.
+
+## Setup
+
+Install the dependencies:
+
+```bash
+bun install
+```
+
+### Start a development app
+
+```bash
+bun tauri dev
+```
+### Production
+
+Build the application for production:
+
+```bash
+bun tauri build
+```
