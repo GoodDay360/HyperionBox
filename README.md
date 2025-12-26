@@ -105,7 +105,7 @@ Install the dependencies:
 bun install
 ```
 
-### Start a development app
+### Start a development
 
 ```bash
 bun tauri dev
