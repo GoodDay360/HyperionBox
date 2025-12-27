@@ -523,7 +523,9 @@ export default function Watch() {
                                     fullscreenOrientation='landscape'
                                     on:media-enter-fullscreen-request={async ()=>{
                                         const current_window = getCurrentWindow();
+                                        
                                         await current_window.setFullscreen(true);
+                                        
                                     }}
                                     on:media-exit-fullscreen-request={async ()=>{
                                         const current_window = getCurrentWindow();
