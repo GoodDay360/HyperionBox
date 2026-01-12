@@ -240,7 +240,7 @@ export default function Plugin() {
                                 sx={{
                                     border:"none",
                                     outline:"none",
-                                    background: select_source_id() === source_id ? "var(--background-2)" : "var(--background-1)",
+                                    background: select_source_id() === source_id ? "var(--background-3)" : "var(--background-1)",
                                     textTransform: "none",
                                     color: "var(--color-1)",
                                     fontSize: "calc((100vw + 100vh)/2*0.025)",
@@ -337,7 +337,7 @@ export default function Plugin() {
                                                                         skeleton_sx={{
                                                                             width: "calc((100vw + 100vh)/2*0.18)",
                                                                             height: "calc((100vw + 100vh)/2*0.25)",
-                                                                            background: "var(--background-2)",
+                                                                            background: "var(--background-3)",
                                                                             borderRadius: "5px",
                                                                         }}
                                                                     />

@@ -102,10 +102,13 @@
 	padding: 12px;
 	display: flex;
 	flex-direction: row;
-	flex-wrap: wrap;
 	justify-content: flex-start;
+	overflow-x: auto;
+	flex-grow: 0;
+	flex-shrink: 0;
 	gap: 8px;
 }
+
 
 .container_2_box {
 	border: 2px solid red;
@@ -126,9 +129,9 @@
 	font-size: calc((100vw + 100vh)/2*0.025);
 	font-weight: 400;
 	user-select: none;
-	white-space: wrap;
+	white-space: nowrap;
 	max-width: 100%;
-	word-break: break-all;
+	word-break: normal;
 }
 
 

@@ -195,7 +195,7 @@ export default function Search() {
                                             skeleton_sx={{
                                                 width: "calc((100vw + 100vh)/2*0.18)",
                                                 height: "calc((100vw + 100vh)/2*0.25)",
-                                                background: "var(--background-2)",
+                                                background: "var(--background-3)",
                                                 borderRadius: "5px",
                                             }}
                                         />
@@ -213,7 +213,7 @@ export default function Search() {
                                         sx={{
                                             width: "100%",
                                             height: "calc((100vw + 100vh)/2 * 0.25)",
-                                            background: "var(--background-2)",
+                                            background: "var(--background-3)",
                                             borderRadius: "5px",
                                         }}
                                         variant="rectangular"

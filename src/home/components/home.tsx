@@ -320,7 +320,7 @@ export default function Home() {
                                                     skeleton_sx={{
                                                         width: "calc((100vw + 100vh)/2*0.18)",
                                                         height: "calc((100vw + 100vh)/2*0.25)",
-                                                        background: "var(--background-2)",
+                                                        background: "var(--background-3)",
                                                         borderRadius: "5px",
                                                     }}
                                                 />
@@ -417,7 +417,7 @@ export default function Home() {
                                                     skeleton_sx={{
                                                         width: "calc((100vw + 100vh)/2*0.18)",
                                                         height: "calc((100vw + 100vh)/2*0.25)",
-                                                        background: "var(--background-2)",
+                                                        background: "var(--background-3)",
                                                         borderRadius: "5px",
                                                     }}
                                                 />
@@ -438,7 +438,7 @@ export default function Home() {
                             sx={{
                                 width: "100%",
                                 height: "calc((100vw + 100vh)/2*0.4)",
-                                background: "var(--background-2)",
+                                background: "var(--background-3)",
                             }}
                             variant="rectangular"
                         />
@@ -450,7 +450,7 @@ export default function Home() {
                                     sx={{
                                         width: "100%",
                                         height: "36px",
-                                        background: "var(--background-2)",
+                                        background: "var(--background-3)",
                                     }}
                                 />
                             </h2>
@@ -467,7 +467,7 @@ export default function Home() {
                                         sx={{
                                             width: "100%",
                                             height: "calc((100vw + 100vh)/2 * 0.25)",
-                                            background: "var(--background-2)",
+                                            background: "var(--background-3)",
                                             borderRadius: "5px",
                                         }}
                                         variant="rectangular"
