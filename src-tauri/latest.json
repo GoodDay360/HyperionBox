@@ -1,0 +1,31 @@
+{
+    "version": "2.2.5",
+    "notes": "🎉 New version of HyperionBox.\nCheck github repository for full changelogs.",
+    "pub_date": "2025-11-27T00:00:00+00:00",
+    "platforms": {
+        "windows-x86_64": {
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSeFVHNmZsakVqRjh1cHk1eEloVGxUelNkK2V5MzhyemQ3Q2dHZUR3UHZheU1iMXFIbmhmVzB5S21xQ1FJWnN2ckVCVkZjL21MUDBxNTQ1Zm9CN2tQSHk5WGRTYmFzM1FNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MjA2OTA3CWZpbGU6SHlwZXJpb25Cb3hfMi4yLjVfeDY0LXNldHVwLmV4ZQpvWGZ6NzFTNlhIUjBvYWVKR2FTRTBMOHdnTVZlVkFaZmtsTzVFdE5yVDU2bC81QzFuSllON1laR29SeFNETVhFZlF5V0xDRmo3bGEwYkZMbFNmeXpCZz09Cg==",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/HyperionBox_2.2.5_x64-setup.exe"
+        },
+		"android": {
+            "signature": "",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-universal-release.apk"
+        },
+        "android-arm64-v8a": {
+            "signature": "",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-arm64-release.apk"
+        },
+        "android-armeabi-v7a": {
+            "signature": "",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-arm-release.apk"
+        },
+        "android-x86": {
+            "signature": "",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-x86-release.apk"
+        },
+        "android-x86_64": {
+            "signature": "",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-x86_64-release.apk"
+        }
+    }
+}
