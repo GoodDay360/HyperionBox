@@ -666,7 +666,7 @@ export default function Settings() {
                                         width: '100%',
                                         height: 'calc((100vw + 100vh)/2 * 0.45)',
                                         borderRadius: '5px',
-                                        background: 'var(--background-2)',
+                                        background: 'var(--background-3)',
                                     }}
                                 />
                             )}

@@ -668,7 +668,7 @@ export default function Watch() {
                                         sx={{
                                             width: "100%",
                                             height: "calc((100vw + 100vh)/2*0.45)",
-                                            background: "var(--background-2)",
+                                            background: "var(--background-3)",
                                         }}
                                     
                                     />
@@ -1027,7 +1027,7 @@ export default function Watch() {
                                 sx={{
                                     width: "100%",
                                     height: "calc((100vw + 100vh)/2*0.45)",
-                                    background: "var(--background-2)",
+                                    background: "var(--background-3)",
                                 }}
                             
                             />
@@ -1036,7 +1036,7 @@ export default function Watch() {
                                     sx={{
                                         width: "100%",
                                         height: "calc((100vw + 100vh)/2*0.05)",
-                                        background: "var(--background-2)",
+                                        background: "var(--background-3)",
                                     }}
                                 />
                                 <Skeleton variant='rectangular'
@@ -1069,7 +1069,7 @@ export default function Watch() {
                                             sx={{
                                                 width: "100%",
                                                 minHeight: "calc((100vw + 100vh)/2*0.05)",
-                                                background: "var(--background-2)",
+                                                background: "var(--background-3)",
                                             }}
                                         />
                                     )}

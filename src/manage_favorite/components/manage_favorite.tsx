@@ -459,7 +459,7 @@ export default function Plugin() {
                                             height: "50px",
                                             borderRadius: "5px",
                                             
-                                            background: "var(--background-2)"
+                                            background: "var(--background-3)"
                                         }}
                                     />
                                 )}

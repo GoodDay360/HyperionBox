@@ -26,6 +26,8 @@ import SaveRoundedIcon from '@suid/icons-material/SaveRounded';
 import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
 
 
+
+
 // Solid Toast
 import toast from 'solid-toast';
 
@@ -197,7 +199,7 @@ export default function View() {
                                     skeleton_sx={{
                                         width: "100%",
                                         height: "calc((100vw + 100vh)/2*0.18)",
-                                        background: "calc((100vw + 100vh)/2*0.25)",
+                                        background: "var(--background-3)",
                                         borderRadius: "5px",
                                     }}
                                 />
@@ -284,7 +286,12 @@ export default function View() {
 
                     </div>
 
-                    <div class={styles.container_2}>
+                    <div class={`${styles.container_2} ${["android","ios" ].includes(platform()) && "hide_scrollbar"}`}
+                        onWheel={(e) => {
+                            horizontal_scroll(e);
+                        }}
+                    >
+                        
                         <For each={DATA()?.manifest_data?.meta_data}>
                             {(item) => (
                                 <div class={styles.container_2_box}>
@@ -292,7 +299,13 @@ export default function View() {
                                 </div>
                             )}
                         </For>
+                        
+
                     </div>
+
+
+                    
+                    
 
                     <div class={styles.container_3}>
                         <div class={styles.container_3_title_box}>
@@ -338,7 +351,7 @@ export default function View() {
                                     {(_,index) =>
                                         <ButtonBase
                                             sx={{
-                                                background: current_season_index() == index() ? "var(--background-2)" : "var(--background-1)",
+                                                background: current_season_index() == index() ? "var(--background-3)" : "var(--background-1)",
                                                 color: "var(--color-1)",
                                                 whiteSpace: "nowrap",
                                                 padding: "28px",
@@ -616,7 +629,7 @@ export default function View() {
                                 sx={{
                                     width: "100%",
                                     height: "calc((100vw + 100vh)/2*0.45)",
-                                    background: "var(--background-2)",
+                                    background: "var(--background-3)",
                                 }}
                             />
                         </div>
@@ -635,7 +648,7 @@ export default function View() {
                                             sx={{
                                                 flex: 1,
                                                 height: "40px",
-                                                background: "var(--background-2)",
+                                                background: "var(--background-3)",
                                             }}
                                         />
                                     }
@@ -645,7 +658,7 @@ export default function View() {
                                 sx={{
                                     width: "100%",
                                     height: "100px",
-                                    background: "var(--background-2)",
+                                    background: "var(--background-3)",
                                 }}
                             />
                         </div>
@@ -661,7 +674,7 @@ export default function View() {
                                         sx={{
                                             width: "100%",
                                             height: "40px",
-                                            background: "var(--background-2)",
+                                            background: "var(--background-3)",
                                         }}
                                     />
                                 </div>
@@ -677,7 +690,7 @@ export default function View() {
                                                 sx={{
                                                     width: "100%",
                                                     height: "40px",
-                                                    background: "var(--background-2)",
+                                                    background: "var(--background-3)",
                                                 }}
                                             />
                                         }
