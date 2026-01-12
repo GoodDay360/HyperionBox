@@ -91,7 +91,7 @@ export default function NavigationBar({
                                 style={{
                                     background: "var(--background-1)",
                                     ...(location.pathname === item.navigate && {
-                                        background: "var(--background-2)",
+                                        background: "var(--background-3)",
                                     })
                                 }}
                             >
