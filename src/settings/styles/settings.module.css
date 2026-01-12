@@ -85,5 +85,4 @@
 	font-family: var(--font-family);
 	padding: 8px;
 	overflow: hidden;
-	text-overflow: ellipsis;
 }

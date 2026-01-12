@@ -92,12 +92,13 @@ export default function Watch() {
     const episode_index:number = parseInt(queryParams.episode_index as string) ?? 0;
 
     const [CONTAINER_REF, SET_CONTAINER_REF] = createSignal<HTMLDivElement>();
-    let PLAYER_REF!: MediaPlayerElement;
+    
     
 
     const [is_loading, set_is_loading] = createSignal<boolean>(true);
     const [is_player_ready, set_is_player_ready] = createSignal<boolean>(false);
     const [is_loading_server, set_is_loading_server] = createSignal<boolean>(true);
+    const [is_last_fullscreen, set_is_last_fullscren] = createSignal<boolean>(false);
 
     const [EPISODE_LIST, SET_EPISODE_LIST] = createSignal<EpisodeList[][][]>([]);
     const [EPISIDE_SERVER_DATA, SET_EPISODE_SERVER_DATA] = createSignal<EpisodeServerData>();
@@ -126,6 +127,8 @@ export default function Watch() {
 
     const [verify_robot, set_verify_robot] = createSignal<{state:boolean, url:string|null}>({state:false, url:null});
     
+    let PLAYER_REF!: MediaPlayerElement;
+
     let hls_instance:Hls|null = null;
     let max_duration:number = 0;
     let current_watch_time:number = 0;
@@ -521,21 +524,39 @@ export default function Watch() {
                                 ? <media-player id="player" ref={PLAYER_REF}
                                     playsInline webkit-playsinline crossOrigin autoPlay
                                     fullscreenOrientation='landscape'
-                                    on:media-enter-fullscreen-request={async ()=>{
-                                        const current_window = getCurrentWindow();
+                                    on:media-enter-fullscreen-request={async (e)=>{
+                                        e.preventDefault();
                                         
-                                        await current_window.setFullscreen(true);
+                                        try{
+                                            const current_window = getCurrentWindow();
+                                            console.log(context?.is_enter_fullscreen(), (await current_window.isFullscreen()))
+                                            if (context?.is_enter_fullscreen() || (await current_window.isFullscreen())){
+                                                set_is_last_fullscren(true);
+                                            }else{
+                                                set_is_last_fullscren(false);
+                                            }
+                                            await current_window.setFullscreen(true);
+                                        }catch(e){
+                                            console.error(e);
+                                        }
+                                        
+                                        await PLAYER_REF.enterFullscreen();
                                         
                                     }}
-                                    on:media-exit-fullscreen-request={async ()=>{
-                                        const current_window = getCurrentWindow();
-                                        if (context?.is_enter_fullscreen()) {
-                                            await current_window.setFullscreen(true);
-                                            context?.set_is_enter_fullscreen(true);
-                                        }else{
-                                            await current_window.setFullscreen(false);
-                                            context?.set_is_enter_fullscreen(false);
+                                    on:media-exit-fullscreen-request={async (e)=>{
+                                        e.preventDefault();
+                                        await PLAYER_REF.exitFullscreen();
+                                        try{
+                                            const current_window = getCurrentWindow();
+                                            if (is_last_fullscreen()) {
+                                                await current_window.setFullscreen(true);
+                                            }else{
+                                                await current_window.setFullscreen(false);
+                                            }
+                                        }catch(e){
+                                            console.error(e);
                                         }
+                                        
                                     }}
                                     streamType='on-demand'
                                     style={{ 

@@ -18,6 +18,9 @@ import MinimizeRoundedIcon from '@suid/icons-material/MinimizeRounded';
 import styles from "../styles/titlebar.module.css"
 import type { Accessor } from 'solid-js';
 
+// Script Imports
+
+
 export default function TitleBar({
     ref,
     title
@@ -26,18 +29,20 @@ export default function TitleBar({
     title?: Accessor<string>
 }) {
     const appWindow = getCurrentWindow();
+    
 
     return (<>{["linux", "macos", "windows"].includes(platform()) && (
         <div ref={ref as HTMLDivElement} class={styles.titlebar_container}>   
             <div class={styles.titlebar_draggable}
                 onMouseDown={async (e)=> {
                     e.preventDefault();
+                    if (await appWindow.isFullscreen()) return;
                     if (e.buttons === 1) {
                         // Primary (left) button
                         if (e.detail === 2){
                             await appWindow.toggleMaximize();
                         }else{
-                            appWindow.startDragging(); // Else start dragging
+                            appWindow.startDragging();
                         }
                     }
                 }}
@@ -69,7 +74,14 @@ export default function TitleBar({
                         fontSize: "16px",
                     }}
 
-                    onClick={()=> appWindow.toggleMaximize()}
+                    onClick={async ()=> {
+                        if (await appWindow.isFullscreen()){
+                            appWindow.setFullscreen(false);
+                        }else{
+                            appWindow.setFullscreen(true);
+                        }
+                        
+                    }}
                 >
                     <CropSquareRoundedIcon color='inherit' fontSize='inherit'/>
                 </ButtonBase>

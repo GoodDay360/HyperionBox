@@ -54,6 +54,7 @@ export const ContextManager = createContext<{
 
     is_enter_fullscreen: () => boolean,
     set_is_enter_fullscreen: (value: boolean) => void,
+
 }>();
 
 export default function App() {
@@ -64,6 +65,7 @@ export default function App() {
     let TitleBarRef!: HTMLElement;
 
     const [is_enter_fullscreen, set_is_enter_fullscreen] = createSignal(false);
+    const [hide_title_bar, set_hide_title_bar] = createSignal(false);
 
     const [safe_area, set_safe_area] = createSignal({top: 0, bottom: 0, left: 0, right: 0});
     const [screen_size, set_screen_size] = createSignal({width: 0, height: 0});
@@ -88,15 +90,17 @@ export default function App() {
         document.addEventListener('keydown', async function(event) {
             if (event.key === 'F11') {
                 toast.remove();
-                if (await appWindow.isFullscreen()) {
+                if (is_enter_fullscreen()) {
                     await appWindow.setFullscreen(false);
                     set_is_enter_fullscreen(false);
-                    toast("Exited fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});
+                    set_hide_title_bar(false);
+                    toast("Exit fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});
                 }else{
                     await appWindow.unmaximize();
                     await appWindow.setFullscreen(true);
                     set_is_enter_fullscreen(true);
-                    toast("Entered fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});
+                    set_hide_title_bar(true);
+                    toast("Enter fullscreen. F11 toggles fullscreen.", {style: {color: "cyan"}});
                     
                 }
                 on_resize();
@@ -178,7 +182,7 @@ export default function App() {
             <div id="safe-area-probe" ref={SafeAreaProbeRef}/>
 
             <div class="app">
-                {!is_enter_fullscreen() &&
+                {!hide_title_bar() &&
                     <TitleBar ref={TitleBarRef} />
                 }
 
