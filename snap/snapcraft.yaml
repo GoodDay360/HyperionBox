@@ -95,7 +95,6 @@ parts:
     stage-packages:
       - libwebkit2gtk-4.1-0
       - libayatana-appindicator3-1
-      - libunistring2
 
     source: .
     override-build: |
