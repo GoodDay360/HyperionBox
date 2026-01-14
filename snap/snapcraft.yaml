@@ -8,13 +8,6 @@ description: |
 grade: stable
 confinement: strict
 
-architectures:
-  - build-on: amd64
-    build-for: amd64
-  - build-on: amd64
-    build-for: arm64
-
-
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
     bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1
