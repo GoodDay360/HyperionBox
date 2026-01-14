@@ -18,6 +18,12 @@ jobs:
         sudo apt-get update
         sudo snap install snapcraft --classic
 
+    - name: Fix permissions
+      run: |
+        sudo chown -R $USER:$USER .
+        sudo chmod -R u+rwX,go+rX .
+
+
     - name: Build Snap package
       env: 
         TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }} 
