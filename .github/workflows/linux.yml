@@ -1,0 +1,47 @@
+name: Linux Build
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: 'src-tauri -> src-tauri/target'
+
+    - name: Export Tauri signing environment variables
+      shell: bash
+      run: |
+        echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" >> $GITHUB_ENV
+        echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: bun install
+
+    - name: Build Linux AppImage
+      run: bun tauri build
+
+    - name: Upload AppImage and signature
+      uses: actions/upload-artifact@v4
+      with:
+        name: hyperionbox-linux-appimage
+        path: |
+          src-tauri/target/release/bundle/appimage/*.AppImage
+          src-tauri/target/release/bundle/appimage/*.sig
