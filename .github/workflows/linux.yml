@@ -3,70 +3,63 @@ name: Linux Build
 on:
   push:
     branches:
-      - dev
+      - build
 
 jobs:
   build-linux:
-    strategy:
-      matrix:
-        include:
-          - arch: amd64
-            runner: ubuntu-latest
-          - arch: arm64
-            runner: ubuntu-22.04-arm64
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Install system dependencies 
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libgtk-3-dev \
-            libwebkit2gtk-4.1-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            pkg-config \
-            build-essential \
-            curl \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
-            gstreamer1.0-plugins-bad \
-            gstreamer1.0-plugins-ugly \
-            gstreamer1.0-libav \
-            gstreamer1.0-vaapi
+    - name: Install system dependencies 
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libgtk-3-dev \
+          libwebkit2gtk-4.1-dev \
+          libayatana-appindicator3-dev \
+          librsvg2-dev \
+          pkg-config \
+          build-essential \
+          curl \
+          gstreamer1.0-plugins-base \
+          gstreamer1.0-plugins-good \
+          gstreamer1.0-plugins-bad \
+          gstreamer1.0-plugins-ugly \
+          gstreamer1.0-libav \
+          gstreamer1.0-vaapi
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
 
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: 'src-tauri -> src-tauri/target'
+    - name: Rust cache
+      uses: swatinem/rust-cache@v2
+      with:
+        workspaces: 'src-tauri -> src-tauri/target'
 
-      - name: Export Tauri signing environment variables
-        shell: bash
-        run: |
-          echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" >> $GITHUB_ENV
-          echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
+    - name: Export Tauri signing environment variables
+      shell: bash
+      run: |
+        echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" >> $GITHUB_ENV
+        echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        run: bun install
+    - name: Install dependencies
+      run: bun install
 
-      - name: Build Linux AppImage
-        run: bun tauri build
+    - name: Build Linux AppImage
+      run: bun tauri build
 
-      - name: Upload AppImage and signature
-        uses: actions/upload-artifact@v4
-        with:
-          name: hyperionbox-linux-${{ matrix.arch }}
-          path: |
-            src-tauri/target/release/bundle/appimage/*.AppImage
-            src-tauri/target/release/bundle/appimage/*.sig
+    - name: Upload AppImage and signature
+      uses: actions/upload-artifact@v4
+      with:
+        name: hyperionbox-linux-appimage
+        path: |
+          src-tauri/target/release/bundle/appimage/*.AppImage
+          src-tauri/target/release/bundle/appimage/*.sig
