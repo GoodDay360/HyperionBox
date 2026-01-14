@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install dependencies 
+    - name: Install system dependencies 
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -23,6 +23,11 @@ jobs:
           librsvg2-dev \
           pkg-config \
           build-essential \
+          gstreamer1.0-plugins-base \ 
+          gstreamer1.0-plugins-good \ 
+          gstreamer1.0-plugins-bad \ 
+          gstreamer1.0-plugins-ugly \ 
+          gstreamer1.0-libav
           curl
 
     - name: Set up Bun
