@@ -37,9 +37,8 @@ apps:
     # Add the slots you need to expose to other snaps
       - single-instance # add this if you're using the single-instance plugin
     environment:
-      GST_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gstreamer-1.0
       TMPDIR: $SNAP_USER_COMMON/tmp
-      WEBKIT_DISABLE_COMPOSITING_MODE: 1
+      # WEBKIT_DISABLE_COMPOSITING_MODE: 1
 # Add these lines only if you're using the single-instance plugin
 # Check https://v2.tauri.app/plugin/single-instance/ for details
 slots:
