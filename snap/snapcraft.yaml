@@ -38,7 +38,7 @@ apps:
       - single-instance # add this if you're using the single-instance plugin
     environment:
       TMPDIR: $SNAP_USER_COMMON/tmp
-      WEBKIT_DISABLE_COMPOSITING_MODE: 1
+      # WEBKIT_DISABLE_COMPOSITING_MODE: 1
 # Add these lines only if you're using the single-instance plugin
 # Check https://v2.tauri.app/plugin/single-instance/ for details
 slots:
@@ -74,7 +74,6 @@ parts:
     build-snaps:
       - node/20/stable
       - rustup/latest/stable
-      - bun/latest/stable
     build-packages:
       - libwebkit2gtk-4.1-dev
       - build-essential
@@ -100,6 +99,12 @@ parts:
     override-build: |
       set -eu
       rustup default stable
+
+      # Install Bun
+      wget -qO- https://bun.sh/install | bash
+      export BUN_INSTALL="$HOME/.bun"
+      export PATH="$BUN_INSTALL/bin:$PATH"
+      # ---
 
       bun install
       rm -f src-tauri/target/release/bundle/deb/*.deb
