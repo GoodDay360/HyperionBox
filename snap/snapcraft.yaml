@@ -65,9 +65,11 @@ package-repositories:
 parts:
   build-app:
     plugin: dump
+    
     build-environment:
-      - TAURI_SIGNING_PRIVATE_KEY: $TAURI_SIGNING_PRIVATE_KEY
-      - TAURI_SIGNING_PRIVATE_KEY_PASSWORD: $TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+      - TAURI_SIGNING_PRIVATE_KEY: TAURI_SIGNING_PRIVATE_KEY
+      - TAURI_SIGNING_PRIVATE_KEY_PASSWORD: TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+
 
     build-snaps:
       - node/20/stable
