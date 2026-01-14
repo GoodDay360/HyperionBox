@@ -10,11 +10,29 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            rust_target: x86_64-unknown-linux-gnu
+            pkg_config_env: ""
+            extra_deps: |
+              libgtk-3-dev
+              libwebkit2gtk-4.1-dev
+              libayatana-appindicator3-dev
+              librsvg2-dev
+              pkg-config
+          - arch: arm64
+            rust_target: aarch64-unknown-linux-gnu
+            pkg_config_env: "PKG_CONFIG_aarch64_unknown_linux_gnu=aarch64-linux-gnu-pkg-config"
+            extra_deps: |
+              gcc-aarch64-linux-gnu
+              pkg-config-aarch64-linux-gnu
+              libgtk-3-dev:arm64
+              libwebkit2gtk-4.1-dev:arm64
+              libayatana-appindicator3-dev:arm64
+              librsvg2-dev:arm64
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Install system dependencies
       run: |
@@ -22,11 +40,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y \
           snapd \
-          libgtk-3-dev \
-          libwebkit2gtk-4.1-dev \
-          libayatana-appindicator3-dev \
-          librsvg2-dev \
-          pkg-config \
           build-essential \
           curl \
           gstreamer1.0-plugins-base \
@@ -34,7 +47,8 @@ jobs:
           gstreamer1.0-plugins-bad \
           gstreamer1.0-plugins-ugly \
           gstreamer1.0-libav \
-          gstreamer1.0-vaapi
+          gstreamer1.0-vaapi \
+          ${{ matrix.extra_deps }}
         sudo snap install snapcraft --classic
 
     - name: Set up Bun
@@ -42,11 +56,10 @@ jobs:
       with:
         bun-version: latest
 
-    - name: Install Rust
+    - name: Install Rust target
       run: |
         rustup default stable
-        rustup target add x86_64-unknown-linux-gnu
-        rustup target add aarch64-unknown-linux-gnu
+        rustup target add ${{ matrix.rust_target }}
 
     - name: Rust cache
       uses: swatinem/rust-cache@v2
@@ -54,7 +67,6 @@ jobs:
         workspaces: 'src-tauri -> src-tauri/target'
 
     - name: Export Tauri signing environment variables
-      shell: bash
       run: |
         echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" >> $GITHUB_ENV
         echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
@@ -62,17 +74,17 @@ jobs:
     - name: Install dependencies
       run: bun install
 
-    - name: Build Linux Deb
+    - name: Configure pkg-config
       run: |
-        if [ "${{ matrix.arch }}" = "amd64" ]; then
-          bun tauri build --bundles deb --target x86_64-unknown-linux-gnu
-        else
-          bun tauri build --bundles deb --target aarch64-unknown-linux-gnu
+        if [ -n "${{ matrix.pkg_config_env }}" ]; then
+          echo "${{ matrix.pkg_config_env }}" >> $GITHUB_ENV
         fi
 
+    - name: Build Linux Deb
+      run: bun tauri build --bundles deb --target ${{ matrix.rust_target }}
+
     - name: Build Snap package
-      run: |
-        sudo snapcraft pack --destructive-mode --target-arch=${{ matrix.arch }}
+      run: sudo snapcraft pack --destructive-mode --target-arch=${{ matrix.arch }}
 
     - name: Upload Snap artifact
       uses: actions/upload-artifact@v4
