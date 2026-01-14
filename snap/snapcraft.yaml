@@ -97,6 +97,8 @@ parts:
 
     source: .
     override-build: |
+      chmod -R a+r .
+
       set -eu
       rustup default stable
 
