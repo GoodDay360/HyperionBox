@@ -38,7 +38,7 @@ apps:
       - single-instance # add this if you're using the single-instance plugin
     environment:
       TMPDIR: $SNAP_USER_COMMON/tmp
-      # WEBKIT_DISABLE_COMPOSITING_MODE: 1
+      WEBKIT_DISABLE_COMPOSITING_MODE: 1
 # Add these lines only if you're using the single-instance plugin
 # Check https://v2.tauri.app/plugin/single-instance/ for details
 slots:
