@@ -13,23 +13,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo snap install snapcraft --classic
-
-    - name: Fix permissions
-      run: |
-        sudo chown -R $USER:$USER .
-        sudo chmod -R u+rwX,go+rX .
-
-
-    - name: Build Snap package
+    - name: Build Snap
       env: 
         TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }} 
         TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-      run: |
-        sudo snapcraft pack --destructive-mode
+      uses: snapcore/action-build@v1
+      id: snapcraft
+
+    - name: List project directory 
+      run: ls -lh
 
     - name: Upload Snap artifact
       uses: actions/upload-artifact@v4
