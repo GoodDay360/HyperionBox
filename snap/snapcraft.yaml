@@ -67,8 +67,9 @@ parts:
   build-app:
     plugin: dump
     build-environment:
-      - TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5YVg1aWxZSDhCWUJjWituZm1EOFJ4ckh4L0luWWJBejljb1ZCSzYrQXdMTUFBQkFBQUFBQUFBQUFBQUlBQUFBQWd4M1lZT1IvZ3pzMGVlOVVsU3lmK2dXNjFpYVhnOFFHVW9KOEdqUitMYStUTHpZZWQrUkkzQzcwMkZ2MG9iWmV2cGNjbTJYOVFuNlFUYStRbUNRUmZZbVRLS1lzMVNsTFphcEJraUlZSGxjTDdneHdwYVNBWmZrNCtyMUJmdUtwd2RCOG9PRUZLQUk9Cg=="
-      - TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+      - TAURI_SIGNING_PRIVATE_KEY: $TAURI_SIGNING_PRIVATE_KEY
+      - TAURI_SIGNING_PRIVATE_KEY_PASSWORD: $TAURI_SIGNING_PRIVATE_KEY_PASSWORD
+
     build-snaps:
       - node/20/stable
       - rustup/latest/stable
@@ -83,14 +84,15 @@ parts:
       - libayatana-appindicator3-dev
       - librsvg2-dev
       - dpkg
-    stage-packages:
-      - libwebkit2gtk-4.1-0
-      - libayatana-appindicator3-1
       - gstreamer1.0-plugins-base
       - gstreamer1.0-plugins-good
       - gstreamer1.0-plugins-bad
       - gstreamer1.0-plugins-ugly
       - gstreamer1.0-libav
+      - gstreamer1.0-vaapi
+    stage-packages:
+      - libwebkit2gtk-4.1-0
+      - libayatana-appindicator3-1
 
     source: .
     override-build: |

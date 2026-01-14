@@ -1,0 +1,35 @@
+name: Linux Snapcraft Build
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo snap install snapcraft --classic
+
+    - name: Export Tauri signing environment variables
+      shell: bash
+      run: |
+        echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" >> $GITHUB_ENV
+        echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
+
+    - name: Build Snap package
+      run: |
+        sudo snapcraft pack --destructive-mode
+
+    - name: Upload Snap artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: hyperionbox-linux-snap
+        path: ./*.snap

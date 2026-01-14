@@ -3,7 +3,7 @@ name: Linux Build
 on:
   push:
     branches:
-      - dev
+      - build
 
 jobs:
   build-linux:
@@ -23,13 +23,13 @@ jobs:
           librsvg2-dev \
           pkg-config \
           build-essential \
+          curl \
           gstreamer1.0-plugins-base \
           gstreamer1.0-plugins-good \
           gstreamer1.0-plugins-bad \
           gstreamer1.0-plugins-ugly \
           gstreamer1.0-libav \
-          gstreamer1.0-vaapi \
-          curl
+          gstreamer1.0-vaapi
 
     - name: Set up Bun
       uses: oven-sh/setup-bun@v2
