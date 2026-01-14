@@ -3,7 +3,7 @@ name: Linux Build
 on:
   push:
     branches:
-      - build
+      - dev
 
 jobs:
   build-linux:
