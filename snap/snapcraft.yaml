@@ -78,6 +78,7 @@ parts:
       - libwebkit2gtk-4.1-dev
       - build-essential
       - curl
+      - libunistring-dev
       - wget
       - file
       - libxdo-dev
@@ -94,6 +95,7 @@ parts:
     stage-packages:
       - libwebkit2gtk-4.1-0
       - libayatana-appindicator3-1
+      - libunistring2
 
     source: .
     override-build: |
@@ -101,7 +103,7 @@ parts:
       rustup default stable
 
       # Install Bun
-      wget -qO- https://bun.sh/install | bash
+      curl -fsSL https://bun.sh/install | bash
       export BUN_INSTALL="$HOME/.bun"
       export PATH="$BUN_INSTALL/bin:$PATH"
       # ---
