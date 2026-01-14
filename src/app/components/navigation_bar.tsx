@@ -59,7 +59,7 @@ export default function NavigationBar({
                             paddingLeft: '18px',
                             paddingRight: '18px',
                             ...(location.pathname === item.navigate && {
-                                background: 'var(--background-2)',
+                                background: 'var(--background-3)',
                                 backdropFilter: 'blur(10px)',
                                 WebkitBackdropFilter: 'blur(10px)',
                                 boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px;"
@@ -91,7 +91,7 @@ export default function NavigationBar({
                                 style={{
                                     background: "var(--background-1)",
                                     ...(location.pathname === item.navigate && {
-                                        background: "var(--background-2)",
+                                        background: "var(--background-3)",
                                     })
                                 }}
                             >

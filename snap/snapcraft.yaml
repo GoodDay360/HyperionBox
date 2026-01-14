@@ -1,19 +1,12 @@
 name: hyperionbox
 base: core22
-version: '2.2.4'
+version: '2.2.5'
 summary: An open-source anime and movie streaming app. # 79 char long summary
 description: |
   An open-source anime and movie streaming app that support watch progress and download for many sources.
 
 grade: stable
 confinement: strict
-
-architectures:
-  - build-on: amd64
-    build-for: amd64
-  - build-on: amd64
-    build-for: arm64
-
 
 layout:
   /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
@@ -37,9 +30,8 @@ apps:
     # Add the slots you need to expose to other snaps
       - single-instance # add this if you're using the single-instance plugin
     environment:
-      GST_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gstreamer-1.0
       TMPDIR: $SNAP_USER_COMMON/tmp
-      WEBKIT_DISABLE_COMPOSITING_MODE: 1
+      # WEBKIT_DISABLE_COMPOSITING_MODE: 1
 # Add these lines only if you're using the single-instance plugin
 # Check https://v2.tauri.app/plugin/single-instance/ for details
 slots:
@@ -66,12 +58,10 @@ package-repositories:
 parts:
   build-app:
     plugin: dump
-    build-environment:
-      - TAURI_SIGNING_PRIVATE_KEY: "dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5ClJXUlRZMEl5YVg1aWxZSDhCWUJjWituZm1EOFJ4ckh4L0luWWJBejljb1ZCSzYrQXdMTUFBQkFBQUFBQUFBQUFBQUlBQUFBQWd4M1lZT1IvZ3pzMGVlOVVsU3lmK2dXNjFpYVhnOFFHVW9KOEdqUitMYStUTHpZZWQrUkkzQzcwMkZ2MG9iWmV2cGNjbTJYOVFuNlFUYStRbUNRUmZZbVRLS1lzMVNsTFphcEJraUlZSGxjTDdneHdwYVNBWmZrNCtyMUJmdUtwd2RCOG9PRUZLQUk9Cg=="
-      - TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+    
     build-snaps:
-      - node/20/stable
       - rustup/latest/stable
+      - bun-js/latest/stable
     build-packages:
       - libwebkit2gtk-4.1-dev
       - build-essential
@@ -83,25 +73,20 @@ parts:
       - libayatana-appindicator3-dev
       - librsvg2-dev
       - dpkg
-    stage-packages:
-      - libwebkit2gtk-4.1-0
-      - libayatana-appindicator3-1
       - gstreamer1.0-plugins-base
       - gstreamer1.0-plugins-good
       - gstreamer1.0-plugins-bad
       - gstreamer1.0-plugins-ugly
       - gstreamer1.0-libav
+      - gstreamer1.0-vaapi
+    stage-packages:
+      - libwebkit2gtk-4.1-0
+      - libayatana-appindicator3-1
 
     source: .
     override-build: |
       set -eu
       rustup default stable
-
-      # Install Bun
-      curl -fsSL https://bun.sh/install | bash
-      export BUN_INSTALL="$HOME/.bun"
-      export PATH="$BUN_INSTALL/bin:$PATH"
-      # ---
 
       bun install
       rm -f src-tauri/target/release/bundle/deb/*.deb
