@@ -72,13 +72,12 @@ parts:
 
 
     build-snaps:
-      - node/20/stable
       - rustup/latest/stable
+      - bun-js/latest/stable
     build-packages:
       - libwebkit2gtk-4.1-dev
       - build-essential
       - curl
-      - libunistring-dev
       - wget
       - file
       - libxdo-dev
@@ -100,12 +99,6 @@ parts:
     override-build: |
       set -eu
       rustup default stable
-
-      # Install Bun
-      curl -fsSL https://bun.sh/install | bash
-      export BUN_INSTALL="$HOME/.bun"
-      export PATH="$BUN_INSTALL/bin:$PATH"
-      # ---
 
       bun install
       rm -f src-tauri/target/release/bundle/deb/*.deb
