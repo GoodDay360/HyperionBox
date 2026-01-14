@@ -1,40 +1,36 @@
-name: Build Linux
+name: Linux Build
 
 on:
   push:
     branches:
-      - dev
+      - build
 
 jobs:
   build-linux:
-    runs-on: ubuntu-22.04
     strategy:
-      fail-fast: false
       matrix:
-        arch: [
-          x86_64-unknown-linux-gnu, 
-          aarch64-unknown-linux-gnu
-        ]
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-22.04-arm64
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Add Rust target
-        run: rustup target add ${{ matrix.arch }}
-
-      - name: Install system dependencies
+      - name: Install system dependencies 
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            curl \
+            libgtk-3-dev \
             libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
+            libayatana-appindicator3-dev \
             librsvg2-dev \
-            patchelf \
+            pkg-config \
+            build-essential \
+            curl \
             gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
             gstreamer1.0-plugins-bad \
@@ -47,22 +43,30 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install frontend dependencies
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: 'src-tauri -> src-tauri/target'
+
+      - name: Export Tauri signing environment variables
+        shell: bash
+        run: |
+          echo "TAURI_SIGNING_PRIVATE_KEY=${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}" >> $GITHUB_ENV
+          echo "TAURI_SIGNING_PRIVATE_KEY_PASSWORD=${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}" >> $GITHUB_ENV
+
+      - name: Install dependencies
         run: bun install
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build Linux AppImage
+        run: bun tauri build
+
+      - name: Upload AppImage and signature
+        uses: actions/upload-artifact@v4
         with:
-          args: --target ${{ matrix.arch }}
-
-      - name: Upload AppImage and signature 
-        uses: actions/upload-artifact@v4 
-        with: 
-          name: hyperionbox-linux-${{ matrix.arch }} 
-          path: | 
-            src-tauri/target/${{ matrix.arch }}/release/bundle/appimage/*.AppImage 
-            src-tauri/target/${{ matrix.arch }}/release/bundle/appimage/*.sig
-
-
+          name: hyperionbox-linux-${{ matrix.arch }}
+          path: |
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/appimage/*.sig
