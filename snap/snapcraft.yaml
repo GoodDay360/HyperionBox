@@ -66,7 +66,10 @@ parts:
 
     source: .
     override-build: |
-      dpkg -x src-tauri/target/release/bundle/deb/*.deb $SNAPCRAFT_PART_INSTALL/
-      mkdir -p $SNAPCRAFT_PART_INSTALL/meta
-      cp $SNAPCRAFT_PROJECT_DIR/snap_config/snapshots.yaml $SNAPCRAFT_PART_INSTALL/meta/
-      sed -i -e "s|Icon=HyperionBox|Icon=/usr/share/icons/hicolor/256x256@2/apps/HyperionBox.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop
+      ARCH_TRIPLET=$(dpkg-architecture -qDEB_HOST_GNU_TYPE)
+      DEB_FILE=$(ls src-tauri/target/${ARCH_TRIPLET}/release/bundle/deb/*.deb | head -n 1)
+      dpkg -x "$DEB_FILE" "$SNAPCRAFT_PART_INSTALL/"
+      mkdir -p "$SNAPCRAFT_PART_INSTALL/meta"
+      cp "$SNAPCRAFT_PROJECT_DIR/snap_config/snapshots.yaml" "$SNAPCRAFT_PART_INSTALL/meta/"
+      sed -i -e "s|Icon=HyperionBox|Icon=/usr/share/icons/hicolor/256x256@2/apps/HyperionBox.png|g" \
+        "$SNAPCRAFT_PART_INSTALL/usr/share/applications/HyperionBox.desktop"
