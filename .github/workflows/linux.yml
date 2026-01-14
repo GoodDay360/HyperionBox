@@ -11,7 +11,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu]
+        arch: [
+          x86_64-unknown-linux-gnu, 
+          aarch64-unknown-linux-gnu
+        ]
 
     steps:
       - name: Checkout code
@@ -19,30 +22,25 @@ jobs:
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+
       - name: Add Rust target
         run: rustup target add ${{ matrix.arch }}
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgtk-3-dev \
-            libwebkit2gtk-4.1-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            pkg-config \
-            build-essential \
             curl \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
             gstreamer1.0-plugins-base \
             gstreamer1.0-plugins-good \
             gstreamer1.0-plugins-bad \
             gstreamer1.0-plugins-ugly \
             gstreamer1.0-libav \
-            gstreamer1.0-vaapi \
-            patchelf
-          if [ "${{ matrix.arch }}" = "aarch64-unknown-linux-gnu" ]; then
-            sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          fi
+            gstreamer1.0-vaapi
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -52,13 +50,16 @@ jobs:
       - name: Install frontend dependencies
         run: bun install
 
-      - name: Build Linux AppImage
-        run: bun tauri build --target ${{ matrix.arch }}
-
-      - name: Upload AppImage and signature
-        uses: actions/upload-artifact@v4
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: hyperionbox-linux-${{ matrix.arch }}
-          path: |
-            src-tauri/target/${{ matrix.arch }}/release/bundle/appimage/*.AppImage
-            src-tauri/target/${{ matrix.arch }}/release/bundle/appimage/*.sig
+          tagName: app-v__VERSION__ # __VERSION__ auto-replaced
+          releaseName: 'App v__VERSION__'
+          releaseBody: 'See the assets to download this version and install.'
+          releaseDraft: true
+          prerelease: false
+          args: --target ${{ matrix.arch }}
+
+
