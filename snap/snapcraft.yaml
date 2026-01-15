@@ -11,7 +11,6 @@ confinement: strict
 architectures:
   - build-on: amd64
   - build-on: arm64
-  - build-on: armhf
 
 
 
@@ -37,6 +36,7 @@ apps:
     # Add the slots you need to expose to other snaps
       - single-instance # add this if you're using the single-instance plugin
     environment:
+      GST_PLUGIN_PATH: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/gstreamer-1.0
       TMPDIR: $SNAP_USER_COMMON/tmp
       # WEBKIT_DISABLE_COMPOSITING_MODE: 1
 # Add these lines only if you're using the single-instance plugin
@@ -81,15 +81,15 @@ parts:
       - libayatana-appindicator3-dev
       - librsvg2-dev
       - dpkg
+    stage-packages:
+      - libwebkit2gtk-4.1-0
+      - libayatana-appindicator3-1
       - gstreamer1.0-plugins-base
       - gstreamer1.0-plugins-good
       - gstreamer1.0-plugins-bad
       - gstreamer1.0-plugins-ugly
       - gstreamer1.0-libav
       - gstreamer1.0-vaapi
-    stage-packages:
-      - libwebkit2gtk-4.1-0
-      - libayatana-appindicator3-1
 
     source: .
     override-build: |
