@@ -71,6 +71,7 @@ parts:
     build-packages:
       - libwebkit2gtk-4.1-dev
       - build-essential
+      - unzip
       - curl
       - wget
       - file
