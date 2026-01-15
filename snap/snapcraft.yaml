@@ -103,7 +103,7 @@ parts:
       # ---
 
       # Force-disable updater artifacts in Tauri config 
-      sed -i 's/"createUpdaterArtifacts": true/"createUpdaterArtifacts": false/' src-tauri/tauri.conf.json
+      sed -i 's/"createUpdaterArtifacts":[[:space:]]*true/"createUpdaterArtifacts": false/' src-tauri/tauri.conf.json
 
 
       bun install
