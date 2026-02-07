@@ -21,6 +21,8 @@
     
 </div>
 
+[![Star History Chart](https://api.star-history.com/svg?repos=GoodDay360/HyperionBox&type=Date)](https://star-history.com/#GoodDay360/HyperionBox&Date)
+
 # Download
 
 ### <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Windows_logo_-_2012.svg" alt="Android" width="20" height="20"> Windows, <img src="https://upload.wikimedia.org/wikipedia/commons/d/d7/Android_robot.svg" alt="Android" width="20" height="20"> Android, <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/759px-Tux.svg.png?20220320193426" alt="Android" width="20" height="20"> Linux
