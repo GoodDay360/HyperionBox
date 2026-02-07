@@ -57,7 +57,7 @@ An open-source anime and movie streaming app that supports many sources through 
 - [Rust](https://www.rust-lang.org/pt-BR)
   - [Tauri](https://v2.tauri.app/)
     <details>
-      <summary>Tauri Official Plugins</summary>
+      <summary>Tauri Plugins</summary>
           <ul>
             <li><a href="https://v2.tauri.app/plugin/sql/">@tauri-apps/plugin-sql</a></li>
             <li><a href="https://v2.tauri.app/plugin/http/">@tauri-apps/plugin-http</a></li>
@@ -66,9 +66,9 @@ An open-source anime and movie streaming app that supports many sources through 
             <li><a href="https://v2.tauri.app/plugin/single-instance/">@tauri-apps/plugin-single-instance</a></li>
             <li><a href="https://v2.tauri.app/plugin/opener/">@tauri-apps/plugin-opener</a></li>
             <li><a href="https://v2.tauri.app/plugin/os-info/">@tauri-apps/plugin-os</a></li>
+            <li><a href="https://github.com/CrossCopy/tauri-plugin-clipboard">@CrossCopy/tauri-plugin-clipboard</a></li>
           </ul>
     </details>
-  - [@CrossCopy/tauri-plugin-clipboard](https://github.com/CrossCopy/tauri-plugin-clipboard)
 - [Typescript](https://www.typescriptlang.org/)
 - [SolidJS](https://www.solidjs.com/)
 - [Bootstrap](https://getbootstrap.com/)
