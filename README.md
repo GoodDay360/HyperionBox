@@ -46,13 +46,37 @@ An open-source anime and movie streaming app that supports many sources through 
 - 🔍 **Advanced search** for quick content discovery.
 - 🧩 **Plugins**: check source code in this repository [chlaty-core](https://github.com/chlaty/chlaty-core).
 
+
+# How to use?
+[Watch this video on YouTube](https://youtu.be/M32efmieHIg)
+
+
 # How it works?
 - Instead of spawning a local server like other apps, we uses [chlaty-core](https://github.com/chlaty/chlaty-core) to fetch available streaming sources from different plugins, and leverages [IPC](https://v2.tauri.app/concept/inter-process-communication/) to manage streaming logic in Rust and pass it to the video player.
 - Plugins are built-in, so there is no need for manual installation.
 - By using this method, when a plugin is updated, HyperionBox does not need to update the entire application; only the new plugin needs to be updated.
 - HyperionBox can be compiled and used on almost every platform supported by Tauri, with minimal software limitations.
 
-# Stack
+# 📸 Screenshot
+### Home
+<img width="1920" height="1080" alt="Screenshot (551)" src="https://github.com/user-attachments/assets/a8f41e0e-1430-4243-89e1-727f556abf2a" />
+
+### View
+<img width="1920" height="1080" alt="Screenshot (552)" src="https://github.com/user-attachments/assets/b6455082-1b4c-48ec-958b-26d0270fd468" />
+
+### Search
+<img width="1920" height="1080" alt="Screenshot (553)" src="https://github.com/user-attachments/assets/f926264a-b776-4c39-b77b-959382ce91ff" />
+
+### Download
+<img width="1920" height="1080" alt="Screenshot (554)" src="https://github.com/user-attachments/assets/fb96d09d-dec6-4099-89f4-f1dbaa401cfd" />
+
+
+### Watch
+<img width="1920" height="1080" alt="Screenshot (555)" src="https://github.com/user-attachments/assets/9f8c7c83-2682-4ff6-9dc7-abc7461e578c" />
+
+# Contribution Guide
+
+### Stack
 
 - [Rust](https://www.rust-lang.org/pt-BR)
   - [Tauri](https://v2.tauri.app/)
@@ -74,24 +98,6 @@ An open-source anime and movie streaming app that supports many sources through 
 - [Bootstrap](https://getbootstrap.com/)
 
 
-# 📸 Screenshot
-### Home
-<img width="1920" height="1080" alt="Screenshot (551)" src="https://github.com/user-attachments/assets/a8f41e0e-1430-4243-89e1-727f556abf2a" />
-
-### View
-<img width="1920" height="1080" alt="Screenshot (552)" src="https://github.com/user-attachments/assets/b6455082-1b4c-48ec-958b-26d0270fd468" />
-
-### Search
-<img width="1920" height="1080" alt="Screenshot (553)" src="https://github.com/user-attachments/assets/f926264a-b776-4c39-b77b-959382ce91ff" />
-
-### Download
-<img width="1920" height="1080" alt="Screenshot (554)" src="https://github.com/user-attachments/assets/fb96d09d-dec6-4099-89f4-f1dbaa401cfd" />
-
-
-### Watch
-<img width="1920" height="1080" alt="Screenshot (555)" src="https://github.com/user-attachments/assets/9f8c7c83-2682-4ff6-9dc7-abc7461e578c" />
-
-# Contribution Guide
 
 ## Prerequisites
 
