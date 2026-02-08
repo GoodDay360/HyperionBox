@@ -36,11 +36,10 @@ export default function TitleBar({
             <div class={styles.titlebar_draggable}
                 onMouseDown={async (e)=> {
                     e.preventDefault();
-                    if (await appWindow.isFullscreen()) return;
                     if (e.buttons === 1) {
                         // Primary (left) button
                         if (e.detail === 2){
-                            await appWindow.toggleMaximize();
+                            await appWindow.setFullscreen(!(await appWindow.isFullscreen()));
                         }else{
                             appWindow.startDragging();
                         }
@@ -75,11 +74,7 @@ export default function TitleBar({
                     }}
 
                     onClick={async ()=> {
-                        if (await appWindow.isFullscreen()){
-                            appWindow.setFullscreen(false);
-                        }else{
-                            appWindow.setFullscreen(true);
-                        }
+                        await appWindow.setFullscreen(!(await appWindow.isFullscreen()));
                         
                     }}
                 >
