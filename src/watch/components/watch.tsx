@@ -609,7 +609,7 @@ export default function Watch() {
                                                     if (!is_player_ready()) return;
 
                                                     let next_epi_id:string = "";
-                                                    for (const ep of EPISODE_LIST()?.[current_season_index()][next_ep_page_index]){
+                                                    for (const ep of EPISODE_LIST()?.[current_season_index()][next_ep_page_index] ?? []){
                                                         if (ep.index === current_episode_index()){
                                                             next_epi_id = ep.id;
                                                             break;
@@ -724,7 +724,7 @@ export default function Watch() {
                                         }
                                         
                                         let prev_epi_id:string = "";
-                                        for (const ep of EPISODE_LIST()?.[current_season_index()][prev_ep_page_index]){
+                                        for (const ep of EPISODE_LIST()?.[current_season_index()][prev_ep_page_index] ?? []){
                                             if (ep.index === current_episode_index()){
                                                 prev_epi_id = ep.id;
                                                 break;
@@ -771,7 +771,7 @@ export default function Watch() {
                                         }
 
                                         let next_epi_id:string = "";
-                                        for (const ep of EPISODE_LIST()?.[current_season_index()][next_ep_page_index]){
+                                        for (const ep of EPISODE_LIST()?.[current_season_index()][next_ep_page_index] ?? []){
                                             if (ep.index === current_episode_index()){
                                                 next_epi_id = ep.id;
                                                 break;
