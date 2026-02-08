@@ -1,35 +1,35 @@
 {
-    "version": "2.2.5",
+    "version": "2.2.6",
     "notes": "🎉 New version of HyperionBox.\nCheck github repository for full changelogs.",
     "pub_date": "2025-11-27T00:00:00+00:00",
     "platforms": {
         "windows-x86_64": {
-            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSeFVHNmZsakVqRjh1cHk1eEloVGxUelNkK2V5MzhyemQ3Q2dHZUR3UHZheU1iMXFIbmhmVzB5S21xQ1FJWnN2ckVCVkZjL21MUDBxNTQ1Zm9CN2tQSHk5WGRTYmFzM1FNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4MjA2OTA3CWZpbGU6SHlwZXJpb25Cb3hfMi4yLjVfeDY0LXNldHVwLmV4ZQpvWGZ6NzFTNlhIUjBvYWVKR2FTRTBMOHdnTVZlVkFaZmtsTzVFdE5yVDU2bC81QzFuSllON1laR29SeFNETVhFZlF5V0xDRmo3bGEwYkZMbFNmeXpCZz09Cg==",
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/HyperionBox_2.2.5_x64-setup.exe"
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSeFVHNmZsakVqRjVXYjY0eHJ4eno4cXlsV3pKL2Z1SUluTWxUWEN4QXlWVWNJNkNJajVGWTV2UjJmTVBIdFpFcExIelBZTldaNWMwNGNLZFdJTXJHbGJ1eUQvd0hOVXdnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzcwNTgyNDE1CWZpbGU6SHlwZXJpb25Cb3hfMi4yLjZfeDY0LXNldHVwLmV4ZQpFTjhESm5JQk0vVlJlKzlMRklGSDZQdUptZUpQV1Q1L2Rza0I2VDFNMDNmeDBhcWRhNjBoMUQxMlhlbHdUNGs3UXFqbWxjNEllMmhiVkNjRSt5ZlZDZz09Cg==",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.6/HyperionBox_2.2.6_x64-setup.exe"
         },
         "linux-x86_64": {
-            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSeFVHNmZsakVqRnkxMGJPL3NlTUFid3NGS0hFUUx3aG1WdTM3OVhpM1RjR2VhcmNXQng1RG1TMWM4c1czMW0rYkVHV2xKL0pGOGNYMWFyTXcrQUNGRWRzTFZFTEFNbmdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY4NDg0MjQwCWZpbGU6SHlwZXJpb25Cb3hfMi4yLjVfYW1kNjQuQXBwSW1hZ2UKU2JobkpjRzd3VGtkV1NsUFZXTW5mS1ZZSytIVzhhaEowalk1UllRdEZxRzdSU1pYaXdGcjB5L0tnRk5ObmpKMkU3Y3VtTkxFR01lTTQ0M0Q0eDlWQUE9PQo=",
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/HyperionBox_2.2.5_amd64.AppImage"
+            "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSeFVHNmZsakVqRjU1K0h4U1R6YWJSY1FSMzRoM0E3VlhoNkJlTkVyNjZVSU9LVW9iOGk4MVErc1JWRmttV2ZRdStUMjRESGYvRVd0bW9oR3dnNXdLaDJPbkdSdmpjWUFzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzcwNTgyMTY5CWZpbGU6SHlwZXJpb25Cb3hfMi4yLjZfYW1kNjQuQXBwSW1hZ2UKQ2NYM05SelkwT2RvSW41WTJVSy9rRFJaUE9OYlNHUENOUmlwZGdvbWlQbUVncDV4M2k4T04wdUJhKzR0azZhZWVIR2xzZ3drZjQxVUg0TklEMW5mREE9PQo=",
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.6/HyperionBox_2.2.6_amd64.AppImage"
         },
 		"android": {
             "signature": "",
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-universal-release.apk"
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.6/hyperionbox-universal-release.apk"
         },
         "android-arm64-v8a": {
             "signature": "",
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-arm64-release.apk"
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.6/hyperionbox-arm64-release.apk"
         },
         "android-armeabi-v7a": {
             "signature": "",
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-arm-release.apk"
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.6/hyperionbox-arm-release.apk"
         },
         "android-x86": {
             "signature": "",
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-x86-release.apk"
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.6/hyperionbox-x86-release.apk"
         },
         "android-x86_64": {
             "signature": "",
-            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.5/hyperionbox-x86_64-release.apk"
+            "url": "https://github.com/GoodDay360/HyperionBox/releases/download/2.2.6/hyperionbox-x86_64-release.apk"
         }
     }
 }
