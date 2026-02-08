@@ -26,7 +26,8 @@ import SearchRoundedIcon from '@suid/icons-material/SearchRounded';
 import ArrowBackRoundedIcon from '@suid/icons-material/ArrowBackRounded';
 import SaveRoundedIcon from '@suid/icons-material/SaveRounded';
 import RefreshRoundedIcon from '@suid/icons-material/RefreshRounded';
-
+import SkipPreviousRoundedIcon from '@suid/icons-material/SkipPreviousRounded';
+import SkipNextRoundedIcon from '@suid/icons-material/SkipNextRounded';
 
 // Solid Toast
 import toast from 'solid-toast';
@@ -383,6 +384,7 @@ export default function Watch() {
         
 
         get_data();
+        // set_is_loading(false);
     })
     onCleanup(() => {
         clearInterval(set_hls_instance_interval);
@@ -591,15 +593,33 @@ export default function Watch() {
                                         clearTimeout(play_next_timeout);                                        
                                         if ((Math.floor(current_watch_time) >= Math.floor(max_duration)) && current_watch_time && max_duration && PLAYER_CONFIGS().auto_next && is_player_ready()){
                                             console.log(current_watch_time, max_duration, is_player_ready());
-                                            let max_ep_index_len = (EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()]?.length ?? 0) - 1;
-                                            const next_ep_index = current_episode_index() + 1;
-                                            if (next_ep_index <= max_ep_index_len){
+                                            {
+                                                let max_ep_index_len = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()]?.length ?? 0;
+                                                let next_ep_page_index = current_episode_page_index();
+                                                const next_ep_index = current_episode_index() + 1;
+                                                if (next_ep_index >= max_ep_index_len){
+                                                    let next_ep_page_index_len = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()+1]?.length ?? 0;
+                                                    if (next_ep_page_index_len === 0){
+                                                        return;
+                                                    }
+                                                    next_ep_page_index++;
+                                                }
+
                                                 play_next_timeout = setTimeout(() => {
                                                     if (!is_player_ready()) return;
 
+                                                    let next_epi_id:string = "";
+                                                    for (const ep of EPISODE_LIST()?.[current_season_index()][next_ep_page_index]){
+                                                        if (ep.index === current_episode_index()){
+                                                            next_epi_id = ep.id;
+                                                            break;
+                                                        }
+                                                    }
+                                                    
                                                     set_mode({current: "online", force_online: false});
-                                                    const next_epi_id = EPISODE_LIST()?.[current_season_index()][current_episode_page_index()][next_ep_index].id;
+                                                    
                                                     set_current_episode_id(next_epi_id);
+                                                    set_current_episode_page_index(next_ep_page_index);
                                                     set_current_episode_index(next_ep_index);
                                                     get_data();
                                                     navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(link_plugin_id)}&link_id=${encodeURIComponent(link_id)}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(current_episode_index())}`, {replace: true});
@@ -676,6 +696,104 @@ export default function Watch() {
                             }
                         </div>
                         <div class={styles.tool_box}>
+                            <div class={styles.play_action_container}>
+                                <Button  color='primary'
+                                    variant='outlined'
+                                    sx={{
+                                        color: "var(--color-1)",
+                                        fontSize: "12.5px",
+                                        minWidth: "fit-content",
+                                        width: "fit-content",
+                                        margin:0,
+                                        padding: "8px 12px",
+                                        borderRadius: 0,
+                                        borderLeft: "none",
+                                    }}
+                                    onClick={() => {
+                                        let min_ep_index = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()]?.[0]?.index ?? -1;
+                                        let prev_ep_page_index = current_episode_page_index();
+                                        const prev_ep_index = current_episode_index() - 1;
+                                        if (prev_ep_index <= min_ep_index){
+                                            let next_ep_page_index_len = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()+1]?.length ?? 0;
+                                            if (next_ep_page_index_len === 0){
+                                                toast.remove();
+                                                toast("No previous episode available", {style: {color:"orange"}});
+                                                return;
+                                            }
+                                            prev_ep_page_index--;
+                                        }
+                                        
+                                        let prev_epi_id:string = "";
+                                        for (const ep of EPISODE_LIST()?.[current_season_index()][prev_ep_page_index]){
+                                            if (ep.index === current_episode_index()){
+                                                prev_epi_id = ep.id;
+                                                break;
+                                            }
+                                        }
+
+                                        set_mode({current: "online", force_online: false});
+                                        set_current_episode_id(prev_epi_id);
+                                        set_current_episode_page_index(prev_ep_page_index);
+                                        set_current_episode_index(prev_ep_index);
+                                        get_data();
+                                        navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(link_plugin_id)}&link_id=${encodeURIComponent(link_id)}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(current_episode_index())}`, {replace: true});
+                                
+                                    }}
+                                    startIcon={<SkipPreviousRoundedIcon fontSize='large'/>}
+                                >
+                                    Previous
+                                </Button>
+
+                                <Button  color='primary'
+                                    variant='outlined'
+                                    sx={{
+                                        color: "var(--color-1)",
+                                        fontSize: "12.5px",
+                                        minWidth: "fit-content",
+                                        width: "fit-content",
+                                        margin:0,
+                                        padding: "8px 12px",
+                                        borderRadius: 0,
+                                        borderRight: "none"
+                                    }}
+                                    onClick={() => {
+                                        let max_ep_index_len = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()]?.length ?? 0;
+                                        let next_ep_page_index = current_episode_page_index();
+                                        const next_ep_index = current_episode_index() + 1;
+                                        if (next_ep_index >= max_ep_index_len){
+                                            let next_ep_page_index_len = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()+1]?.length ?? 0;
+                                            if (next_ep_page_index_len === 0){
+                                                toast.remove();
+                                                toast("No next episode available", {style: {color:"orange"}});
+                                                return;
+                                            }
+                                            next_ep_page_index++;
+                                        }
+
+                                        let next_epi_id:string = "";
+                                        for (const ep of EPISODE_LIST()?.[current_season_index()][next_ep_page_index]){
+                                            if (ep.index === current_episode_index()){
+                                                next_epi_id = ep.id;
+                                                break;
+                                            }
+                                        }
+
+                                        set_mode({current: "online", force_online: false});
+                                        set_current_episode_id(next_epi_id);
+                                        set_current_episode_page_index(next_ep_page_index);
+                                        set_current_episode_index(next_ep_index);
+                                        get_data();
+                                        navigate(`/watch?source=${encodeURIComponent(source)}&id=${encodeURIComponent(id)}&link_plugin_id=${encodeURIComponent(link_plugin_id)}&link_id=${encodeURIComponent(link_id)}&season_index=${encodeURIComponent(current_season_index())}&episode_index=${encodeURIComponent(current_episode_index())}`, {replace: true});
+                                
+                                        
+                                    }}
+                                    endIcon={<SkipNextRoundedIcon fontSize="large"/>}
+                                >
+                                    Next
+                                </Button>
+
+                            </div>
+
                             <div class={styles.player_options_container}>
                                 <FormControlLabel control={<Checkbox sx={{ color:"var(--color-1)" }} size="small"
                                     checked={PLAYER_CONFIGS()?.auto_skip_intro_outro ?? true}
@@ -708,6 +826,9 @@ export default function Watch() {
                                     }}
                                 />
                             </div>
+                            
+                            
+
                             <div
                                 style={{
                                     padding: "18px",
@@ -784,6 +905,9 @@ export default function Watch() {
                                     }
                                 </div>
                             </div>
+                        
+                            
+                            
                         </div>
                     </div>
                     
