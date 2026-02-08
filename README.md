@@ -46,33 +46,16 @@ An open-source anime and movie streaming app that supports many sources through 
 - 🔍 **Advanced search** for quick content discovery.
 - 🧩 **Plugins**: check source code in this repository [chlaty-core](https://github.com/chlaty/chlaty-core).
 
+
+# How to use?
+[Watch this video on YouTube](https://youtu.be/M32efmieHIg)
+
+
 # How it works?
 - Instead of spawning a local server like other apps, we uses [chlaty-core](https://github.com/chlaty/chlaty-core) to fetch available streaming sources from different plugins, and leverages [IPC](https://v2.tauri.app/concept/inter-process-communication/) to manage streaming logic in Rust and pass it to the video player.
 - Plugins are built-in, so there is no need for manual installation.
 - By using this method, when a plugin is updated, HyperionBox does not need to update the entire application; only the new plugin needs to be updated.
 - HyperionBox can be compiled and used on almost every platform supported by Tauri, with minimal software limitations.
-
-# Stack
-
-- [Rust](https://www.rust-lang.org/pt-BR)
-  - [Tauri](https://v2.tauri.app/)
-    <details>
-      <summary>Tauri Official Plugins</summary>
-          <ul>
-            <li><a href="https://v2.tauri.app/plugin/sql/">@tauri-apps/plugin-sql</a></li>
-            <li><a href="https://v2.tauri.app/plugin/http/">@tauri-apps/plugin-http</a></li>
-            <li><a href="https://v2.tauri.app/plugin/file-system/">@tauri-apps/plugin-fs</a></li>
-            <li><a href="https://v2.tauri.app/plugin/updater/">@tauri-apps/plugin-updater</a></li>
-            <li><a href="https://v2.tauri.app/plugin/single-instance/">@tauri-apps/plugin-single-instance</a></li>
-            <li><a href="https://v2.tauri.app/plugin/opener/">@tauri-apps/plugin-opener</a></li>
-            <li><a href="https://v2.tauri.app/plugin/os-info/">@tauri-apps/plugin-os</a></li>
-          </ul>
-    </details>
-  - [@CrossCopy/tauri-plugin-clipboard](https://github.com/CrossCopy/tauri-plugin-clipboard)
-- [Typescript](https://www.typescriptlang.org/)
-- [SolidJS](https://www.solidjs.com/)
-- [Bootstrap](https://getbootstrap.com/)
-
 
 # 📸 Screenshot
 ### Home
@@ -92,6 +75,29 @@ An open-source anime and movie streaming app that supports many sources through 
 <img width="1920" height="1080" alt="Screenshot (555)" src="https://github.com/user-attachments/assets/9f8c7c83-2682-4ff6-9dc7-abc7461e578c" />
 
 # Contribution Guide
+
+### Stack
+
+- [Rust](https://www.rust-lang.org/pt-BR)
+  - [Tauri](https://v2.tauri.app/)
+    <details>
+      <summary>Tauri Plugins</summary>
+          <ul>
+            <li><a href="https://v2.tauri.app/plugin/sql/">@tauri-apps/plugin-sql</a></li>
+            <li><a href="https://v2.tauri.app/plugin/http/">@tauri-apps/plugin-http</a></li>
+            <li><a href="https://v2.tauri.app/plugin/file-system/">@tauri-apps/plugin-fs</a></li>
+            <li><a href="https://v2.tauri.app/plugin/updater/">@tauri-apps/plugin-updater</a></li>
+            <li><a href="https://v2.tauri.app/plugin/single-instance/">@tauri-apps/plugin-single-instance</a></li>
+            <li><a href="https://v2.tauri.app/plugin/opener/">@tauri-apps/plugin-opener</a></li>
+            <li><a href="https://v2.tauri.app/plugin/os-info/">@tauri-apps/plugin-os</a></li>
+            <li><a href="https://github.com/CrossCopy/tauri-plugin-clipboard">@CrossCopy/tauri-plugin-clipboard</a></li>
+          </ul>
+    </details>
+- [Typescript](https://www.typescriptlang.org/)
+- [SolidJS](https://www.solidjs.com/)
+- [Bootstrap](https://getbootstrap.com/)
+
+
 
 ## Prerequisites
 
