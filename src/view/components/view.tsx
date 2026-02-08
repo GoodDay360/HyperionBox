@@ -238,6 +238,11 @@ export default function View() {
                                                 icon: '⚠️',
                                                 style: {color:"orange"}
                                             });
+                                            document.getElementById("episode_container")?.scrollIntoView({
+                                                behavior: "smooth", 
+                                                block: "end"        
+                                            });
+
                                             return;
                                         }
 
@@ -372,7 +377,7 @@ export default function View() {
                         </div>
                     }
 
-                    <div class={styles.episode_container}>
+                    <div class={styles.episode_container} id="episode_container">
                         <div class={styles.episode_frame}>
                             <div class={styles.episode_header_box}>
                                 <h2 class={styles.episode_header_box_text}>Episodes</h2>
