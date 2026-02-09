@@ -100,6 +100,7 @@ export default function Watch() {
     const [is_player_ready, set_is_player_ready] = createSignal<boolean>(false);
     const [is_loading_server, set_is_loading_server] = createSignal<boolean>(true);
     const [is_last_fullscreen, set_is_last_fullscren] = createSignal<boolean>(false);
+    const [is_last_playsinline, set_is_last_playsinsline] = createSignal<boolean>(false);
 
     const [EPISODE_LIST, SET_EPISODE_LIST] = createSignal<EpisodeList[][][]>([]);
     const [EPISIDE_SERVER_DATA, SET_EPISODE_SERVER_DATA] = createSignal<EpisodeServerData>();
@@ -107,7 +108,8 @@ export default function Watch() {
 
     const [PLAYER_CONFIGS, SET_PLAYER_CONFIGS] = createSignal<PlayerConfigs>({
         auto_next: true,
-        auto_skip_intro_outro: true
+        auto_skip_intro_outro: true,
+        playsinline: false
     });
 
 
@@ -368,13 +370,14 @@ export default function Watch() {
         /* Load player configs */
         let player_configs:PlayerConfigs = {
             auto_next: true,
-            auto_skip_intro_outro: true
+            auto_skip_intro_outro: true,
+            playsinline: false
         }
         try {
             const saved_player_configs = localStorage.getItem("player_configs");
             if (saved_player_configs) {
                 const configs:PlayerConfigs = JSON.parse(saved_player_configs) || player_configs;
-                player_configs = configs;
+                player_configs = {...player_configs, ...configs};
             }
         }catch(e){
             console.error(e);
@@ -524,10 +527,31 @@ export default function Watch() {
                         <div class={styles.player_box}>
                             {!is_loading_server() 
                                 ? <media-player id="player" ref={PLAYER_REF}
-                                    playsInline webkit-playsinline crossOrigin autoPlay
+                                    playsInline={["android","ios" ].includes(platform()) ? true : PLAYER_CONFIGS()?.playsinline}
+                                    webkit-playsinline={["android","ios" ].includes(platform()) ? true : PLAYER_CONFIGS()?.playsinline}
+                                    crossOrigin autoPlay
                                     fullscreenOrientation='landscape'
                                     on:media-enter-fullscreen-request={async (e)=>{
                                         e.preventDefault();
+                                        if (PLAYER_CONFIGS()?.playsinline && !["android","ios" ].includes(platform())) {
+                                            const player: HTMLElement = document.getElementById("player") as HTMLElement;
+                                            if (is_last_playsinline()){
+                                                player.style.setProperty("top", "auto", "important");
+                                                player.style.setProperty("position", "relative", "important");
+                                                player.style.setProperty("z-index", "1", "important");
+                                                player.style.setProperty("width", "100%", "important");
+                                                player.style.setProperty("height", "calc((100vw + 100vh) / 2 * 0.45)", "important");
+                                                set_is_last_playsinsline(false);
+                                            }else{
+                                                player.style.setProperty("top", "var(--titlebar-height)", "important");
+                                                player.style.setProperty("position", "fixed", "important");
+                                                player.style.setProperty("z-index", "5", "important");
+                                                player.style.setProperty("width", "var(--inner-width)", "important");
+                                                player.style.setProperty("height", "var(--inner-height)", "important");
+                                                set_is_last_playsinsline(true);
+                                            }
+                                            return;
+                                        };
                                         
                                         try{
                                             const current_window = getCurrentWindow();
@@ -547,6 +571,8 @@ export default function Watch() {
                                     }}
                                     on:media-exit-fullscreen-request={async (e)=>{
                                         e.preventDefault();
+                                        
+                                        
                                         await PLAYER_REF.exitFullscreen();
                                         try{
                                             const current_window = getCurrentWindow();
@@ -825,6 +851,23 @@ export default function Watch() {
                                         userSelect:"none"
                                     }}
                                 />
+                                {!["android","ios" ].includes(platform()) &&
+                                    <FormControlLabel control={<Checkbox sx={{ color:"var(--color-1)" }} size="small"
+                                        checked={PLAYER_CONFIGS()?.playsinline ?? false}
+                                        onChange={(_,value) => {
+                                            SET_PLAYER_CONFIGS({
+                                                ...PLAYER_CONFIGS(),
+                                                playsinline: value
+                                            });
+                                            localStorage.setItem("player_configs", JSON.stringify(PLAYER_CONFIGS()));
+                                        }}
+                                    />} label="Plays Inline" 
+                                        sx={{
+                                            color:"var(--color-1)",
+                                            userSelect:"none"
+                                        }}
+                                    />
+                                }
                             </div>
                             
                             
