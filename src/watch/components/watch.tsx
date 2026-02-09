@@ -527,8 +527,8 @@ export default function Watch() {
                         <div class={styles.player_box}>
                             {!is_loading_server() 
                                 ? <media-player id="player" ref={PLAYER_REF}
-                                    playsInline={["android","ios" ].includes(platform()) ? false : PLAYER_CONFIGS()?.playsinline}
-                                    webkit-playsinline={["android","ios" ].includes(platform()) ? false : PLAYER_CONFIGS()?.playsinline}
+                                    playsInline={["android","ios" ].includes(platform()) ? true : PLAYER_CONFIGS()?.playsinline}
+                                    webkit-playsinline={["android","ios" ].includes(platform()) ? true : PLAYER_CONFIGS()?.playsinline}
                                     crossOrigin autoPlay
                                     fullscreenOrientation='landscape'
                                     on:media-enter-fullscreen-request={async (e)=>{
