@@ -115,6 +115,10 @@ export default function App() {
         document.documentElement.style.setProperty('--inner-width', `${window.innerWidth}px`);
         document.documentElement.style.setProperty('--inner-height', `${window.innerHeight - (TitleBarRef?.clientHeight ?? 0)}px`);
         set_screen_size({width: window.innerWidth, height: window.innerHeight - (TitleBarRef?.clientHeight ?? 0)});
+        
+        document.documentElement.style.setProperty('--titlebar-width', `${TitleBarRef?.clientWidth ?? 0}px`);
+        document.documentElement.style.setProperty('--titlebar-height', `${TitleBarRef?.clientHeight ?? 0}px`);
+
     }
 
     onMount(()=>{

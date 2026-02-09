@@ -1,8 +1,21 @@
 #player { /* Or the actual Vidstack element */
     width: 100%;
-    height: calc((100vw + 100vh)/2*0.45);
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: calc((100vw + 100vh) / 2 * 0.45);
     object-fit: contain !important;
     border-radius: 0 !important;
+    
+    /* playsinline */
+    /* top: var(--titlebar-height);
+    position: fixed;
+    z-index: 5;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    width: var(--inner-width) !important;
+    height: var(--inner-height) !important; */
+    /* --- */
+
 }
 
 
