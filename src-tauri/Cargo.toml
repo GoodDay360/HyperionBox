@@ -1,6 +1,6 @@
 [package]
 name = "HyperionBox"
-version = "2.2.6"
+version = "2.2.7"
 description = "A Tauri App"
 authors = ["goodday360"]
 edition = "2021"

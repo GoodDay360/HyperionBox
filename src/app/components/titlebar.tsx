@@ -41,6 +41,7 @@ export default function TitleBar({
                         if (e.detail === 2){
                             await appWindow.setFullscreen(!(await appWindow.isFullscreen()));
                         }else{
+                            if (await appWindow.isFullscreen()) return;
                             appWindow.startDragging();
                         }
                     }
