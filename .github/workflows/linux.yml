@@ -25,11 +25,12 @@ jobs:
           webkit2gtk-4.1-dev \
           librsvg-dev \
           gstreamer-dev \
-          gst-plugins-base-dev \
-          gst-plugins-good-dev \
-          gst-plugins-bad-dev \
-          gst-plugins-ugly-dev \
-          gst-libav-dev
+          gstreamer-tools \
+          gst-plugins-base \
+          gst-plugins-good \
+          gst-plugins-bad \
+          gst-plugins-ugly \
+          gst-libav
 
     - name: Checkout code
       uses: actions/checkout@v4
