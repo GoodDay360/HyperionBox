@@ -32,13 +32,10 @@ jobs:
           gstreamer1.0-libav \
           gstreamer1.0-vaapi
 
-        # Install musl-cross pkg-config wrapper
-        sudo apt-get install -y pkg-config-multiarch
-
         # Export pkg-config variables for musl target
         echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
-        echo "PKG_CONFIG_x86_64_unknown_linux_musl=/usr/bin/pkg-config" >> $GITHUB_ENV
-        echo "PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_linux_musl=/usr/x86_64-linux-musl" >> $GITHUB_ENV
+        echo "PKG_CONFIG_x86_64_unknown_linux_musl=pkg-config" >> $GITHUB_ENV
+        echo "PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_linux_musl=/usr" >> $GITHUB_ENV
 
     - name: Set up Bun
       uses: oven-sh/setup-bun@v2
