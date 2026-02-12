@@ -1,52 +1,43 @@
-name: Linux Build (musl)
+name: Linux Build
 
 on:
   push:
     branches:
-      - dev
+      - build
 
 jobs:
-  build-linux-musl:
+  build-linux:
     runs-on: ubuntu-latest
-    container: alpine:latest   # musl-based build environment
 
     steps:
-    - name: Install base tools
-      run: |
-        apk update
-        apk add --no-cache \
-          bash \
-          curl \
-          git \
-          build-base \
-          pkgconfig \
-          musl-dev \
-          nodejs \
-          npm \
-          gtk+3.0-dev \
-          webkit2gtk-4.1-dev \
-          librsvg-dev \
-          gstreamer-dev \
-          gstreamer-tools \
-          gst-plugins-base \
-          gst-plugins-good \
-          gst-plugins-bad \
-          gst-plugins-ugly \
-          gst-libav
-
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Install Bun (musl build)
+    - name: Install system dependencies 
       run: |
-        curl -fsSL https://bun.sh/install | bash
-        echo "$HOME/.bun/bin" >> $GITHUB_PATH
+        sudo apt-get update
+        sudo apt-get install -y \
+          libgtk-3-dev \
+          libwebkit2gtk-4.1-dev \
+          libayatana-appindicator3-dev \
+          librsvg2-dev \
+          pkg-config \
+          build-essential \
+          curl \
+          gstreamer1.0-plugins-base \
+          gstreamer1.0-plugins-good \
+          gstreamer1.0-plugins-bad \
+          gstreamer1.0-plugins-ugly \
+          gstreamer1.0-libav \
+          gstreamer1.0-vaapi
+
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: latest
 
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
-
-    - name: Add musl target
-      run: rustup target add x86_64-unknown-linux-musl
 
     - name: Rust cache
       uses: swatinem/rust-cache@v2
@@ -62,13 +53,13 @@ jobs:
     - name: Install dependencies
       run: bun install
 
-    - name: Build Linux AppImage (musl)
-      run: bun tauri build --target x86_64-unknown-linux-musl
+    - name: Build Linux AppImage
+      run: bun tauri build
 
     - name: Upload AppImage and signature
       uses: actions/upload-artifact@v4
       with:
-        name: hyperionbox-linux-appimage-musl
+        name: hyperionbox-linux-appimage
         path: |
-          src-tauri/target/x86_64-unknown-linux-musl/release/bundle/appimage/*.AppImage
-          src-tauri/target/x86_64-unknown-linux-musl/release/bundle/appimage/*.sig
+          src-tauri/target/release/bundle/appimage/*.AppImage
+          src-tauri/target/release/bundle/appimage/*.sig
