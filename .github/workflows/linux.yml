@@ -1,4 +1,4 @@
-name: Linux Build
+name: Linux Build (musl)
 
 on:
   push:
@@ -8,34 +8,33 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    container: alpine:latest   # run inside Alpine (musl-based)
 
     steps:
+    - name: Install base tools
+      run: |
+        apk update
+        apk add --no-cache \
+          bash \
+          curl \
+          git \
+          build-base \
+          pkgconfig \
+          musl-dev \
+          gtk+3.0-dev \
+          webkit2gtk-dev \
+          librsvg-dev \
+          gstreamer-dev \
+          gstreamer-tools \
+          gstreamer-libav \
+          gstreamer-vaapi \
+          gstreamer-plugins-base \
+          gstreamer-plugins-good \
+          gstreamer-plugins-bad \
+          gstreamer-plugins-ugly
+
     - name: Checkout code
       uses: actions/checkout@v4
-
-    - name: Install system dependencies 
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          musl-tools \
-          pkg-config \
-          libgtk-3-dev \
-          libwebkit2gtk-4.1-dev \
-          libayatana-appindicator3-dev \
-          librsvg2-dev \
-          build-essential \
-          curl \
-          gstreamer1.0-plugins-base \
-          gstreamer1.0-plugins-good \
-          gstreamer1.0-plugins-bad \
-          gstreamer1.0-plugins-ugly \
-          gstreamer1.0-libav \
-          gstreamer1.0-vaapi
-
-        # Export pkg-config variables for musl target
-        echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
-        echo "PKG_CONFIG_x86_64_unknown_linux_musl=pkg-config" >> $GITHUB_ENV
-        echo "PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_linux_musl=/usr" >> $GITHUB_ENV
 
     - name: Set up Bun
       uses: oven-sh/setup-bun@v2
@@ -45,7 +44,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
 
-    - name: Add musl target 
+    - name: Add musl target
       run: rustup target add x86_64-unknown-linux-musl
 
     - name: Rust cache
