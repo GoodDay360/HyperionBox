@@ -8,7 +8,7 @@ on:
 jobs:
   build-linux-musl:
     runs-on: ubuntu-latest
-    container: alpine:latest
+    container: alpine:latest   # musl-based build environment
 
     steps:
     - name: Install base tools
@@ -21,6 +21,8 @@ jobs:
           build-base \
           pkgconfig \
           musl-dev \
+          nodejs \
+          npm \
           gtk+3.0-dev \
           webkit2gtk-4.1-dev \
           librsvg-dev \
