@@ -39,6 +39,9 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
 
+    - name: Add musl target 
+      run: rustup target add x86_64-unknown-linux-musl
+
     - name: Rust cache
       uses: swatinem/rust-cache@v2
       with:
@@ -53,13 +56,13 @@ jobs:
     - name: Install dependencies
       run: bun install
 
-    - name: Build Linux AppImage
-      run: bun tauri build
+    - name: Build Linux AppImage (musl)
+      run: bun tauri build --target x86_64-unknown-linux-musl
 
     - name: Upload AppImage and signature
       uses: actions/upload-artifact@v4
       with:
         name: hyperionbox-linux-appimage
         path: |
-          src-tauri/target/release/bundle/appimage/*.AppImage
-          src-tauri/target/release/bundle/appimage/*.sig
+          src-tauri/target/x86_64-unknown-linux-musl/release/bundle/appimage/*.AppImage
+          src-tauri/target/x86_64-unknown-linux-musl/release/bundle/appimage/*.sig
