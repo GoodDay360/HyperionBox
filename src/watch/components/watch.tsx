@@ -739,9 +739,9 @@ export default function Watch() {
                                         let min_ep_index = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()]?.[0]?.index ?? -1;
                                         let prev_ep_page_index = current_episode_page_index();
                                         const prev_ep_index = current_episode_index() - 1;
-                                        if (prev_ep_index <= min_ep_index){
-                                            let next_ep_page_index_len = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()+1]?.length ?? 0;
-                                            if (next_ep_page_index_len === 0){
+                                        if (prev_ep_index < min_ep_index){
+                                            let prev_ep_page_index_len = EPISODE_LIST()?.[current_season_index()]?.[current_episode_page_index()-1]?.length ?? 0;
+                                            if (prev_ep_page_index_len === 0){
                                                 toast.remove();
                                                 toast("No previous episode available", {style: {color:"orange"}});
                                                 return;
