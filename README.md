@@ -1,3 +1,8 @@
+# 🌟 This application continues to work as expected, but please note that future issues will not be maintained.  
+- You’re welcome to fork this project and maintain it yourself.  
+- For a stable, actively maintained alternative, check out [RecomBox](https://github.com/RecomBox/RecomBox).
+# 
+
 [<img src="https://github.com/GoodDay360/HyperionBox/blob/main/public/1500x500-banner.png?raw=true">](https://github.com/GoodDay360/HyperionBox)
 <div>
     <a href="https://discord.gg/TkArvnVvNG">
