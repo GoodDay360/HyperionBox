@@ -1,4 +1,4 @@
-# 🌟 This application continues to work as expected, but please note that future issues will not be maintained for now.  
+# 🌟 This application continues to work as expected, but for now future issues will not be maintained.  
 - You’re welcome to fork this project and maintain it yourself.  
 - For a stable, actively maintained alternative, check out [RecomBox](https://github.com/RecomBox/RecomBox).
 # 
