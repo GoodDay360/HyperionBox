@@ -45,7 +45,6 @@ An open-source anime and movie streaming app that supports many sources through 
 # ✨ Features
 - 🎬 **Stream anime and movies** seamlessly from various sources.
 - 📌 **Track your watch progress** and pick up where you left off.
-- ☁️ **Integrate with [HyperSync](https://github.com/GoodDay360/HyperSync)** to sync your favorites and watch history across all your devices.
 - ⬇️ **Download** for offline watching.
 - 🎨 **Modern UI** for a smooth and intuitive experience.
 - 🔍 **Advanced search** for quick content discovery.
